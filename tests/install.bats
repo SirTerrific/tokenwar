@@ -314,7 +314,7 @@ EOF
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
     local cmd
-    cmd="$(node -e 'const c=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));process.stdout.write((c.statusLine||{}).command||"")' "$HOME/.claude/settings.json")"
+    cmd="$(node -e 'const c=JSON.parse(require("fs").readFileSync(0,"utf8"));process.stdout.write((c.statusLine||{}).command||"")' < "$HOME/.claude/settings.json")"
     [[ "$cmd" == *"tokenwar-statusline.sh"* ]]
     if is_windows; then
         [[ "$cmd" == *"bash.exe"* ]]

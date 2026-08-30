@@ -83,7 +83,9 @@ readonly REFRESHABLE_MARKETPLACES=(
 refresh_marketplaces() {
     local mp dir rc=0
     for mp in "${REFRESHABLE_MARKETPLACES[@]}"; do
-        dir="${MARKETPLACE_ROOT}/${mp}"
+        # git is a native Windows binary: it cannot chdir into an MSYS path when
+        # MSYS_NO_PATHCONV=1 disables the implicit rewrite.
+        dir="$(tw_node_path "${MARKETPLACE_ROOT}/${mp}")"
         if [[ ! -d "${dir}/.git" ]]; then
             $quiet || echo "tokenwar: marketplace clone missing: $dir" >&2
             rc=1
@@ -107,7 +109,8 @@ refresh_marketplaces() {
 readonly MARKETPLACE_GIT_SHA_LEN=12
 marketplace_version() {
     local marketplace="$1" plugin_name="$2"
-    local marketplace_dir="${MARKETPLACE_ROOT}/${marketplace}"
+    local marketplace_dir
+    marketplace_dir="$(tw_node_path "${MARKETPLACE_ROOT}/${marketplace}")"
     local upstream="" manifest_json="" v=""
 
     if [[ -d "${marketplace_dir}/.git" ]]; then

@@ -67,10 +67,22 @@ The engine is Bash, so every entry point ends up calling the same
 | Shell | Entry point | Wired by |
 | ----- | ----------- | -------- |
 | Git Bash | `tokenwar` shell function | `install.sh` (`~/.bashrc`) |
-| PowerShell | `bin\tokenwar.ps1` via a `$PROFILE` function | `install.ps1` |
+| PowerShell | `bin\tokenwar.cmd` on PATH, plus a `$PROFILE` function | `install.ps1` |
 | Command Prompt | `bin\tokenwar.cmd` on PATH | `install.ps1` |
 
-Both shims find `bash.exe` the same way — `$env:TOKENWAR_BASH`, then the usual
+**There is deliberately no `bin\tokenwar.ps1`.** Windows PowerShell defaults to an
+ExecutionPolicy of Restricted, which refuses to run `.ps1` files at all — and PATH
+resolution prefers `.ps1` over `.cmd`, so shipping one shadowed the entry point
+that works with one that could not run. A `.cmd` is not policy-controlled and
+behaves identically when called from PowerShell.
+
+The same policy applies to `install.ps1` itself. If yours is restrictive:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -All
+```
+
+The shim finds `bash.exe` this way — `$env:TOKENWAR_BASH`, then the usual
 Git for Windows locations, then PATH, deliberately skipping
 `System32\bash.exe` (that is the WSL launcher, a different environment that
 cannot see this install). Override the install location with

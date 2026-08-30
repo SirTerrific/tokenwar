@@ -89,6 +89,17 @@ jobs:
       - name: Run bats tests
         run: bats tests/
 
+      - name: Run bats tests with MSYS path conversion disabled
+        # node, python3 and git are native Windows binaries and cannot resolve an
+        # MSYS path. MSYS normally rewrites those values as it spawns them, but a
+        # user can switch that off — and the failure is silent, so an unreadable
+        # settings.json looks exactly like an absent one. This run is what proves
+        # the explicit path conversions are carrying the weight, rather than a
+        # heuristic we happen to be riding on.
+        env:
+          MSYS_NO_PATHCONV: 1
+        run: bats tests/
+
       - name: Run scripts smoke-check (statusline + gain print output)
         run: |
           echo '{}' | bash scripts/tokenwar-statusline.sh

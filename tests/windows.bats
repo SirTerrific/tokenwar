@@ -23,6 +23,10 @@ require_windows() {
     od_eval "tw_is_windows" || skip "Windows-only entry point"
 }
 
+# cmd.exe switch: MSYS rewrites a lone /c into a path, so //c is needed — unless
+# MSYS_NO_PATHCONV=1 disables that rewrite, when //c is what cmd cannot parse.
+cmd_c() { [[ -n "${MSYS_NO_PATHCONV:-}" ]] && printf "/c" || printf "//c"; }
+
 # Absolute Windows path for a repo-relative file.
 win_path() {
     ( cd "$REPO_ROOT" && cygpath -w "$PWD/$1" )
@@ -62,14 +66,20 @@ od_eval() {
 }
 
 @test "tw_user falls back to USERNAME when USER is empty" {
-    # The Git Bash case: USER is unset, only USERNAME carries the account name.
-    # Without this the statusline caches collapse onto one shared filename.
     run env USER= USERNAME=bob bash -c "source '$OSDETECT'; tw_user"
     [ "$output" = "bob" ]
 }
 
+@test "tw_user falls back to USERNAME when USER is UNSET" {
+    # The real Git Bash case, and the one that matters: unset (not empty) is what
+    # trips `set -u` in the statusline. A test that merely empties USER passes
+    # against the broken code too.
+    run env -u USER USERNAME=bob bash -c "source '$OSDETECT'; tw_user"
+    [ "$output" = "bob" ]
+}
+
 @test "tw_user never returns empty" {
-    run env USER= USERNAME= LOGNAME= bash -c "source '$OSDETECT'; tw_user"
+    run env -u USER -u USERNAME -u LOGNAME bash -c "source '$OSDETECT'; tw_user"
     [ -n "$output" ]
 }
 
@@ -166,11 +176,11 @@ b" ]
 
 # ── statusline regressions ──────────────────────────────────────────
 
-@test "statusline renders when USER is empty" {
+@test "statusline renders when USER is unset" {
     # Git Bash leaves USER unset. Under `set -u` the cache-filename expansion
     # aborted the whole script with "USER: unbound variable", so the status bar
     # was not merely wrong on Windows — it never rendered at all.
-    run env USER= USERNAME=tester HOME="$HOME" bash "$STATUSLINE" </dev/null
+    run env -u USER USERNAME=tester HOME="$HOME" bash "$STATUSLINE" </dev/null
     [ "$status" -eq 0 ]
     [[ "$output" == *"ponytail"* ]]
 }
@@ -178,7 +188,7 @@ b" ]
 @test "statusline prints no stray errors on a first-ever run" {
     # ~/.claude/tokenwar does not exist yet: creating the refresh lock failed and
     # bash reported the redirection error into the status bar itself.
-    run env USER= USERNAME=tester HOME="$HOME" bash "$STATUSLINE" </dev/null
+    run env -u USER USERNAME=tester HOME="$HOME" bash "$STATUSLINE" </dev/null
     [ "$status" -eq 0 ]
     [[ "$output" != *"No such file or directory"* ]]
     [[ "$output" != *"unbound variable"* ]]
@@ -187,7 +197,7 @@ b" ]
 @test "statusline caches are namespaced per user" {
     local tmpdir="$BATS_TEST_TMPDIR/cache"
     mkdir -p "$tmpdir"
-    run env USER= USERNAME=tester HOME="$HOME" TMPDIR="$tmpdir" bash "$STATUSLINE" </dev/null
+    run env -u USER USERNAME=tester HOME="$HOME" TMPDIR="$tmpdir" bash "$STATUSLINE" </dev/null
     [ "$status" -eq 0 ]
     # Never the bare "tokenwar-plugins-.json" that an empty USER produced.
     [ ! -e "$tmpdir/tokenwar-plugins-.json" ]
@@ -257,7 +267,7 @@ JSON
     # a printable class like [^ -~]: .gitattributes checks these files out with
     # CRLF, and CR is ASCII but not printable, so such a test passes on an LF
     # working copy and fails on a real checkout.
-    for f in "$REPO_ROOT/install.ps1" "$REPO_ROOT/uninstall.ps1" "$REPO_ROOT/bin/tokenwar.ps1"; do
+    for f in "$REPO_ROOT/install.ps1" "$REPO_ROOT/uninstall.ps1"; do
         [ -f "$f" ] || continue
         run bash -c "LC_ALL=C tr -d '\\000-\\177' < '$f' | wc -c"
         [ "$(echo "$output" | tr -d '[:space:]')" = "0" ]
@@ -267,7 +277,7 @@ JSON
 @test "PowerShell scripts parse" {
     require_windows
     command -v powershell.exe >/dev/null 2>&1 || skip "powershell.exe not available"
-    for rel in install.ps1 uninstall.ps1 bin/tokenwar.ps1; do
+    for rel in install.ps1 uninstall.ps1; do
         [ -f "$REPO_ROOT/$rel" ] || continue
         local wp; wp="$(win_path "$rel")"
         run powershell.exe -NoProfile -Command "\$e=\$null;\$null=[System.Management.Automation.Language.Parser]::ParseFile('$wp',[ref]\$null,[ref]\$e);if(\$e){'FAIL'}else{'OK'}"
@@ -282,7 +292,7 @@ JSON
     # NB: cmd.exe needs //c here — MSYS rewrites a lone /c into a path, cmd then
     # sees no switch and opens an interactive shell that never returns.
     run env TOKENWAR_DIR="$(cd "$REPO_ROOT" && cygpath -w "$PWD")" \
-        cmd.exe //c "$(win_path bin/tokenwar.cmd)" help
+        cmd.exe "$(cmd_c)" "$(win_path bin/tokenwar.cmd)" help
     [ "$status" -eq 0 ]
     [[ "$output" == *"token-saving stack manager"* ]]
 }
@@ -292,17 +302,30 @@ JSON
     command -v cmd.exe >/dev/null 2>&1 || skip "cmd.exe not available"
     [ -f "$REPO_ROOT/bin/tokenwar.cmd" ] || skip "cmd shim not present"
     # 127 is the shim's own "not installed" code, hence `run -127`.
-    run -127 env TOKENWAR_DIR='C:\no\such\place' cmd.exe //c "$(win_path bin/tokenwar.cmd)" help
+    run -127 env TOKENWAR_DIR='C:\no\such\place' cmd.exe "$(cmd_c)" "$(win_path bin/tokenwar.cmd)" help
     [[ "$output" == *"dispatcher not found"* ]]
 }
 
-@test "tokenwar.ps1 reaches the dispatcher" {
+@test "bin/ ships no .ps1 that would shadow the .cmd on PATH" {
+    # PATH resolution prefers .ps1 over .cmd, and Windows PowerShell's default
+    # ExecutionPolicy (Restricted) blocks .ps1 outright — so a tokenwar.ps1 in
+    # bin/ hid the one entry point that actually runs.
+    run bash -c "ls '$REPO_ROOT/bin/' | grep -c '\.ps1$' || true"
+    [ "$(echo "$output" | tr -d '[:space:]')" = "0" ]
+}
+
+@test "tokenwar resolves from PowerShell with no ExecutionPolicy override" {
     require_windows
     command -v powershell.exe >/dev/null 2>&1 || skip "powershell.exe not available"
-    [ -f "$REPO_ROOT/bin/tokenwar.ps1" ] || skip "ps1 shim not present"
-    local root; root="$(cd "$REPO_ROOT" && cygpath -w "$PWD")"
-    run powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \
-        "\$env:TOKENWAR_DIR='$root'; & '$(win_path bin/tokenwar.ps1)' help"
+    local bin="$BATS_TEST_TMPDIR/bin"
+    mkdir -p "$bin"
+    cp "$REPO_ROOT/bin/tokenwar.cmd" "$bin/"
+    local wbin wroot
+    wbin="$(cd "$bin" && cygpath -w "$PWD")"
+    wroot="$(cd "$REPO_ROOT" && cygpath -w "$PWD")"
+    # Deliberately NO -ExecutionPolicy Bypass: this is what a real user has, and
+    # it is the case that was broken.
+    run powershell.exe -NoProfile -Command "\$env:PATH='$wbin;'+\$env:PATH; \$env:TOKENWAR_DIR='$wroot'; tokenwar help"
     [ "$status" -eq 0 ]
     [[ "$output" == *"token-saving stack manager"* ]]
 }

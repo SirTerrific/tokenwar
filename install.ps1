@@ -122,7 +122,12 @@ foreach ($line in $existing) {
     if (-not $inBlock) { $kept.Add($line) }
 }
 
-$shim = Join-Path $TwDir 'bin\tokenwar.ps1'
+# Point at the .cmd, not a .ps1. Windows PowerShell's default ExecutionPolicy is
+# Restricted, which blocks .ps1 files outright; .cmd is not policy-controlled and
+# runs identically from PowerShell. Shipping a tokenwar.ps1 in bin/ was worse than
+# useless: PATH resolution prefers .ps1 over .cmd, so it shadowed the working
+# entry point with one that could not run.
+$shim = Join-Path $TwDir 'bin\tokenwar.cmd'
 $block = @(
     $TwBegin,
     "function tokenwar { & '$shim' @args }",

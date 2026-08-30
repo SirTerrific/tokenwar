@@ -118,9 +118,14 @@ EOF
 @test "plugin update fast-forwards a stale marketplace clone before installing" {
     mock_claude_scoped
     # Bare upstream + a work tree with an initial commit.
-    UP="$HOME/upstream.git"
+    # git is a native Windows binary and cannot resolve an MSYS path once
+    # MSYS_NO_PATHCONV=1 turns the implicit rewrite off. Normalise every fixture
+    # path BEFORE the first git call — normalising afterwards would leave the
+    # repo wherever the un-normalised path landed. No-op off Windows.
+    winpath() { cygpath -m "$1" 2>/dev/null || printf '%s' "$1"; }
+    UP="$(winpath "$HOME/upstream.git")"
     git init -q --bare -b main "$UP"
-    WORK="$(mktemp -d)"
+    WORK="$(winpath "$(mktemp -d)")"
     git init -q -b main "$WORK"
     git -C "$WORK" config user.email t@t; git -C "$WORK" config user.name t
     echo v1 > "$WORK/f"; git -C "$WORK" add f; git -C "$WORK" commit -qm v1
@@ -128,6 +133,7 @@ EOF
     # Clone into the marketplace location, pinned at v1 (the "stale" clone).
     CLONE="$HOME/.claude/plugins/marketplaces/caveman"
     mkdir -p "$(dirname "$CLONE")"
+    CLONE="$(winpath "$CLONE")"
     git clone -q "$UP" "$CLONE"
     stale_head=$(git -C "$CLONE" rev-parse HEAD)
     # Advance upstream by one commit — clone is now behind origin.

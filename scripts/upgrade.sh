@@ -119,7 +119,9 @@ plugin_scope() {
 sync_marketplace_clone() {
     local slug="$1"
     local marketplace="${slug##*@}"
-    local dir="${MARKETPLACE_ROOT}/${marketplace}"
+    local dir
+    # See the note in check-updates.sh: git needs a path it can chdir into.
+    dir="$(tw_node_path "${MARKETPLACE_ROOT}/${marketplace}")"
     [[ -d "${dir}/.git" ]] || return 0
     git -C "$dir" fetch --quiet 2>/dev/null \
         || warn "marketplace '$marketplace': git fetch failed — installing current local HEAD"
