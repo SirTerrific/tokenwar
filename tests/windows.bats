@@ -200,10 +200,15 @@ b" ]
     # so a UTF-8 character inside a double-quoted string decodes into stray bytes
     # and breaks parsing outright. Keeping these files ASCII sidesteps the whole
     # encoding question. Runs on every platform — it is a pure text check.
+    #
+    # Count bytes OUTSIDE 0x00-0x7F by deleting the ASCII ones. Do not reach for
+    # a printable class like [^ -~]: .gitattributes checks these files out with
+    # CRLF, and CR is ASCII but not printable, so such a test passes on an LF
+    # working copy and fails on a real checkout.
     for f in "$REPO_ROOT/install.ps1" "$REPO_ROOT/uninstall.ps1" "$REPO_ROOT/bin/tokenwar.ps1"; do
         [ -f "$f" ] || continue
-        run env LC_ALL=C grep -c '[^ -~]' "$f"
-        [ "$output" = "0" ]
+        run bash -c "LC_ALL=C tr -d '\\000-\\177' < '$f' | wc -c"
+        [ "$(echo "$output" | tr -d '[:space:]')" = "0" ]
     done
 }
 
