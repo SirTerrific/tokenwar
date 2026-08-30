@@ -63,6 +63,25 @@ context, never the screen. So tokenwar surfaces the stack differently per CLI:
   non-interactive launches (`codex exec`, `gemini -p …`, `kimi -p …`,
   `opencode run …`, pipes) so it never pollutes scripted output.
 
+## Windows
+
+Every `bash ~/.claude/skills/tokenwar/scripts/<script>.sh` call below works
+unchanged on Windows, provided Claude Code can reach the Git Bash bash (the MSYS2
+one from Git for Windows). Three behaviours differ, and you should report them as
+platform facts rather than as faults:
+
+- **statusLine** is written as `"<full path>\bash.exe" -c '~/…/tokenwar-statusline.sh'`
+  because Claude Code spawns it as a native Windows process, where a bare `bash`
+  may not resolve and `~` is not expanded by the caller.
+- **Codex / opencode telemetry** reads SQLite through `node:sqlite` when Python is
+  unusable — the stock Windows `python3` is a Microsoft Store stub that satisfies
+  `command -v` and fails on every run. With neither engine, both report `N/A`;
+  never present that as `0`.
+- **rtk** is expected from PATH. `--with-rtk` does not pipe a POSIX installer into
+  `sh` there, and `upgrade` skips rtk unless it was `cargo install --path`-ed.
+
+Full detail in `docs/windows.md`.
+
 ## Usage
 
 ```

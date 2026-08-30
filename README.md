@@ -247,6 +247,25 @@ Uninstall:
 curl -fsSL https://raw.githubusercontent.com/oratelecom/tokenwar/main/uninstall.sh | bash
 ```
 
+### 🪟 Windows install
+
+Same command, run from **Git Bash** (the MSYS2 bash from
+[Git for Windows](https://git-scm.com/download/win)) rather than PowerShell or cmd:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/oratelecom/tokenwar/main/install.sh | bash -s -- --all
+```
+
+The installer adapts three things for the platform: the `statusLine` command
+names `bash.exe` by full Windows path (Claude Code spawns it as a native Windows
+process, where a bare `bash` may not resolve), pxpipe is copied rather than
+symlinked, and rtk is expected from PATH instead of a piped POSIX installer.
+Codex and opencode telemetry falls back to `node:sqlite` because the stock
+Windows `python3` is a Microsoft Store stub that fails on every run.
+
+See **[docs/windows.md](docs/windows.md)** for requirements, limitations and
+troubleshooting.
+
 ### Manual install
 
 ```bash

@@ -40,3 +40,58 @@ jobs:
           bash scripts/tokenwar.sh help
           bash scripts/upgrade.sh </dev/null || true
           bash scripts/tokenwar-launch.sh codex </dev/null
+
+  test-windows:
+    # tokenwar runs on Windows through Git Bash (the MSYS2 bash shipped with Git
+    # for Windows), which windows-latest provides as `bash`. Same scripts, same
+    # tests — only the environment below differs.
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+      # bats mangles UTF-8 @test names into `bats: unknown test name` under the
+      # default C locale here, and silently runs only the ASCII-named subset —
+      # it reported "Executed 74 instead of expected 110 tests" while still
+      # exiting 0. Several test names contain an em dash, so this is required
+      # for the suite to run at all, not a cosmetic setting.
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+      # Make `ln -s` produce real symlinks instead of MSYS's silent file copy.
+      MSYS: winsymlinks:nativestrict
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node (for inline JSON parsing + the node:sqlite reader)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install bats + shellcheck
+        run: npm install -g bats shellcheck
+
+      - name: Verify no CRLF reached the shell sources
+        # .gitattributes pins *.sh and *.bats to LF. A stray CR breaks the
+        # shebang and every `case` pattern, so fail loudly rather than watch the
+        # suite die with unreadable errors.
+        run: |
+          if grep -rlU $'\r' --include='*.sh' --include='*.bats' . ; then
+            echo "CRLF found in shell sources — check .gitattributes"
+            exit 1
+          fi
+          echo "shell sources are LF-only"
+
+      - name: shellcheck all .sh files
+        run: shellcheck -S warning scripts/*.sh scripts/lib/*.sh install.sh uninstall.sh
+
+      - name: Run bats tests
+        run: bats tests/
+
+      - name: Run scripts smoke-check (statusline + gain print output)
+        run: |
+          echo '{}' | bash scripts/tokenwar-statusline.sh
+          bash scripts/gain.sh || true
+          bash scripts/status.sh || true
+          bash scripts/tokenwar.sh help
+          bash scripts/upgrade.sh </dev/null || true
+          bash scripts/tokenwar-launch.sh codex </dev/null
