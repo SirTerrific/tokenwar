@@ -45,7 +45,7 @@ context, never the screen. So tokenwar surfaces the stack differently per CLI:
 
 | CLI        | How the stack is surfaced                                              |
 | ---------- | --------------------------------------------------------------------- |
-| Claude Code | Native persistent bottom bar via `statusLine` (auto, always visible)  |
+| Claude Code | Native persistent bottom bar via `statusLine` (terminal CLI only)   |
 | Codex      | **Launch banner** + reminder + upgrade prompt (via shell wrapper)     |
 | Gemini CLI | **Launch banner** + reminder + upgrade prompt (via shell wrapper)     |
 | Kimi Code CLI | **Launch banner** + reminder + upgrade prompt (via shell wrapper)  |

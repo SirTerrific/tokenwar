@@ -124,7 +124,9 @@ Inside Claude Code (`/tokenwar <subcommand>`) or standalone (`bash ~/.claude/ski
 ## Status in every CLI (Claude, Codex, Gemini, Kimi, opencode)
 
 The persistent **bottom status bar** is a Claude Code feature — it ships a
-`statusLine` API and tokenwar wires it automatically. **Codex, Gemini, Kimi, and
+`statusLine` API and tokenwar wires it automatically. It renders in the
+`claude` **terminal CLI**; the desktop app does not draw statusLine, so use a
+terminal when you want the bar. **Codex, Gemini, Kimi, and
 opencode do not expose a status-bar API** (their footers are hardcoded; their
 hooks inject only into the model context, not the screen). So tokenwar surfaces
 the stack the best way each CLI allows, with **zero daily effort** — `install.sh`

@@ -27,10 +27,14 @@ Pick the shell you actually live in — both end at the same installed state.
 ```
 
 `install.ps1` does **not** reimplement the installer. It locates Git Bash, hands
-`install.sh` your flags, and then adds only what Bash cannot reach: a `tokenwar`
-function in your `$PROFILE`, and `bin\` on your user PATH so `tokenwar` also
-resolves from Command Prompt. Pass `-SkipProfile` to leave `$PROFILE` and PATH
-alone.
+`install.sh` your flags, and then adds only what Bash cannot reach: `bin\` on your
+user PATH, then a `tokenwar` function in your `$PROFILE`. Pass `-SkipProfile` to
+leave both alone.
+
+PATH comes first because it is what actually delivers the command — to PowerShell
+and to Command Prompt alike. The `$PROFILE` function is a convenience, and it is
+written best-effort: if your `Documents` is redirected (OneDrive Known Folder
+Move), the profile cannot be created; the installer warns and carries on.
 
 ```powershell
 . $PROFILE      # or open a new window
@@ -153,8 +157,12 @@ depend on it.
 
 ## Troubleshooting
 
-**The status bar is missing after restarting Claude Code.** Check what got
-written, and that it runs:
+**The status bar does not appear.** First: the status bar is a **terminal**
+feature. It renders in the `claude` CLI, below the prompt. The desktop app does
+not draw statusLine at all, so there is nothing to fix if that is where you are
+looking — open a terminal and run `claude` instead.
+
+If it is missing in the terminal too, check what got written, and that it runs:
 
 ```bash
 node -e 'console.log(JSON.parse(require("fs").readFileSync(0,"utf8")).statusLine)' < ~/.claude/settings.json
