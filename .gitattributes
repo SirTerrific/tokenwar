@@ -1,0 +1,21 @@
+# Shell scripts and bats tests MUST check out with LF, on every platform.
+#
+# Git Bash runs the tokenwar scripts on Windows. A checkout with core.autocrlf=true
+# (the Git for Windows default) rewrites them to CRLF, and a trailing \r then breaks
+# the shebang line, `case` patterns, and every `[[ "$x" == "literal" ]]` comparison.
+# Declaring eol=lf here makes the checkout correct regardless of the user's config.
+*.sh        text eol=lf
+*.bats      text eol=lf
+install.sh  text eol=lf
+uninstall.sh text eol=lf
+
+# Windows-side entry points are consumed by cmd.exe / PowerShell, which want CRLF.
+*.cmd       text eol=crlf
+*.ps1       text eol=crlf
+
+# Everything else: let Git normalise text, leave binaries alone.
+*.md        text
+*.json      text
+*.yml       text
+*.html      text
+*.png       binary
