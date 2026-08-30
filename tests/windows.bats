@@ -5,13 +5,27 @@
 # answer so the POSIX expectations are asserted on every platform, which is what
 # guards against a Windows branch quietly changing POSIX behaviour.
 
+# `run -<code>` (used for the shim's 127 exit) needs bats 1.5+.
+bats_require_minimum_version 1.5.0
+
 setup() {
-    OSDETECT="$BATS_TEST_DIRNAME/../scripts/lib/osdetect.sh"
-    PROVIDERS="$BATS_TEST_DIRNAME/../scripts/lib/providers.sh"
-    STATUSLINE="$BATS_TEST_DIRNAME/../scripts/tokenwar-statusline.sh"
+    REPO_ROOT="$BATS_TEST_DIRNAME/.."
+    OSDETECT="$REPO_ROOT/scripts/lib/osdetect.sh"
+    PROVIDERS="$REPO_ROOT/scripts/lib/providers.sh"
+    STATUSLINE="$REPO_ROOT/scripts/tokenwar-statusline.sh"
     [ -f "$OSDETECT" ] || skip "osdetect.sh not found"
     export HOME="$BATS_TEST_TMPDIR/home"
     mkdir -p "$HOME"
+}
+
+# The .cmd/.ps1 entry points only mean anything on Windows.
+require_windows() {
+    od_eval "tw_is_windows" || skip "Windows-only entry point"
+}
+
+# Absolute Windows path for a repo-relative file.
+win_path() {
+    ( cd "$REPO_ROOT" && cygpath -w "$PWD/$1" )
 }
 
 # Run a snippet with osdetect.sh sourced.
@@ -177,6 +191,63 @@ b" ]
     [ "$status" -eq 0 ]
     # Never the bare "tokenwar-plugins-.json" that an empty USER produced.
     [ ! -e "$tmpdir/tokenwar-plugins-.json" ]
+}
+
+# ── PowerShell / cmd entry points ───────────────────────────────────
+
+@test "PowerShell scripts are ASCII-only" {
+    # Windows PowerShell 5.1 reads a .ps1 without a BOM using the ANSI codepage,
+    # so a UTF-8 character inside a double-quoted string decodes into stray bytes
+    # and breaks parsing outright. Keeping these files ASCII sidesteps the whole
+    # encoding question. Runs on every platform — it is a pure text check.
+    for f in "$REPO_ROOT/install.ps1" "$REPO_ROOT/uninstall.ps1" "$REPO_ROOT/bin/tokenwar.ps1"; do
+        [ -f "$f" ] || continue
+        run env LC_ALL=C grep -c '[^ -~]' "$f"
+        [ "$output" = "0" ]
+    done
+}
+
+@test "PowerShell scripts parse" {
+    require_windows
+    command -v powershell.exe >/dev/null 2>&1 || skip "powershell.exe not available"
+    for rel in install.ps1 uninstall.ps1 bin/tokenwar.ps1; do
+        [ -f "$REPO_ROOT/$rel" ] || continue
+        local wp; wp="$(win_path "$rel")"
+        run powershell.exe -NoProfile -Command "\$e=\$null;\$null=[System.Management.Automation.Language.Parser]::ParseFile('$wp',[ref]\$null,[ref]\$e);if(\$e){'FAIL'}else{'OK'}"
+        [[ "$output" == *"OK"* ]]
+    done
+}
+
+@test "tokenwar.cmd reaches the dispatcher" {
+    require_windows
+    command -v cmd.exe >/dev/null 2>&1 || skip "cmd.exe not available"
+    [ -f "$REPO_ROOT/bin/tokenwar.cmd" ] || skip "cmd shim not present"
+    # NB: cmd.exe needs //c here — MSYS rewrites a lone /c into a path, cmd then
+    # sees no switch and opens an interactive shell that never returns.
+    run env TOKENWAR_DIR="$(cd "$REPO_ROOT" && cygpath -w "$PWD")" \
+        cmd.exe //c "$(win_path bin/tokenwar.cmd)" help
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"token-saving stack manager"* ]]
+}
+
+@test "tokenwar.cmd fails cleanly when the install is missing" {
+    require_windows
+    command -v cmd.exe >/dev/null 2>&1 || skip "cmd.exe not available"
+    [ -f "$REPO_ROOT/bin/tokenwar.cmd" ] || skip "cmd shim not present"
+    # 127 is the shim's own "not installed" code, hence `run -127`.
+    run -127 env TOKENWAR_DIR='C:\no\such\place' cmd.exe //c "$(win_path bin/tokenwar.cmd)" help
+    [[ "$output" == *"dispatcher not found"* ]]
+}
+
+@test "tokenwar.ps1 reaches the dispatcher" {
+    require_windows
+    command -v powershell.exe >/dev/null 2>&1 || skip "powershell.exe not available"
+    [ -f "$REPO_ROOT/bin/tokenwar.ps1" ] || skip "ps1 shim not present"
+    local root; root="$(cd "$REPO_ROOT" && cygpath -w "$PWD")"
+    run powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \
+        "\$env:TOKENWAR_DIR='$root'; & '$(win_path bin/tokenwar.ps1)' help"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"token-saving stack manager"* ]]
 }
 
 @test "tw_human_tokens renders M, K and bare counts" {
