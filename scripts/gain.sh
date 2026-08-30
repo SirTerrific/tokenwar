@@ -110,7 +110,7 @@ mem_summary() {
     if [[ ! -f "$MEM_SYNC_STATE" ]]; then
         echo "N/A|claude-mem store not found ($MEM_SYNC_STATE)|0"; return
     fi
-    MEM_STATE="$MEM_SYNC_STATE" PER_ITEM="$MEM_EST_TOKENS_PER_ITEM" \
+    MEM_STATE="$(tw_node_path "$MEM_SYNC_STATE")" PER_ITEM="$MEM_EST_TOKENS_PER_ITEM" \
     node --input-type=module -e "
         import { readFileSync } from 'fs';
         let j; try { j = JSON.parse(readFileSync(process.env.MEM_STATE,'utf8')); } catch { console.log('N/A|claude-mem state parse failed|0'); process.exit(0); }
@@ -144,7 +144,7 @@ pxpipe_summary() {
     if [[ ! -f "$PXPIPE_EVENTS_LOG" ]]; then
         echo "N/A|pxpipe events log not found ($PXPIPE_EVENTS_LOG)|0"; return
     fi
-    PXPIPE_EVENTS="$PXPIPE_EVENTS_LOG" node --input-type=module -e '
+    PXPIPE_EVENTS="$(tw_node_path "$PXPIPE_EVENTS_LOG")" node --input-type=module -e '
         import { readFileSync } from "node:fs";
         const pick = (o, keys) => {
             for (const k of keys) {

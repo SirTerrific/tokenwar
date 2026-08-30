@@ -24,6 +24,10 @@ shift || true
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
+
+# shellcheck source=lib/osdetect.sh
+source "${SCRIPT_DIR}/lib/osdetect.sh"
+
 readonly STATUSLINE_SCRIPT="${SCRIPT_DIR}/tokenwar-statusline.sh"
 readonly UPGRADE_SCRIPT="${SCRIPT_DIR}/upgrade.sh"
 readonly UPGRADE_CACHE_FILE="${HOME}/.claude/tokenwar/upgrade-check.json"
@@ -75,7 +79,7 @@ printf "%stokenwar%s · %s — run %stokenwar status%s for the full state · %st
 update_count=0
 if [[ -f "$UPGRADE_CACHE_FILE" ]]; then
     update_count=$(
-        CACHE="$UPGRADE_CACHE_FILE" TW_STATE="$STATE_UPDATE" node --input-type=module -e '
+        CACHE="$(tw_node_path "$UPGRADE_CACHE_FILE")" TW_STATE="$STATE_UPDATE" node --input-type=module -e '
             import { readFileSync } from "node:fs";
             let d; try { d = JSON.parse(readFileSync(process.env.CACHE, "utf8")); } catch { console.log(0); process.exit(0); }
             const buckets = [d.tools || {}];

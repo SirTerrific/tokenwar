@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # tokenwar uninstaller.
 #
-#   curl -fsSL https://raw.githubusercontent.com/oratelecom/tokenwar/main/uninstall.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/uninstall.sh | bash
 #
 # Does:
 #   1. remove statusLine from ~/.claude/settings.json (if it points at tokenwar)
@@ -21,6 +21,27 @@ STATUSLINE_CMD='bash ~/.claude/skills/tokenwar/scripts/tokenwar-statusline.sh'
 readonly TW_RC_BEGIN="# >>> tokenwar shell integration >>>"
 readonly TW_RC_END="# <<< tokenwar shell integration <<<"
 
+# Duplicated from scripts/lib/osdetect.sh — this script is piped from curl, so
+# it cannot source anything out of the install it is about to remove.
+tw_is_windows() {
+    [[ "${OS:-}" == "Windows_NT" ]] && return 0
+    case "$(uname -s 2>/dev/null)" in
+        MINGW*|MSYS*|CYGWIN*) return 0 ;;
+    esac
+    return 1
+}
+
+# node is a native Windows binary and cannot open an MSYS path. Without this,
+# under MSYS_NO_PATHCONV=1 the settings read fails silently and the statusLine
+# is left behind while the uninstall reports success.
+tw_node_path() {
+    if tw_is_windows && command -v cygpath >/dev/null 2>&1; then
+        cygpath -m "$1" 2>/dev/null || printf '%s' "$1"
+        return
+    fi
+    printf '%s' "$1"
+}
+
 color()  { printf '\033[%sm%s\033[0m' "$1" "$2"; }
 green()  { color 32 "$1"; }
 yellow() { color 33 "$1"; }
@@ -29,7 +50,7 @@ warn()   { printf '%s %s\n' "$(yellow '!!')" "$*" >&2; }
 
 if [[ -f "$SETTINGS_JSON" ]]; then
     say "Unwiring statusLine from $SETTINGS_JSON"
-    SETTINGS_JSON="$SETTINGS_JSON" STATUSLINE_CMD="$STATUSLINE_CMD" node --input-type=module -e '
+    SETTINGS_JSON="$(tw_node_path "$SETTINGS_JSON")" STATUSLINE_CMD="$STATUSLINE_CMD" node --input-type=module -e '
 import { readFileSync, writeFileSync, copyFileSync } from "fs";
 const path = process.env.SETTINGS_JSON;
 const desired = process.env.STATUSLINE_CMD;

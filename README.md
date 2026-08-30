@@ -161,7 +161,7 @@ Run the installer **once** — it wires every client it can find. There is no
 per-client install step; the difference is only *how the stack shows up* in each.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/oratelecom/tokenwar/main/install.sh | bash -s -- --all
+curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/install.sh | bash -s -- --all
 ```
 
 | Client        | What `install.sh` does for it                                         | How you confirm it's active |
@@ -193,10 +193,10 @@ opencode…). The agent reads the installer, runs it, then proves it works — n
 copy-pasting flags:
 
 ```text
-Install, activate, and verify that https://github.com/oratelecom/tokenwar works.
+Install, activate, and verify that https://github.com/SirTerrific/tokenwar works.
 
 Steps:
-1. Install: run `curl -fsSL https://raw.githubusercontent.com/oratelecom/tokenwar/main/install.sh | bash -s -- --all`
+1. Install: run `curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/install.sh | bash -s -- --all`
    (fetch and read the script first if you want to inspect it — it only wires
    the statusline, shell functions, the 4 Claude plugins, the RTK binary, and pxpipe).
 2. Activate: reload the shell (`source ~/.bashrc`) so the tokenwar / codex /
@@ -212,7 +212,7 @@ Steps:
 One line, if your agent likes it terse:
 
 ```text
-Install, activate, and verify https://github.com/oratelecom/tokenwar — run its install.sh --all, reload the shell, then confirm `tokenwar status` shows all 6 tools OK, `tokenwar check` says COMPLEMENTARY, and `tokenwar gain` reports real savings.
+Install, activate, and verify https://github.com/SirTerrific/tokenwar — run its install.sh --all, reload the shell, then confirm `tokenwar status` shows all 6 tools OK, `tokenwar check` says COMPLEMENTARY, and `tokenwar gain` reports real savings.
 ```
 
 ### 👤 Human install
@@ -220,7 +220,7 @@ Install, activate, and verify https://github.com/oratelecom/tokenwar — run its
 One command — the whole stack: the 4 Claude Code plugins (context-mode, claude-mem, caveman, **ponytail**), the **RTK** binary (via rtk's official prebuilt installer), **pxpipe** (via pinned `pxpipe-proxy@0.10.0`), the statusline + shell functions, and RTK's hook:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/oratelecom/tokenwar/main/install.sh | bash -s -- --all
+curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/install.sh | bash -s -- --all
 ```
 
 Then activate + verify:
@@ -237,14 +237,14 @@ Restart Claude Code to load the plugins. `--all` = `--with-plugins --with-rtk --
 Prefer no surprise mutations? Drop the flags — `… | bash` just wires the statusline + shell functions, then `/tokenwar activate` installs the plugins on confirmation:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/oratelecom/tokenwar/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/install.sh | bash
 /tokenwar activate
 ```
 
 Uninstall:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/oratelecom/tokenwar/main/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/uninstall.sh | bash
 ```
 
 ### 🪟 Windows install
@@ -279,7 +279,7 @@ troubleshooting.
 ### Manual install
 
 ```bash
-git clone https://github.com/oratelecom/tokenwar ~/.claude/skills/tokenwar
+git clone https://github.com/SirTerrific/tokenwar ~/.claude/skills/tokenwar
 chmod +x ~/.claude/skills/tokenwar/scripts/*.sh
 
 # Diagnose current state

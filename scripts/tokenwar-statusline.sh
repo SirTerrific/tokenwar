@@ -172,7 +172,7 @@ maybe_refresh_updates() {
 # Echo "ctx|mem|rtk|caveman|pxpipe", each "true"/"false" for update-available, from the
 # cache only (no network). Missing/corrupt cache → all "false".
 update_states() {
-    UPD_CACHE="$UPDATE_CACHE" STATE_AVAIL="$UPDATE_STATE_AVAILABLE" \
+    UPD_CACHE="$(tw_node_path "$UPDATE_CACHE")" STATE_AVAIL="$UPDATE_STATE_AVAILABLE" \
     K_CTX="$KEY_CTX" K_MEM="$KEY_MEM" K_RTK="$KEY_RTK" K_CAVE="$KEY_CAVE" K_PXPIPE="$KEY_PXPIPE" \
     node --input-type=module -e '
         import { readFileSync } from "fs";
@@ -193,7 +193,7 @@ plugin_list_json="${plugin_list_json:-[]}"
 # CC's `plugin list` only reads settings.json — but CC actually merges both
 # at runtime, so a wipe of settings.json's enabledPlugins shouldn't paint
 # a still-loaded plugin red.
-enabled_plugins_json=$(SETTINGS="$SETTINGS_JSON" SETTINGS_LOCAL="$SETTINGS_LOCAL_JSON" node --input-type=module -e '
+enabled_plugins_json=$(SETTINGS="$(tw_node_path "$SETTINGS_JSON")" SETTINGS_LOCAL="$(tw_node_path "$SETTINGS_LOCAL_JSON")" node --input-type=module -e '
     import { readFileSync } from "fs";
     const read = (p) => { try { return JSON.parse(readFileSync(p,"utf8")).enabledPlugins || {}; } catch { return {}; } };
     const merged = { ...read(process.env.SETTINGS), ...read(process.env.SETTINGS_LOCAL) };
@@ -236,7 +236,7 @@ IFS='|' read -r cave_ver cave_enabled <<<"$(plugin_lookup "$SLUG_CAVE")"
 rtk_saved="-"
 rtk_active="false"
 if command -v "$RTK_BIN" >/dev/null 2>&1; then
-    rtk_hook_wired=$(SETTINGS="$SETTINGS_JSON" SETTINGS_LOCAL="$SETTINGS_LOCAL_JSON" node --input-type=module -e '
+    rtk_hook_wired=$(SETTINGS="$(tw_node_path "$SETTINGS_JSON")" SETTINGS_LOCAL="$(tw_node_path "$SETTINGS_LOCAL_JSON")" node --input-type=module -e '
         import { readFileSync } from "fs";
         const wiredIn = (path) => {
             try {

@@ -73,6 +73,26 @@ tw_win_path() {
     printf '%s' "$p"
 }
 
+# tw_node_path <path> — a path a NATIVE Windows binary can actually open.
+#
+# The scripts speak MSYS paths (/c/Users/...); node and python3 are native
+# Windows binaries and cannot resolve those. MSYS normally rewrites such values
+# as it spawns the process, but that is a heuristic the user can switch off with
+# MSYS_NO_PATHCONV=1 — and the resulting failure is SILENT: an unreadable
+# settings.json or telemetry DB is indistinguishable from an absent one, so the
+# tool reports a confident "not installed" / "N/A" instead of an error.
+#
+# Forward slashes (cygpath -m), so the result is safe inside a JS string literal
+# and inside a file: URI without further escaping.
+tw_node_path() {
+    local p="$1"
+    if tw_is_windows && command -v cygpath >/dev/null 2>&1; then
+        cygpath -m "$p" 2>/dev/null || printf '%s' "$p"
+        return
+    fi
+    printf '%s' "$p"
+}
+
 # tw_bash_path — Windows path to a bash.exe that a native Windows process can
 # spawn (Claude Code's statusLine, hooks). Empty + non-zero off Windows.
 tw_bash_path() {

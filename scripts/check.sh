@@ -67,7 +67,7 @@ check_r1() {
         echo "$RES_WARN|settings.json missing"; return
     fi
     local result
-    result=$(SETTINGS="$SETTINGS_FILE" node --input-type=module -e '
+    result=$(SETTINGS="$(tw_node_path "$SETTINGS_FILE")" node --input-type=module -e '
         import { readFileSync } from "fs";
         let cfg;
         try { cfg = JSON.parse(readFileSync(process.env.SETTINGS,"utf8")); }

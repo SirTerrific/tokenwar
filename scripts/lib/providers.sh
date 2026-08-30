@@ -71,13 +71,21 @@ tw_sqlite_engine() {
 # tw_sqlite_rows <db> <sql> — run a read-only query; echo one line per row with
 # fields space-separated and NULL as empty. Silent (empty output) on any failure.
 tw_sqlite_rows() {
-    local db="$1" sql="$2"
+    local db sql
+    # Both engines are native Windows binaries and cannot open an MSYS path.
+    db="$(tw_node_path "$1")"
+    sql="$2"
     case "$(tw_sqlite_engine)" in
         python3)
             TW_DB="$db" TW_SQL="$sql" python3 -c '
 import os, sqlite3, sys
 try:
-    db = sqlite3.connect("file:" + os.environ["TW_DB"] + "?mode=ro", uri=True)
+    # Read-only, so a report never mutates the user store. Normalise to
+    # file:///<abs> so a Windows drive letter is a path segment, not a scheme.
+    p = os.environ["TW_DB"].replace("\\", "/")
+    if not p.startswith("/"):
+        p = "/" + p
+    db = sqlite3.connect("file://" + p + "?mode=ro", uri=True)
     for row in db.execute(os.environ["TW_SQL"]).fetchall():
         print(" ".join("" if v is None else str(v) for v in row))
 except Exception:

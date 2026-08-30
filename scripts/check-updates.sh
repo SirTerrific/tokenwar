@@ -258,7 +258,7 @@ if $force_refresh || ! cache_is_fresh; then
     opencode_state=$(classify "$opencode_installed" "$opencode_latest")
 
     now=$(date +%s)
-    TOKENWAR_CACHE_FILE="$CACHE_FILE" \
+    TOKENWAR_CACHE_FILE="$(tw_node_path "$CACHE_FILE")" \
     NOW="$now" \
     REFRESH_OK="$($refresh_ok && echo 1 || echo 0)" \
     CTX_I="$ctx_installed" CTX_L="$ctx_latest" CTX_S="$ctx_state" \
@@ -297,7 +297,7 @@ fi
 # Render cache → stdout (unless --quiet, in which case only set exit code).
 _render_cache() {
     local cache_file="$1" quiet="$2" status_upd_val="$3"
-    TWC_QUIET="$quiet" TWC_STAT_UPD="$status_upd_val" TWC_CACHE_FILE="$cache_file" node --input-type=module <<'NODESCRIPT'
+    TWC_QUIET="$quiet" TWC_STAT_UPD="$status_upd_val" TWC_CACHE_FILE="$(tw_node_path "$cache_file")" node --input-type=module <<'NODESCRIPT'
 import { readFileSync } from 'node:fs';
 
 const data = JSON.parse(readFileSync(process.env.TWC_CACHE_FILE, 'utf8'));

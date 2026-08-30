@@ -300,7 +300,7 @@ if [[ -x "$CHECK_UPDATES_SCRIPT" ]]; then
     if [[ "$update_count" == *"EXIT=2"* ]]; then
         readonly UPGRADE_CACHE_FILE="${HOME}/.claude/tokenwar/upgrade-check.json"
         if [[ -f "$UPGRADE_CACHE_FILE" ]]; then
-            CACHE="$UPGRADE_CACHE_FILE" node --input-type=module -e "
+            CACHE="$(tw_node_path "$UPGRADE_CACHE_FILE")" node --input-type=module -e "
                 import { readFileSync } from 'node:fs';
                 const d = JSON.parse(readFileSync(process.env.CACHE, 'utf8'));
                 const ups = Object.entries(d.tools).filter(([,v]) => v.state === 'update-available');

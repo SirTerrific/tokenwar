@@ -10,6 +10,11 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR
+# shellcheck source=lib/osdetect.sh
+source "${SCRIPT_DIR}/lib/osdetect.sh"
+
 readonly SETTINGS="${HOME}/.claude/settings.json"
 readonly LOCAL="${HOME}/.claude/settings.local.json"
 readonly BACKUP="${SETTINGS}.tokenwar-bak"
@@ -28,7 +33,7 @@ fi
 
 cp -f "$SETTINGS" "$BACKUP"
 
-SETTINGS_PATH="$SETTINGS" LOCAL_PATH="$LOCAL" node --input-type=module -e '
+SETTINGS_PATH="$(tw_node_path "$SETTINGS")" LOCAL_PATH="$(tw_node_path "$LOCAL")" node --input-type=module -e '
     import { readFileSync, writeFileSync } from "fs";
     const cur   = JSON.parse(readFileSync(process.env.SETTINGS_PATH, "utf8"));
     const local = JSON.parse(readFileSync(process.env.LOCAL_PATH,    "utf8"));

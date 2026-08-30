@@ -18,6 +18,11 @@
 
 set -uo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR
+# shellcheck source=lib/osdetect.sh
+source "${SCRIPT_DIR}/lib/osdetect.sh"
+
 readonly SLUG_CTX="context-mode@context-mode"
 readonly SLUG_MEM="claude-mem@thedotmack"
 readonly SLUG_CAVE="caveman@caveman"
@@ -72,7 +77,7 @@ tools_needing_update() {
     if $force_all || [[ ! -f "$UPGRADE_CACHE_FILE" ]]; then
         echo "ctx mem cave rtk pxpipe"; return
     fi
-    CACHE="$UPGRADE_CACHE_FILE" TW_STATE="$STATE_UPDATE" node --input-type=module -e '
+    CACHE="$(tw_node_path "$UPGRADE_CACHE_FILE")" TW_STATE="$STATE_UPDATE" node --input-type=module -e '
         import { readFileSync } from "node:fs";
         let d; try { d = JSON.parse(readFileSync(process.env.CACHE, "utf8")); } catch { console.log("ctx mem cave rtk pxpipe"); process.exit(0); }
         const t = d.tools || {};

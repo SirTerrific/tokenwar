@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # tokenwar one-shot installer.
 #
-#   curl -fsSL https://raw.githubusercontent.com/oratelecom/tokenwar/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/install.sh | bash
 #   curl -fsSL .../install.sh | bash -s -- --with-plugins   # + the 4 plugins
 #   curl -fsSL .../install.sh | bash -s -- --all            # + plugins + RTK + pxpipe
 #
 # Does:
-#   1. git clone https://github.com/oratelecom/tokenwar ~/.claude/skills/tokenwar
+#   1. git clone https://github.com/SirTerrific/tokenwar ~/.claude/skills/tokenwar
 #   2. chmod +x scripts/*.sh
 #   3. patch ~/.claude/settings.json to wire the statusLine
 #   4. wire the tokenwar/codex/gemini/kimi/opencode shell functions
@@ -26,7 +26,7 @@
 
 set -euo pipefail
 
-REPO_URL="${TOKENWAR_REPO_URL:-https://github.com/oratelecom/tokenwar}"
+REPO_URL="${TOKENWAR_REPO_URL:-https://github.com/SirTerrific/tokenwar}"
 INSTALL_DIR="${TOKENWAR_DIR:-$HOME/.claude/skills/tokenwar}"
 SETTINGS_JSON="$HOME/.claude/settings.json"
 STATUSLINE_CMD='bash ~/.claude/skills/tokenwar/scripts/tokenwar-statusline.sh'
@@ -89,6 +89,18 @@ tw_is_windows() {
         MINGW*|MSYS*|CYGWIN*) return 0 ;;
     esac
     return 1
+}
+
+# A path the native Windows node can open. MSYS usually rewrites POSIX paths as
+# it spawns a native process, but MSYS_NO_PATHCONV=1 turns that off and the
+# failure is silent — node would just see no settings.json and write a fresh one
+# over the user's config. Mirrors tw_node_path in osdetect.sh.
+tw_node_path() {
+    if tw_is_windows && command -v cygpath >/dev/null 2>&1; then
+        cygpath -m "$1" 2>/dev/null || printf '%s' "$1"
+        return
+    fi
+    printf '%s' "$1"
 }
 
 # Windows path to a bash.exe that Claude Code — itself a native Windows process
@@ -187,7 +199,7 @@ say "Wiring statusLine in $SETTINGS_JSON"
 mkdir -p "$(dirname "$SETTINGS_JSON")"
 [[ -f "$SETTINGS_JSON" ]] || echo '{}' > "$SETTINGS_JSON"
 
-SETTINGS_JSON="$SETTINGS_JSON" STATUSLINE_CMD="$STATUSLINE_CMD" node --input-type=module -e '
+SETTINGS_JSON="$(tw_node_path "$SETTINGS_JSON")" STATUSLINE_CMD="$STATUSLINE_CMD" node --input-type=module -e '
 import { readFileSync, writeFileSync, copyFileSync } from "fs";
 const path = process.env.SETTINGS_JSON;
 const desired = process.env.STATUSLINE_CMD;

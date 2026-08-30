@@ -193,6 +193,58 @@ b" ]
     [ ! -e "$tmpdir/tokenwar-plugins-.json" ]
 }
 
+# ── native-binary path handoff ──────────────────────────────────────
+
+@test "tw_node_path is the identity on POSIX" {
+    run env TW_FORCE_OS=posix bash -c "source '$OSDETECT'; tw_node_path /home/x/.claude/settings.json"
+    [ "$output" = "/home/x/.claude/settings.json" ]
+}
+
+@test "tw_node_path yields a path native tools can open on Windows" {
+    od_eval "tw_is_windows" || skip "not running on Windows"
+    local f="$HOME/probe.json"
+    echo '{"ok":true}' > "$f"
+    run od_eval "tw_node_path '$f'"
+    [ "$status" -eq 0 ]
+    # Drive-lettered and forward-slashed, so it is safe in a JS string and a URI.
+    [[ "$output" == ?:/* ]]
+    # And node must actually be able to read it with MSYS conversion disabled.
+    run env MSYS_NO_PATHCONV=1 P="$output" node -e 'require("fs").readFileSync(process.env.P,"utf8");console.log("READ")'
+    [ "$output" = "READ" ]
+}
+
+@test "config reads survive MSYS_NO_PATHCONV=1" {
+    # The scripts speak MSYS paths; node and python3 are native Windows binaries
+    # that cannot resolve them. MSYS rewrites such values as it spawns the
+    # process, but the user can switch that off — and the failure is silent, so
+    # check.sh reported "cannot parse settings.json" on a perfectly good config.
+    od_eval "tw_is_windows" || skip "not running on Windows"
+    mkdir -p "$HOME/.claude"
+    cat > "$HOME/.claude/settings.json" <<'JSON'
+{"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"command":"rtk hook claude"}]}]}}
+JSON
+    run env MSYS_NO_PATHCONV=1 HOME="$HOME" bash "$REPO_ROOT/scripts/check.sh"
+    [[ "$output" == *"single PreToolUse Bash hook"* ]]
+    [[ "$output" != *"cannot parse settings.json"* ]]
+}
+
+@test "SQLite telemetry survives MSYS_NO_PATHCONV=1" {
+    od_eval "tw_is_windows" || skip "not running on Windows"
+    [ -f "$PROVIDERS" ] || skip "providers.sh not found"
+    [ "$(bash -c "source '$PROVIDERS'; tw_sqlite_engine")" != "none" ] || skip "no SQLite engine"
+    local dh="$BATS_TEST_TMPDIR/oc"
+    mkdir -p "$dh"
+    run bash -c "source '$PROVIDERS'; TW_DB=\"\$(tw_node_path '$dh/opencode.db')\" node -e '
+        const { DatabaseSync } = require(\"node:sqlite\");
+        const d = new DatabaseSync(process.env.TW_DB);
+        d.exec(\"CREATE TABLE session(id text,time_created integer,tokens_input integer,tokens_output integer,tokens_reasoning integer)\");
+        d.exec(\"INSERT INTO session VALUES(@<:@s1@:>@,1748000000000,12000,6000,0)\".replace(/@<:@|@:>@/g, String.fromCharCode(39)));
+    '"
+    [ -f "$dh/opencode.db" ]
+    run env MSYS_NO_PATHCONV=1 OPENCODE_DATA_HOME="$dh" bash -c "source '$PROVIDERS'; opencode_telemetry_total"
+    [[ "$output" == *"18.0K"* ]]
+}
+
 # ── PowerShell / cmd entry points ───────────────────────────────────
 
 @test "PowerShell scripts are ASCII-only" {
