@@ -8,7 +8,7 @@
   <img src="docs/tokenwar-stack.png" alt="tokenwar — 1 project → 6 token-saving lanes. The savings stack." width="100%">
 </p>
 
-[![CI](https://github.com/oratelecom/tokenwar/actions/workflows/ci.yml/badge.svg)](https://github.com/oratelecom/tokenwar/actions/workflows/ci.yml)
+[![CI](https://github.com/SirTerrific/tokenwar/actions/workflows/ci.yml/badge.svg)](https://github.com/SirTerrific/tokenwar/actions/workflows/ci.yml)
 
 **Six token-saving tools, run as one stack.** Built for Claude Code first — but the stack reaches further: RTK, ponytail, caveman, context-mode, and pxpipe work across agents (Codex, Gemini, Kimi, opencode, Cursor…), with provider token usage tracked only where native telemetry exists. Each saves a buffer or lane the others can't touch — the model's response, tool stdout, heavy data, cross-session memory, provider-bound prompt payloads, and the code itself — so the savings stack instead of competing. None of the six is the headliner; the point is running all six at once. **6-in-1.**
 
