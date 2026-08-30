@@ -249,12 +249,22 @@ curl -fsSL https://raw.githubusercontent.com/oratelecom/tokenwar/main/uninstall.
 
 ### 🪟 Windows install
 
-Same command, run from **Git Bash** (the MSYS2 bash from
-[Git for Windows](https://git-scm.com/download/win)) rather than PowerShell or cmd:
+Requires [Git for Windows](https://git-scm.com/download/win) — its MSYS2 bash is
+the engine. From **PowerShell**:
+
+```powershell
+.\install.ps1 -All
+```
+
+Or from **Git Bash**:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/oratelecom/tokenwar/main/install.sh | bash -s -- --all
+curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/install.sh | bash -s -- --all
 ```
+
+`install.ps1` is a thin wrapper: it finds Git Bash, hands `install.sh` your
+flags, then wires a `tokenwar` function into your `$PROFILE` and puts `bin\` on
+your PATH so the command also works from Command Prompt.
 
 The installer adapts three things for the platform: the `statusLine` command
 names `bash.exe` by full Windows path (Claude Code spawns it as a native Windows
@@ -371,9 +381,12 @@ CI on every push to `main` and every PR — installs bats + shellcheck, runs ful
 
 ## Credits
 
-**Powered by [Ora Studio](https://studio.oratelecom.net) · Ora Telecom** — token economics, productized.
+**Original project — [Ora Studio](https://studio.oratelecom.net) · Ora Telecom.**
+tokenwar is their design: the six-lane thesis, the complementarity rules, the
+honest-telemetry stance, and the scripts this fork builds on. Token economics,
+productized. Upstream: [oratelecom/tokenwar](https://github.com/oratelecom/tokenwar).
 
-Our open-source footprint on the stack:
+Ora's own open-source footprint on the stack:
 
 | Status | Project | Role |
 | :----: | ------- | ---- |
@@ -382,6 +395,12 @@ Our open-source footprint on the stack:
 | ✓ | **claude-mem**   | upstream contributor |
 | ✦ | **caveman**      | Ora maintenance landing soon |
 
+**Windows port — [Jerome Carbel](https://github.com/SirTerrific) (@SirTerrific).**
+This fork adds and maintains Windows support: the Git Bash runtime path, the OS
+detection layer, the `node:sqlite` telemetry reader, the PowerShell and Command
+Prompt entry points, the `windows-latest` CI job, and `docs/windows.md`.
+
 ## License
 
-[MIT](LICENSE) — © 2026 Ora Telecom. Use, fork, ship — no strings.
+[MIT](LICENSE) — © 2026 Ora Telecom, © 2026 Jerome Carbel (Windows port).
+Use, fork, ship — no strings.

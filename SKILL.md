@@ -80,6 +80,12 @@ platform facts rather than as faults:
 - **rtk** is expected from PATH. `--with-rtk` does not pipe a POSIX installer into
   `sh` there, and `upgrade` skips rtk unless it was `cargo install --path`-ed.
 
+Outside Git Bash the user reaches the same dispatcher through `bin/tokenwar.ps1`
+(PowerShell, wired into `$PROFILE`) or `bin/tokenwar.cmd` (Command Prompt, on
+PATH) — both just locate `bash.exe` and call `scripts/tokenwar.sh`. `install.ps1`
+wires those; it delegates the actual install to `install.sh` rather than
+duplicating it.
+
 Full detail in `docs/windows.md`.
 
 ## Usage

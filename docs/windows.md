@@ -18,21 +18,68 @@ case on Windows (see [Known limitations](#known-limitations)).
 
 ## Install
 
-From **Git Bash**, not PowerShell or cmd:
+Pick the shell you actually live in — both end at the same installed state.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/oratelecom/tokenwar/main/install.sh | bash -s -- --all
+### From PowerShell
+
+```powershell
+.\install.ps1 -All
 ```
 
-Then reload the shell and verify:
+`install.ps1` does **not** reimplement the installer. It locates Git Bash, hands
+`install.sh` your flags, and then adds only what Bash cannot reach: a `tokenwar`
+function in your `$PROFILE`, and `bin\` on your user PATH so `tokenwar` also
+resolves from Command Prompt. Pass `-SkipProfile` to leave `$PROFILE` and PATH
+alone.
+
+```powershell
+. $PROFILE      # or open a new window
+tokenwar status
+tokenwar check
+```
+
+### From Git Bash
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/install.sh | bash -s -- --all
 source ~/.bashrc
 tokenwar status
 tokenwar check
 ```
 
 Restart Claude Code to load the plugins and the status bar.
+
+### Uninstall
+
+```powershell
+.\uninstall.ps1
+```
+
+Removes the `$PROFILE` block and the PATH entry, then delegates to
+`uninstall.sh` for the statusLine, the `~/.bashrc` block and the install
+directory. As upstream, it leaves the six tools themselves installed.
+
+## Running tokenwar outside Git Bash
+
+The engine is Bash, so every entry point ends up calling the same
+`scripts/tokenwar.sh`:
+
+| Shell | Entry point | Wired by |
+| ----- | ----------- | -------- |
+| Git Bash | `tokenwar` shell function | `install.sh` (`~/.bashrc`) |
+| PowerShell | `bin\tokenwar.ps1` via a `$PROFILE` function | `install.ps1` |
+| Command Prompt | `bin\tokenwar.cmd` on PATH | `install.ps1` |
+
+Both shims find `bash.exe` the same way — `$env:TOKENWAR_BASH`, then the usual
+Git for Windows locations, then PATH, deliberately skipping
+`System32\bash.exe` (that is the WSL launcher, a different environment that
+cannot see this install). Override the install location with
+`$env:TOKENWAR_DIR`.
+
+The `.ps1` files are kept **ASCII-only** on purpose: Windows PowerShell 5.1
+reads a `.ps1` without a BOM using the ANSI codepage, so a single UTF-8
+character inside a double-quoted string decodes into stray bytes and breaks
+parsing outright. A test enforces this.
 
 ## What the installer does differently here
 
