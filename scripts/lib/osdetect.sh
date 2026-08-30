@@ -21,6 +21,12 @@
 #
 # Override for tests: TW_FORCE_OS=windows|posix pins tw_is_windows.
 
+# Sourced from several scripts that may already have pulled it in transitively
+# (status.sh sources providers.sh, which sources this). Re-sourcing is harmless
+# today, but the guard keeps it that way if a readonly is ever added below.
+[[ -n "${TW_OSDETECT_SOURCED:-}" ]] && return 0
+TW_OSDETECT_SOURCED=1
+
 # Git for Windows' launcher directory holds the bash.exe wrapper intended for
 # external callers; MSYS exposes it as $EXEPATH. These are the fallbacks when a
 # shell was started some other way and $EXEPATH is not set.
@@ -130,7 +136,7 @@ tw_config_dir() {
             [[ -n "$appdata" ]] && candidates+=("${appdata}/gemini")
             ;;
         kimi)
-            candidates=("${KIMI_CODE_HOME:-${HOME}/.kimi-code}")
+            candidates=("${HOME}/.kimi-code")
             [[ -n "$appdata" ]] && candidates+=("${appdata}/kimi-code")
             ;;
         opencode)
@@ -171,7 +177,7 @@ tw_data_dir() {
             [[ -n "$localappdata" ]] && candidates+=("${localappdata}/codex")
             ;;
         opencode)
-            candidates=("${OPENCODE_DATA_HOME:-${HOME}/.local/share/opencode}")
+            candidates=("${HOME}/.local/share/opencode")
             [[ -n "$localappdata" ]] && candidates+=("${localappdata}/opencode")
             ;;
         *)

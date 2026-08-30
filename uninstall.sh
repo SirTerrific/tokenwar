@@ -35,7 +35,14 @@ const path = process.env.SETTINGS_JSON;
 const desired = process.env.STATUSLINE_CMD;
 let cfg = {};
 try { cfg = JSON.parse(readFileSync(path, "utf8")); } catch { process.exit(0); }
-if (cfg.statusLine && cfg.statusLine.command === desired) {
+// Match by the script name rather than the exact string: install.sh writes a
+// different command on Windows ("<bash.exe>" -c '~/...'), and an exact compare
+// would silently leave that statusLine behind on uninstall.
+const isOurs = cfg.statusLine
+    && typeof cfg.statusLine.command === "string"
+    && (cfg.statusLine.command === desired
+        || cfg.statusLine.command.includes("tokenwar-statusline.sh"));
+if (isOurs) {
     const stamp = new Date().toISOString().replace(/[:.]/g, "-");
     copyFileSync(path, `${path}.bak-${stamp}`);
     delete cfg.statusLine;

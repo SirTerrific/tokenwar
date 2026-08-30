@@ -148,12 +148,14 @@ installed_plugin_version() {
 
 rtk_installed_version() {
     command -v "$RTK_BIN" >/dev/null 2>&1 || { echo ""; return; }
-    "$RTK_BIN" --version 2>/dev/null | awk '{print $2}'
+    # A trailing \r here never matches the semver regex in classify(), which
+    # would report the tool as update-available on every single run.
+    "$RTK_BIN" --version 2>/dev/null | tw_strip_cr | awk '{print $2}'
 }
 
 pxpipe_installed_version() {
     command -v "$PXPIPE_BIN" >/dev/null 2>&1 || { echo ""; return; }
-    "$PXPIPE_BIN" --version 2>/dev/null | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}'
+    "$PXPIPE_BIN" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}'
 }
 
 # Determine rtk's authoritative latest version.

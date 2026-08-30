@@ -10,8 +10,15 @@
 #   Gemini — no local token store; CLI detection only, telemetry N/A
 #   Kimi   — ~/.kimi-code stores sessions/config, but no documented token store
 #   opencode — ~/.local/share/opencode/opencode.db → session token cols (real)
+#
+# The two SQLite-backed sources are read through tw_sqlite_rows, which runs the
+# same SQL under python3 or node:sqlite — see the engine note there.
 
 set -euo pipefail
+
+TW_PROVIDERS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=osdetect.sh
+source "${TW_PROVIDERS_DIR}/osdetect.sh"
 
 # These constants form the registry's public API — they are read by the scripts
 # that source this file (gain.sh, status.sh, check.sh, check-updates.sh,
@@ -27,11 +34,84 @@ readonly PROVIDER_IDX_KIMI=3
 # shellcheck disable=SC2034
 readonly PROVIDER_IDX_OPENCODE=4
 
-readonly CODEX_STATE_DB="${HOME}/.codex/state_5.sqlite"
-readonly KIMI_CODE_HOME="${KIMI_CODE_HOME:-${HOME}/.kimi-code}"
-readonly OPENCODE_DATA_HOME="${OPENCODE_DATA_HOME:-${HOME}/.local/share/opencode}"
+# Store locations. The env overrides stay authoritative (tests and relocated
+# installs rely on them); tw_data_dir/tw_config_dir only supply the default, and
+# on Windows they also consider the %APPDATA%/%LOCALAPPDATA% locations.
+readonly CODEX_HOME="${CODEX_HOME:-$(tw_data_dir codex)}"
+readonly CODEX_STATE_DB="${CODEX_HOME}/state_5.sqlite"
+readonly KIMI_CODE_HOME="${KIMI_CODE_HOME:-$(tw_config_dir kimi)}"
+readonly OPENCODE_DATA_HOME="${OPENCODE_DATA_HOME:-$(tw_data_dir opencode)}"
 readonly OPENCODE_STATE_DB="${OPENCODE_DATA_HOME}/opencode.db"
 # CHARS_PER_TOKEN is defined in gain.sh (primary consumer)
+
+# ── SQLite access ─────────────────────────────────────────────────────
+#
+# Codex and opencode both keep their token counts in SQLite. python3 was the
+# only reader, which makes both sources unreadable on a stock Windows box:
+# Windows ships a python3 "app execution alias" that merely opens the Microsoft
+# Store, so `command -v python3` succeeds while every actual run fails. node is
+# already a hard dependency of tokenwar (every script parses JSON with it) and
+# node:sqlite has been available since Node 22, so it is the natural fallback.
+#
+# Engines are probed once — by RUNNING them, never by `command -v` alone.
+TW_SQLITE_ENGINE=""
+tw_sqlite_engine() {
+    if [[ -z "$TW_SQLITE_ENGINE" ]]; then
+        if command -v python3 >/dev/null 2>&1 && python3 -c 'import sqlite3' >/dev/null 2>&1; then
+            TW_SQLITE_ENGINE="python3"
+        elif command -v node >/dev/null 2>&1 && node -e 'require("node:sqlite")' >/dev/null 2>&1; then
+            TW_SQLITE_ENGINE="node"
+        else
+            TW_SQLITE_ENGINE="none"
+        fi
+    fi
+    printf '%s' "$TW_SQLITE_ENGINE"
+}
+
+# tw_sqlite_rows <db> <sql> — run a read-only query; echo one line per row with
+# fields space-separated and NULL as empty. Silent (empty output) on any failure.
+tw_sqlite_rows() {
+    local db="$1" sql="$2"
+    case "$(tw_sqlite_engine)" in
+        python3)
+            TW_DB="$db" TW_SQL="$sql" python3 -c '
+import os, sqlite3, sys
+try:
+    db = sqlite3.connect("file:" + os.environ["TW_DB"] + "?mode=ro", uri=True)
+    for row in db.execute(os.environ["TW_SQL"]).fetchall():
+        print(" ".join("" if v is None else str(v) for v in row))
+except Exception:
+    sys.exit(0)
+' 2>/dev/null || printf ''
+            ;;
+        node)
+            TW_DB="$db" TW_SQL="$sql" node -e '
+try {
+    const { DatabaseSync } = require("node:sqlite");
+    const db = new DatabaseSync(process.env.TW_DB, { readOnly: true });
+    for (const row of db.prepare(process.env.TW_SQL).all()) {
+        console.log(Object.values(row).map(v => v === null ? "" : String(v)).join(" "));
+    }
+} catch { process.exit(0); }
+' 2>/dev/null || printf ''
+            ;;
+        *) printf '' ;;
+    esac
+}
+
+# tw_no_sqlite_note — why a SQLite-backed provider is unreadable, for the N/A row.
+tw_no_sqlite_note() {
+    printf 'no SQLite reader (need a working python3 or node >= 22)'
+}
+
+# tw_human_tokens <n> — 1234567 -> 1.2M, 30000 -> 30.0K, 42 -> 42.
+tw_human_tokens() {
+    awk -v t="$1" 'BEGIN {
+        if (t >= 1000000)   printf "%.1fM", t / 1000000;
+        else if (t >= 1000) printf "%.1fK", t / 1000;
+        else                printf "%d", t;
+    }'
+}
 
 # ── provider metadata ────────────────────────────────────────────────
 
@@ -87,11 +167,11 @@ provider_label() {
 
 provider_config_dir() {
     case "$1" in
-        0) echo "${HOME}/.claude" ;;
-        1) echo "${HOME}/.codex" ;;
-        2) echo "${HOME}/.gemini" ;;
+        0) tw_config_dir claude ;;
+        1) tw_config_dir codex ;;
+        2) tw_config_dir gemini ;;
         3) echo "$KIMI_CODE_HOME" ;;
-        4) echo "${HOME}/.config/opencode" ;;
+        4) tw_config_dir opencode ;;
     esac
 }
 
@@ -105,7 +185,9 @@ provider_version() {
     local cli
     cli=$(provider_cli "$1")
     if ! command -v "$cli" >/dev/null 2>&1; then echo "-"; return; fi
-    "$cli" --version 2>/dev/null | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}'
+    # A provider CLI reached through an npm .cmd shim can answer with CRLF; the
+    # version is the last field, so the \r would ride along into every compare.
+    "$cli" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}'
 }
 
 # ── telemetry: total tokens saved per provider ────────────────────────
@@ -138,48 +220,34 @@ provider_telemetry_monthly() {
 
 # ── Codex native telemetry (SQLite) ───────────────────────────────────
 
+# COALESCE keeps the first field non-NULL: rows are space-joined, so a leading
+# NULL (empty table) would otherwise be eaten by `read` and shift COUNT into it.
+readonly CODEX_SQL_TOTAL="SELECT COALESCE(SUM(tokens_used), 0), COUNT(*) FROM threads WHERE tokens_used > 0"
+readonly CODEX_SQL_MONTHLY="SELECT strftime('%Y-%m', datetime(created_at, 'unixepoch')) AS m,
+           SUM(tokens_used), COUNT(*)
+    FROM threads WHERE tokens_used > 0 AND created_at > 0
+    GROUP BY m ORDER BY m"
+
 codex_telemetry_total() {
     if [[ ! -f "$CODEX_STATE_DB" ]]; then
         echo "N/A|Codex state DB not found ($CODEX_STATE_DB)|0"; return
     fi
-    if ! command -v python3 >/dev/null 2>&1; then
-        echo "N/A|python3 required to read Codex DB|0"; return
+    if [[ "$(tw_sqlite_engine)" == "none" ]]; then
+        echo "N/A|$(tw_no_sqlite_note) to read Codex DB|0"; return
     fi
-    CODEX_DB="$CODEX_STATE_DB" python3 -c "
-import sqlite3, os, sys
-try:
-    db = sqlite3.connect(os.environ['CODEX_DB'])
-    row = db.execute('SELECT SUM(tokens_used), COUNT(*) FROM threads WHERE tokens_used > 0').fetchone()
-    if not row or row[0] is None:
-        print('N/A|no Codex sessions with tokens|0')
-        sys.exit(0)
-    tokens = int(row[0])
-    sessions = int(row[1])
-    human = f'{tokens/1e6:.1f}M' if tokens >= 1e6 else f'{tokens/1e3:.1f}K' if tokens >= 1e3 else str(tokens)
-    print(f'{human}|{sessions} Codex sessions (real tokens_used)|{tokens}')
-except Exception as e:
-    print(f'N/A|Codex DB read failed: {e}|0')
-" 2>/dev/null || echo "N/A|Codex DB query failed|0"
+    local tokens sessions
+    read -r tokens sessions <<<"$(tw_sqlite_rows "$CODEX_STATE_DB" "$CODEX_SQL_TOTAL")"
+    # Unreadable DB yields no rows; an empty one yields 0. Both are honest N/A.
+    if [[ -z "${tokens:-}" || "$tokens" == "0" ]]; then
+        echo "N/A|no Codex sessions with tokens|0"; return
+    fi
+    echo "$(tw_human_tokens "$tokens")|${sessions} Codex sessions (real tokens_used)|${tokens}"
 }
 
 codex_telemetry_monthly() {
-    if [[ ! -f "$CODEX_STATE_DB" ]]; then echo ""; return; fi
-    if ! command -v python3 >/dev/null 2>&1; then echo ""; return; fi
-    CODEX_DB="$CODEX_STATE_DB" python3 -c "
-import sqlite3, os, sys
-try:
-    db = sqlite3.connect(os.environ['CODEX_DB'])
-    rows = db.execute('''
-        SELECT strftime('%Y-%m', datetime(created_at, 'unixepoch')) as m,
-               SUM(tokens_used), COUNT(*)
-        FROM threads WHERE tokens_used > 0 AND created_at > 0
-        GROUP BY m ORDER BY m
-    ''').fetchall()
-    for r in rows:
-        print(f'{r[0]} {r[1]} {r[2]}')
-except Exception:
-    pass
-" 2>/dev/null || echo ""
+    [[ -f "$CODEX_STATE_DB" ]] || { echo ""; return; }
+    [[ "$(tw_sqlite_engine)" != "none" ]] || { echo ""; return; }
+    tw_sqlite_rows "$CODEX_STATE_DB" "$CODEX_SQL_MONTHLY"
 }
 
 # ── Gemini telemetry — no local token store ───────────────────────────
@@ -215,46 +283,31 @@ kimi_telemetry_monthly() {
 # opencode records real per-session token usage in its Drizzle SQLite DB
 # (session.tokens_input/output/reasoning, time_created in epoch ms).
 
+readonly OPENCODE_SQL_TOTAL="SELECT COALESCE(SUM(tokens_input+tokens_output+tokens_reasoning), 0), COUNT(*)
+    FROM session WHERE (tokens_input+tokens_output) > 0"
+readonly OPENCODE_SQL_MONTHLY="SELECT strftime('%Y-%m', datetime(time_created/1000, 'unixepoch')) AS m,
+           SUM(tokens_input+tokens_output+tokens_reasoning), COUNT(*)
+    FROM session WHERE (tokens_input+tokens_output) > 0 AND time_created > 0
+    GROUP BY m ORDER BY m"
+
 opencode_telemetry_total() {
     if [[ ! -f "$OPENCODE_STATE_DB" ]]; then
         echo "N/A|opencode DB not found ($OPENCODE_STATE_DB)|0"; return
     fi
-    if ! command -v python3 >/dev/null 2>&1; then
-        echo "N/A|python3 required to read opencode DB|0"; return
+    if [[ "$(tw_sqlite_engine)" == "none" ]]; then
+        echo "N/A|$(tw_no_sqlite_note) to read opencode DB|0"; return
     fi
-    OPENCODE_DB="$OPENCODE_STATE_DB" python3 -c "
-import sqlite3, os, sys
-try:
-    db = sqlite3.connect(os.environ['OPENCODE_DB'])
-    row = db.execute('SELECT SUM(tokens_input+tokens_output+tokens_reasoning), COUNT(*) FROM session WHERE (tokens_input+tokens_output) > 0').fetchone()
-    if not row or row[0] is None:
-        print('N/A|no opencode sessions with tokens|0')
-        sys.exit(0)
-    tokens = int(row[0])
-    sessions = int(row[1])
-    human = f'{tokens/1e6:.1f}M' if tokens >= 1e6 else f'{tokens/1e3:.1f}K' if tokens >= 1e3 else str(tokens)
-    print(f'{human}|{sessions} opencode sessions (real token cols)|{tokens}')
-except Exception as e:
-    print(f'N/A|opencode DB read failed: {e}|0')
-" 2>/dev/null || echo "N/A|opencode DB query failed|0"
+    local tokens sessions
+    read -r tokens sessions <<<"$(tw_sqlite_rows "$OPENCODE_STATE_DB" "$OPENCODE_SQL_TOTAL")"
+    # Unreadable DB yields no rows; an empty one yields 0. Both are honest N/A.
+    if [[ -z "${tokens:-}" || "$tokens" == "0" ]]; then
+        echo "N/A|no opencode sessions with tokens|0"; return
+    fi
+    echo "$(tw_human_tokens "$tokens")|${sessions} opencode sessions (real token cols)|${tokens}"
 }
 
 opencode_telemetry_monthly() {
-    if [[ ! -f "$OPENCODE_STATE_DB" ]]; then echo ""; return; fi
-    if ! command -v python3 >/dev/null 2>&1; then echo ""; return; fi
-    OPENCODE_DB="$OPENCODE_STATE_DB" python3 -c "
-import sqlite3, os
-try:
-    db = sqlite3.connect(os.environ['OPENCODE_DB'])
-    rows = db.execute('''
-        SELECT strftime('%Y-%m', datetime(time_created/1000, 'unixepoch')) as m,
-               SUM(tokens_input+tokens_output+tokens_reasoning), COUNT(*)
-        FROM session WHERE (tokens_input+tokens_output) > 0 AND time_created > 0
-        GROUP BY m ORDER BY m
-    ''').fetchall()
-    for r in rows:
-        print(f'{r[0]} {r[1]} {r[2]}')
-except Exception:
-    pass
-" 2>/dev/null || echo ""
+    [[ -f "$OPENCODE_STATE_DB" ]] || { echo ""; return; }
+    [[ "$(tw_sqlite_engine)" != "none" ]] || { echo ""; return; }
+    tw_sqlite_rows "$OPENCODE_STATE_DB" "$OPENCODE_SQL_MONTHLY"
 }

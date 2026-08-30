@@ -77,6 +77,33 @@ EOF
     chmod +x "$MOCK_BIN/opencode"
 }
 
+# Build a SQLite fixture with whichever engine this host has, mirroring the
+# reader's own python3-then-node fallback. Windows ships a python3 alias that
+# only opens the Microsoft Store, so probing by running is the only reliable
+# test; without this the opencode telemetry test would skip on every Windows
+# box — exactly the platform the fallback exists for.
+# Usage: make_sqlite_db <db-path> <schema+seed SQL>
+make_sqlite_db() {
+    local db="$1" sql="$2"
+    if command -v python3 >/dev/null 2>&1 && python3 -c 'import sqlite3' >/dev/null 2>&1; then
+        TW_DB="$db" TW_SQL="$sql" python3 -c '
+import os, sqlite3
+db = sqlite3.connect(os.environ["TW_DB"])
+db.executescript(os.environ["TW_SQL"])
+db.commit()
+'
+        return $?
+    fi
+    if command -v node >/dev/null 2>&1 && node -e 'require("node:sqlite")' >/dev/null 2>&1; then
+        TW_DB="$db" TW_SQL="$sql" node -e '
+const { DatabaseSync } = require("node:sqlite");
+new DatabaseSync(process.env.TW_DB).exec(process.env.TW_SQL);
+'
+        return $?
+    fi
+    return 1
+}
+
 @test "status.sh detects Codex CLI when installed" {
     mock_claude_with_plugins '[
       {"id":"context-mode@context-mode","version":"1.0.107","enabled":true},
@@ -169,27 +196,43 @@ EOF
 }
 
 @test "gain.sh reads REAL opencode token telemetry from opencode.db" {
-    command -v python3 >/dev/null 2>&1 || skip "python3 required to build/read the opencode DB"
     mock_rtk_alive
     mock_opencode
     local data_home="$BATS_TEST_TMPDIR/opencode-data"
     mkdir -p "$data_home"
-    # Build a minimal opencode.db mirroring the real schema's token columns and
-    # seed two sessions totalling 30000 tokens (12000+8000 in, 6000+4000 out).
-    OPENCODE_DB="$data_home/opencode.db" python3 -c "
-import sqlite3, os
-db = sqlite3.connect(os.environ['OPENCODE_DB'])
-db.execute('''CREATE TABLE session (
+    # Minimal opencode.db mirroring the real schema's token columns, seeded with
+    # two sessions totalling 30000 tokens (12000+8000 in, 6000+4000 out).
+    make_sqlite_db "$data_home/opencode.db" "
+CREATE TABLE session (
   id text PRIMARY KEY, time_created integer NOT NULL,
   tokens_input integer DEFAULT 0 NOT NULL, tokens_output integer DEFAULT 0 NOT NULL,
-  tokens_reasoning integer DEFAULT 0 NOT NULL)''')
-db.execute(\"INSERT INTO session VALUES ('s1', 1748000000000, 12000, 6000, 0)\")
-db.execute(\"INSERT INTO session VALUES ('s2', 1748000000000, 8000, 4000, 0)\")
-db.commit()
-"
+  tokens_reasoning integer DEFAULT 0 NOT NULL);
+INSERT INTO session VALUES ('s1', 1748000000000, 12000, 6000, 0);
+INSERT INTO session VALUES ('s2', 1748000000000, 8000, 4000, 0);
+" || skip "no SQLite engine available to build the fixture"
     OPENCODE_DATA_HOME="$data_home" run bash "$GAIN_SCRIPT"
     [ "$status" -eq 0 ]
     # 30000 tokens → rendered as 30.0K, with the real-session note.
     [[ "$output" == *"opencode"*"30.0K"* ]]
     [[ "$output" == *"2 opencode sessions (real token cols)"* ]]
+}
+
+@test "gain.sh reports N/A for an opencode DB with no token rows" {
+    mock_rtk_alive
+    mock_opencode
+    local data_home="$BATS_TEST_TMPDIR/opencode-empty"
+    mkdir -p "$data_home"
+    # A valid DB whose session table is empty: SUM() is NULL, COUNT() is 0.
+    # Space-joined rows would let `read` shift COUNT into the tokens field and
+    # report a fabricated 0 — the reader must say N/A instead.
+    make_sqlite_db "$data_home/opencode.db" "
+CREATE TABLE session (
+  id text PRIMARY KEY, time_created integer NOT NULL,
+  tokens_input integer DEFAULT 0 NOT NULL, tokens_output integer DEFAULT 0 NOT NULL,
+  tokens_reasoning integer DEFAULT 0 NOT NULL);
+" || skip "no SQLite engine available to build the fixture"
+    OPENCODE_DATA_HOME="$data_home" run bash "$GAIN_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"opencode"*"N/A"* ]]
+    [[ "$output" != *"opencode sessions (real token cols)"* ]]
 }

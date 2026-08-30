@@ -63,6 +63,9 @@ rtk_summary() {
     fi
     local out
     out="$("$RTK_BIN" gain 2>/dev/null || true)"
+    # "Total commands:    18956" ends the line, so a CRLF build would hand awk a
+    # count of "18956\r" and print a control char straight into the table.
+    out="${out//$'\r'/}"
     if [[ -z "$out" ]]; then
         echo "N/A|rtk gain returned nothing|0"; return
     fi
@@ -232,6 +235,7 @@ if $json_mode; then
     rtk_monthly_raw=""
     if command -v "$RTK_BIN" >/dev/null 2>&1; then
         rtk_monthly_raw="$("$RTK_BIN" gain --monthly 2>/dev/null || true)"
+        rtk_monthly_raw="${rtk_monthly_raw//$'\r'/}"
     fi
     rtk_has_monthly=false
     if [[ -n "$rtk_monthly_raw" ]] && grep -qE "$MONTH_ROW_RE" <<<"$rtk_monthly_raw"; then
@@ -385,6 +389,7 @@ done
 rtk_monthly_raw=""
 if command -v "$RTK_BIN" >/dev/null 2>&1; then
     rtk_monthly_raw="$("$RTK_BIN" gain --monthly 2>/dev/null || true)"
+    rtk_monthly_raw="${rtk_monthly_raw//$'\r'/}"
 fi
 rtk_has_monthly=false
 if [[ -n "$rtk_monthly_raw" ]] && grep -qE "$MONTH_ROW_RE" <<<"$rtk_monthly_raw"; then

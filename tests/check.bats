@@ -61,18 +61,23 @@ EOF
 {"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"command":"/x/rtk-rewrite.sh"}]}]}}
 EOF
     mkdir -p "$HOME/.claude/plugins" "$HOME/.claude-mem"
+    # R4 requires ALL SIX managed tools: the four plugins plus rtk and pxpipe.
+    # ponytail and pxpipe joined that list after this fixture was written, so it
+    # only ever reached DEGRADED — the assertion below could not pass.
     cat > "$HOME/.claude/plugins/installed_plugins.json" <<'EOF'
 {"plugins":{
   "context-mode@context-mode":[{"version":"1.0.107"}],
   "claude-mem@thedotmack":[{"version":"12.1.4"}],
-  "caveman@caveman":[{"version":"abc"}]
+  "caveman@caveman":[{"version":"abc"}],
+  "ponytail@ponytail":[{"version":"def"}]
 }}
 EOF
-    # Provide rtk command so R4 doesn't fail
+    # Provide the rtk and pxpipe commands so R4 sees a complete stack.
     export PATH="$HOME/bin:$PATH"
     mkdir -p "$HOME/bin"
     echo '#!/usr/bin/env bash' > "$HOME/bin/rtk"
-    chmod +x "$HOME/bin/rtk"
+    echo '#!/usr/bin/env bash' > "$HOME/bin/pxpipe"
+    chmod +x "$HOME/bin/rtk" "$HOME/bin/pxpipe"
 
     run bash "$SCRIPT"
     [[ "$output" == *"COMPLEMENTARY"* ]]

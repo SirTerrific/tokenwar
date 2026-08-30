@@ -79,6 +79,39 @@ readonly WRAPPED_PROVIDER_CLIS=(
     "opencode"
 )
 
+# Deliberately duplicated from scripts/lib/osdetect.sh: this script is piped
+# straight from curl into bash, so it runs before the repo it clones exists and
+# cannot source anything out of it. Keep the two in sync — note that $OSTYPE is
+# "cygwin" under Git Bash too, so it is not a usable signal on its own.
+tw_is_windows() {
+    [[ "${OS:-}" == "Windows_NT" ]] && return 0
+    case "$(uname -s 2>/dev/null)" in
+        MINGW*|MSYS*|CYGWIN*) return 0 ;;
+    esac
+    return 1
+}
+
+# Windows path to a bash.exe that Claude Code — itself a native Windows process
+# — can spawn for the statusLine. Mirrors tw_bash_path in osdetect.sh.
+tw_win_bash_path() {
+    local candidate probe self
+    if [[ -n "${EXEPATH:-}" ]]; then
+        candidate="${EXEPATH%\\}\\bash.exe"
+        probe="$(cygpath -u "$candidate" 2>/dev/null || printf '')"
+        if [[ -n "$probe" && -x "$probe" ]]; then printf '%s' "$candidate"; return 0; fi
+    fi
+    for candidate in "C:\\Program Files\\Git\\bin\\bash.exe" "C:\\Program Files (x86)\\Git\\bin\\bash.exe"; do
+        probe="$(cygpath -u "$candidate" 2>/dev/null || printf '')"
+        if [[ -n "$probe" && -x "$probe" ]]; then printf '%s' "$candidate"; return 0; fi
+    done
+    self="$(command -v bash 2>/dev/null || printf '')"
+    if [[ -n "$self" ]]; then
+        cygpath -w "$self" 2>/dev/null || printf '%s' "$self"
+        return 0
+    fi
+    return 1
+}
+
 color()  { printf '\033[%sm%s\033[0m' "$1" "$2"; }
 green()  { color 32 "$1"; }
 yellow() { color 33 "$1"; }
@@ -135,6 +168,21 @@ say "Marking scripts executable"
 chmod +x "$INSTALL_DIR"/scripts/*.sh
 
 # 3. patch settings.json (statusLine)
+#
+# Claude Code spawns this command itself, outside any Git Bash session, so on
+# Windows a bare `bash` may not resolve and `~` is not expanded by the caller.
+# Name the interpreter by its full Windows path and let bash do the expansion.
+# -c rather than -lc: the statusLine renders constantly, and everything it needs
+# (node, claude, rtk in ~/.local/bin) is already on the Windows PATH.
+if tw_is_windows; then
+    win_bash="$(tw_win_bash_path || printf '')"
+    if [[ -n "$win_bash" ]]; then
+        STATUSLINE_CMD="\"${win_bash}\" -c '~/.claude/skills/tokenwar/scripts/tokenwar-statusline.sh'"
+    else
+        warn "could not locate a Windows bash.exe — leaving the POSIX statusLine command; install Git for Windows and re-run"
+    fi
+fi
+
 say "Wiring statusLine in $SETTINGS_JSON"
 mkdir -p "$(dirname "$SETTINGS_JSON")"
 [[ -f "$SETTINGS_JSON" ]] || echo '{}' > "$SETTINGS_JSON"
@@ -318,7 +366,16 @@ install_pxpipe() {
     if ! command -v "$PXPIPE_BIN" >/dev/null 2>&1; then
         local npm_prefix npm_pxpipe link_target
         npm_prefix="$("$NPM_BIN" config get prefix 2>/dev/null || echo "")"
-        npm_pxpipe="${npm_prefix}/bin/${PXPIPE_BIN}"
+        # npm's global bin directory is <prefix>/bin on POSIX but <prefix> itself
+        # on Windows, where the shims (pxpipe, pxpipe.cmd, pxpipe.ps1) sit at the
+        # top level. Probing <prefix>/bin there finds nothing and silently skips
+        # the whole fallback.
+        if tw_is_windows && [[ -n "$npm_prefix" ]]; then
+            npm_prefix="$(cygpath -u "$npm_prefix" 2>/dev/null || printf '%s' "$npm_prefix")"
+            npm_pxpipe="${npm_prefix}/${PXPIPE_BIN}"
+        else
+            npm_pxpipe="${npm_prefix}/bin/${PXPIPE_BIN}"
+        fi
         link_target="${USER_LOCAL_BIN}/${PXPIPE_BIN}"
         if [[ -n "$npm_prefix" && -x "$npm_pxpipe" ]]; then
             mkdir -p "$USER_LOCAL_BIN" || {
@@ -338,6 +395,13 @@ install_pxpipe() {
             dst_canon="$(cd "$(dirname "$link_target")" 2>/dev/null && printf '%s/%s' "$(pwd -P)" "$(basename "$link_target")")"
             if [[ -n "$src_canon" && "$src_canon" == "$dst_canon" ]]; then
                 : # same file — skip the symlink
+            elif tw_is_windows; then
+                # MSYS turns `ln -s` into a silent file COPY unless the user has
+                # Developer Mode on or MSYS=winsymlinks:nativestrict, so a link
+                # here is a half-truth. npm's prefix is on PATH by default on
+                # Windows anyway; copy the shim only if it somehow is not.
+                cp -f "$npm_pxpipe" "$link_target" \
+                    || warn "could not copy pxpipe into $USER_LOCAL_BIN"
             else
                 ln -sfn "$npm_pxpipe" "$link_target" \
                     || warn "could not link pxpipe into $USER_LOCAL_BIN"

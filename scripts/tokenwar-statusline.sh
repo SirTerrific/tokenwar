@@ -14,11 +14,33 @@
 
 set -uo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR
+
+# shellcheck source=lib/osdetect.sh
+source "${SCRIPT_DIR}/lib/osdetect.sh"
+
+# On Windows this script is spawned by Claude Code, a native Windows process, so
+# it inherits the Windows PATH and not a Git Bash login environment. rtk installs
+# into ~/.local/bin, which its own installer usually — but not always — adds to
+# that PATH; without it the rtk badge renders red on a perfectly good install.
+if tw_is_windows; then
+    case ":$PATH:" in
+        *":${HOME}/.local/bin:"*) : ;;
+        *) PATH="${HOME}/.local/bin:$PATH" ;;
+    esac
+fi
+
 readonly LOOKUP_TIMEOUT_SECS=1
 readonly CACHE_TTL_SECS=30
 readonly CACHE_DIR="${TMPDIR:-/tmp}"
-readonly PLUGIN_CACHE="${CACHE_DIR}/tokenwar-plugins-${USER}.json"
-readonly RTK_GAIN_CACHE="${CACHE_DIR}/tokenwar-rtk-gain-${USER}.txt"
+# $USER is empty under Git Bash, which would collapse every account's cache onto
+# the same "tokenwar-plugins-.json" path — tw_user falls back to $USERNAME.
+TW_USER="$(tw_user)"
+readonly TW_USER
+readonly PLUGIN_CACHE="${CACHE_DIR}/tokenwar-plugins-${TW_USER}.json"
+readonly RTK_GAIN_CACHE="${CACHE_DIR}/tokenwar-rtk-gain-${TW_USER}.txt"
+mkdir -p "$CACHE_DIR" 2>/dev/null || true
 readonly RTK_BIN="rtk"
 readonly PXPIPE_BIN="pxpipe"
 readonly CLAUDE_BIN="claude"
@@ -56,9 +78,6 @@ fi
 # check-updates.sh) and append a ⬆ marker to any tool with an available update.
 # Read-only at render time; a background refresh is kicked off only when the
 # cache is older than UPDATE_CACHE_TTL_SECS, never blocking the bar.
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly SCRIPT_DIR
-
 readonly UPDATE_CACHE="${HOME}/.claude/tokenwar/upgrade-check.json"
 readonly UPDATE_CHECK_SCRIPT="${SCRIPT_DIR}/check-updates.sh"
 readonly UPDATE_REFRESH_LOCK="${UPDATE_CACHE}.refresh.lock"
@@ -106,6 +125,11 @@ cache_or_run() {
     else
         fresh=$("$@" 2>/dev/null)
     fi
+    # A native Windows build (rtk, or claude behind an npm .cmd shim) emits CRLF.
+    # Strip here, before the cache write, so neither the cached copy nor any
+    # downstream awk/JSON.parse ever sees a trailing \r. Pure bash — a statusline
+    # should not spawn `tr` on every render.
+    fresh="${fresh//$'\r'/}"
     if [[ -n "$fresh" ]]; then
         local tmp
         if tmp=$(mktemp "${cache_file}.XXXXXX" 2>/dev/null); then
@@ -136,6 +160,10 @@ maybe_refresh_updates() {
         (( lock_age < UPDATE_REFRESH_LOCK_TTL_SECS )) && return 0
     fi
     [[ -f "$UPDATE_CHECK_SCRIPT" ]] || return 0
+    # On a fresh install ~/.claude/tokenwar does not exist yet. `: > "$lock"`
+    # then fails in the shell BEFORE its own 2>/dev/null takes effect, printing
+    # a redirection error straight into the status bar.
+    mkdir -p "$(dirname "$UPDATE_REFRESH_LOCK")" 2>/dev/null || return 0
     : > "$UPDATE_REFRESH_LOCK" 2>/dev/null || true
     ( nohup bash "$UPDATE_CHECK_SCRIPT" --quiet --force >/dev/null 2>&1; rm -f "$UPDATE_REFRESH_LOCK" ) >/dev/null 2>&1 &
     disown 2>/dev/null || true
@@ -235,6 +263,7 @@ pxpipe_ver="-"
 pxpipe_active="false"
 if command -v "$PXPIPE_BIN" >/dev/null 2>&1; then
     pxpipe_ver=$("$PXPIPE_BIN" --version 2>/dev/null | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}')
+    pxpipe_ver="${pxpipe_ver//$'\r'/}"
     pxpipe_ver="${pxpipe_ver:--}"
     pxpipe_active="true"
 fi

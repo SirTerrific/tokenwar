@@ -94,7 +94,10 @@ rtk_state() {
 
 rtk_version() {
     if ! command -v "$RTK_BIN" >/dev/null 2>&1; then echo "-"; return; fi
-    "$RTK_BIN" --version 2>/dev/null | awk '{print $2}'
+    # tw_strip_cr: the version is the LAST field, so a CRLF-emitting native
+    # Windows build would leave a trailing \r glued to it — enough to break the
+    # semver compare in check-updates.sh and pin the tool at "update-available".
+    "$RTK_BIN" --version 2>/dev/null | tw_strip_cr | awk '{print $2}'
 }
 
 pxpipe_state() {
@@ -106,7 +109,7 @@ pxpipe_state() {
 
 pxpipe_version() {
     if ! command -v "$PXPIPE_BIN" >/dev/null 2>&1; then echo "-"; return; fi
-    "$PXPIPE_BIN" --version 2>/dev/null | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}'
+    "$PXPIPE_BIN" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}'
 }
 
 # Provider state detection

@@ -2,6 +2,16 @@
 # Tests for install.sh --with-plugins — verifies the opt-in plugin install path
 # and the anti-clobber re-enable. Mocks `git` (no-op) and `claude` (records args).
 
+# Mirrors tw_is_windows in scripts/lib/osdetect.sh; the tests cannot source it
+# because install.sh is exercised as the standalone curl-piped script it is.
+is_windows() {
+    [[ "${OS:-}" == "Windows_NT" ]] && return 0
+    case "$(uname -s 2>/dev/null)" in
+        MINGW*|MSYS*|CYGWIN*) return 0 ;;
+    esac
+    return 1
+}
+
 setup() {
     SCRIPT="$BATS_TEST_DIRNAME/../install.sh"
     [ -f "$SCRIPT" ] || skip "install.sh not found"
@@ -226,16 +236,24 @@ EOF
     [[ ! -L "$HOME/.local/bin/pxpipe" || "$(readlink "$HOME/.local/bin/pxpipe")" != "$HOME/.local/bin/pxpipe" ]]
 }
 
-@test "--with-pxpipe symlinks into ~/.local/bin when npm prefix differs" {
+@test "--with-pxpipe links pxpipe into ~/.local/bin when npm prefix differs" {
     # Regression for the same-file guard: when npm's prefix is NOT ~/.local
-    # (the common case — Homebrew, a custom npm prefix…), pxpipe lands in
-    # <prefix>/bin and MUST be symlinked into ~/.local/bin. A guard that
-    # `cd`s onto the file path yields "" == "" for both sides and wrongly
-    # skips the link, leaving pxpipe unlinked. This test fails in that case.
+    # (the common case — Homebrew, a custom npm prefix…), pxpipe lands in npm's
+    # bin directory and MUST be placed into ~/.local/bin. A guard that `cd`s onto
+    # the file path yields "" == "" for both sides and wrongly skips the step,
+    # leaving pxpipe unreachable. This test fails in that case.
+    #
+    # The two platforms differ in both halves of the operation:
+    #   - npm's global bin is <prefix>/bin on POSIX, but <prefix> itself on Windows.
+    #   - MSYS turns `ln -s` into a silent file copy unless Developer Mode or
+    #     MSYS=winsymlinks:nativestrict is set, so install.sh copies there on
+    #     purpose rather than claiming a link it did not make.
     mock_claude_empty
     rm -f "$MOCK_BIN/pxpipe"
     ln -s "$(command -v node)" "$MOCK_BIN/node"
     local npm_prefix="$HOME/.npm-global"
+    local npm_bindir="$npm_prefix/bin"
+    if is_windows; then npm_bindir="$npm_prefix"; fi
     cat > "$MOCK_BIN/npm" <<EOF
 #!/usr/bin/env bash
 if [[ "\$1 \$2 \$3" == "config get prefix" ]]; then
@@ -243,12 +261,12 @@ if [[ "\$1 \$2 \$3" == "config get prefix" ]]; then
     exit 0
 fi
 echo "\$*" >> "$NPM_LOG"
-mkdir -p "$npm_prefix/bin"
-cat > "$npm_prefix/bin/pxpipe" <<'PXPIPE'
+mkdir -p "$npm_bindir"
+cat > "$npm_bindir/pxpipe" <<'PXPIPE'
 #!/usr/bin/env bash
 [[ "\$1" == "--version" ]] && echo "0.10.0"
 PXPIPE
-chmod +x "$npm_prefix/bin/pxpipe"
+chmod +x "$npm_bindir/pxpipe"
 exit 0
 EOF
     chmod +x "$MOCK_BIN/npm"
@@ -256,10 +274,15 @@ EOF
     run bash "$SCRIPT" --with-pxpipe
     [ "$status" -eq 0 ]
     grep -q "install -g pxpipe-proxy@0.10.0" "$NPM_LOG"
-    # The link must exist, be executable, be a symlink, and point at the npm bin.
     [ -x "$HOME/.local/bin/pxpipe" ]
-    [ -L "$HOME/.local/bin/pxpipe" ]
-    [ "$(readlink "$HOME/.local/bin/pxpipe")" == "$npm_prefix/bin/pxpipe" ]
+    if is_windows; then
+        # A real copy, not a link that MSYS would have faked.
+        [ ! -L "$HOME/.local/bin/pxpipe" ]
+        cmp -s "$HOME/.local/bin/pxpipe" "$npm_bindir/pxpipe"
+    else
+        [ -L "$HOME/.local/bin/pxpipe" ]
+        [ "$(readlink "$HOME/.local/bin/pxpipe")" == "$npm_bindir/pxpipe" ]
+    fi
 }
 
 @test "--all installs plugins AND handles rtk and pxpipe" {
@@ -281,6 +304,25 @@ EOF
     grep -q "plugin install ponytail@ponytail" "$CLAUDE_LOG"
     grep -q "init -g" "$RTK_LOG"
     grep -q "install -g pxpipe-proxy@0.10.0" "$NPM_LOG"
+}
+
+@test "statusLine command is spawnable by the host Claude Code" {
+    # Claude Code runs this command itself, outside any Git Bash session. On
+    # Windows a bare `bash` may not resolve and `~` is not expanded by the
+    # caller, so the command must name a bash.exe by full Windows path.
+    mock_claude_empty
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    local cmd
+    cmd="$(node -e 'const c=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));process.stdout.write((c.statusLine||{}).command||"")' "$HOME/.claude/settings.json")"
+    [[ "$cmd" == *"tokenwar-statusline.sh"* ]]
+    if is_windows; then
+        [[ "$cmd" == *"bash.exe"* ]]
+        # Quoted, because the Git install path contains a space.
+        [[ "$cmd" == '"'* ]]
+    else
+        [ "$cmd" = "bash ~/.claude/skills/tokenwar/scripts/tokenwar-statusline.sh" ]
+    fi
 }
 
 @test "unknown argument exits non-zero" {
