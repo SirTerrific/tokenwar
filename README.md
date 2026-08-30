@@ -94,7 +94,7 @@ The lazy-senior-dev ruleset ([DietrichGebert/ponytail](https://github.com/Dietri
 
 ## Why complementary (not conflicting)
 
-The tokenwar `check.sh` script enforces 4 rules:
+The tokenwar `check.sh` script enforces 5 rules:
 
 | Rule | What it verifies                                                                   | Status                  |
 | ---- | ---------------------------------------------------------------------------------- | ----------------------- |
@@ -102,6 +102,7 @@ The tokenwar `check.sh` script enforces 4 rules:
 | R2   | `claude-mem` writes to `~/.claude-mem`, `context-mode` to `~/.claude/projects/...` | Disjoint storage sinks  |
 | R3   | RTK targets tool stdout; caveman targets LLM output                                | Disjoint buffers        |
 | R4   | Core hook/plugin tools installed at current versions                               | `claude plugin list`    |
+| R5   | Active providers keep disjoint config dirs (no tool/hook collision)                | config dirs inspected   |
 
 When all four PASS, the verdict is `COMPLEMENTARY`. ponytail isn't in the conflict table because it owns no hook, store, or output buffer — it only shapes what the model writes. pxpipe is tracked in `status`, `gain`, `updates`, and `upgrade`; it sits at the provider proxy boundary, separate from RTK's shell-output lane. Six tools, still zero overlap.
 

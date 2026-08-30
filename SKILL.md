@@ -111,7 +111,7 @@ Read the args after `/tokenwar`. If empty, treat as `status`. Always print a one
 
 ## Subcommand: status
 
-Run `bash ~/.claude/skills/tokenwar/scripts/status.sh` and report its output verbatim. The script returns exit code `0` if all 5 are healthy, `1` if any is missing/disabled.
+Run `bash ~/.claude/skills/tokenwar/scripts/status.sh` and report its output verbatim. The script returns exit code `0` if all 6 are healthy, `1` if any is missing/disabled.
 
 If exit code is `1`, end with a single line: `→ Run \`/tokenwar activate\` to fix.` (do not auto-fix from `status`).
 
@@ -119,7 +119,7 @@ If exit code is `1`, end with a single line: `→ Run \`/tokenwar activate\` to 
 
 Two phases — detect, then fix with confirmation.
 
-**Phase 1 — detect.** Run `bash ~/.claude/skills/tokenwar/scripts/status.sh`. Parse which of the 5 are in state `not-installed` or `installed-disabled`.
+**Phase 1 — detect.** Run `bash ~/.claude/skills/tokenwar/scripts/status.sh`. Parse which of the 6 are in state `not-installed` or `installed-disabled`.
 
 **Phase 2 — fix.** If any are unhealthy, use `AskUserQuestion` to confirm the fix plan. Example phrasing:
 
@@ -253,6 +253,16 @@ caveman compresses Claude's responses; RTK compresses tool outputs. They operate
 
 If any tracked tool is more than one minor version behind its latest, report as `WARN`. Old context-mode (< 1.0.107) lacks the `ctx_search` source filter; old RTK (< 0.29) double-counted some commands; etc.
 
+### Rule R5 — provider overlap
+
+Multiple provider CLIs can be installed side by side. A provider counts as active
+only when BOTH its binary is on PATH AND its config dir exists, which keeps
+isolated environments (system binaries visible, no config) from raising a false
+WARN. With 0 or 1 active provider there is nothing to collide; with more, the
+check confirms their config dirs are disjoint (`~/.claude`, `~/.codex`,
+`~/.gemini`, `~/.kimi-code`, `~/.config/opencode` — plus the %APPDATA% variants
+on Windows), so no two providers fight over the same hook or tool registry.
+
 Output format:
 
 ```
@@ -262,6 +272,7 @@ R1 bash double-hook       : <PASS|WARN|FAIL>  <evidence>
 R2 memory source overlap  : <PASS|WARN|FAIL>  <evidence>
 R3 output compression     : <PASS|WARN|FAIL>  <evidence>
 R4 version drift          : <PASS|WARN|FAIL>  <evidence>
+R5 provider overlap       : <PASS|WARN|FAIL>  <evidence>
 
 Verdict: <COMPLEMENTARY|DEGRADED|CONFLICT>
 ```

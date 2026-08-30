@@ -145,9 +145,13 @@ depend on it.
 written, and that it runs:
 
 ```bash
-node -e 'console.log(JSON.parse(require("fs").readFileSync(process.env.HOME+"/.claude/settings.json","utf8")).statusLine)'
+node -e 'console.log(JSON.parse(require("fs").readFileSync(0,"utf8")).statusLine)' < ~/.claude/settings.json
 echo '{}' | bash ~/.claude/skills/tokenwar/scripts/tokenwar-statusline.sh
 ```
+
+The redirect is deliberate: it lets the shell resolve the path, so no MSYS path is
+handed to node — which, being a native Windows binary, cannot open one. Passing
+`~/.claude/settings.json` to node as a string fails with a bare `ENOENT` here.
 
 **`USER: unbound variable`.** An old checkout. `$USER` is empty under Git Bash;
 current tokenwar falls back to `$USERNAME`.
