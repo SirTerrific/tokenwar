@@ -176,8 +176,22 @@ grep -rlU $'\r' --include='*.sh' --include='*.bats' .
 git add --renormalize .
 ```
 
-**`tokenwar` is not a command after installing.** Reload the shell
-(`source ~/.bashrc`) or open a new Git Bash window.
+**`tokenwar` is not a command after installing.** In Git Bash, reload the shell
+(`source ~/.bashrc`) or open a new window. In PowerShell or Command Prompt, open a
+new window — PATH changes only reach new processes.
+
+**`install.ps1` warns it could not write `$PROFILE`.** Expected on machines where
+OneDrive Known Folder Move redirects `Documents`: `New-Item -ItemType Directory`
+reports success there and creates nothing, so the profile path never
+materialises. The install continues on purpose — `bin\` is on your PATH, which is
+what actually delivers the `tokenwar` command to both PowerShell and Command
+Prompt. The `$PROFILE` function is only a convenience. Check where PowerShell
+expects it, and whether that directory is real:
+
+```powershell
+$PROFILE
+Test-Path (Split-Path -Parent $PROFILE)
+```
 
 ## Running the tests
 

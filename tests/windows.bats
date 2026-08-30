@@ -306,6 +306,29 @@ JSON
     [[ "$output" == *"dispatcher not found"* ]]
 }
 
+@test "install.ps1 wires PATH before the profile, and guards the profile write" {
+    # A real install died here: with OneDrive Known Folder Move redirecting
+    # Documents, `New-Item -ItemType Directory` REPORTS SUCCESS and creates
+    # nothing, so the following write threw on a path that was never made. With
+    # ErrorActionPreference=Stop that killed the script BEFORE the PATH wiring --
+    # leaving no tokenwar command in PowerShell or cmd at all.
+    #
+    # PATH is the mechanism; the $PROFILE function is a convenience. Assert the
+    # ordering and the guards statically: running install.ps1 for real would
+    # mutate the machine-wide user PATH, which a test must not do.
+    local f="$REPO_ROOT/install.ps1"
+    [ -f "$f" ] || skip "install.ps1 not present"
+    local path_line profile_line
+    path_line="$(grep -n "user PATH ---" "$f" | head -1 | cut -d: -f1)"
+    profile_line="$(grep -n "PowerShell profile (best effort)" "$f" | head -1 | cut -d: -f1)"
+    [ -n "$path_line" ]
+    [ -n "$profile_line" ]
+    [ "$path_line" -lt "$profile_line" ]
+    # The profile write must not trust New-Item: it re-checks, and it cannot abort.
+    grep -q "profile directory could not be created" "$f"
+    grep -q "bin. is on your PATH" "$f"
+}
+
 @test "bin/ ships no .ps1 that would shadow the .cmd on PATH" {
     # PATH resolution prefers .ps1 over .cmd, and Windows PowerShell's default
     # ExecutionPolicy (Restricted) blocks .ps1 outright — so a tokenwar.ps1 in

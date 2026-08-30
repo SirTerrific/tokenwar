@@ -101,42 +101,11 @@ if ($SkipProfile) {
     return
 }
 
-# -- 2. PowerShell profile --------------------------------------------
-# Mirrors the ~/.bashrc block install.sh writes, so `tokenwar` is a command in
-# PowerShell too. Idempotent: an existing block is replaced, never duplicated.
-Write-Step "Wiring the tokenwar function into $PROFILE"
-$profileDir = Split-Path -Parent $PROFILE
-if (-not (Test-Path -LiteralPath $profileDir)) {
-    New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
-}
-if (-not (Test-Path -LiteralPath $PROFILE)) {
-    New-Item -ItemType File -Path $PROFILE -Force | Out-Null
-}
-
-$existing = @(Get-Content -LiteralPath $PROFILE -ErrorAction SilentlyContinue)
-$kept = New-Object System.Collections.Generic.List[string]
-$inBlock = $false
-foreach ($line in $existing) {
-    if ($line -eq $TwBegin) { $inBlock = $true; continue }
-    if ($line -eq $TwEnd) { $inBlock = $false; continue }
-    if (-not $inBlock) { $kept.Add($line) }
-}
-
-# Point at the .cmd, not a .ps1. Windows PowerShell's default ExecutionPolicy is
-# Restricted, which blocks .ps1 files outright; .cmd is not policy-controlled and
-# runs identically from PowerShell. Shipping a tokenwar.ps1 in bin/ was worse than
-# useless: PATH resolution prefers .ps1 over .cmd, so it shadowed the working
-# entry point with one that could not run.
-$shim = Join-Path $TwDir 'bin\tokenwar.cmd'
-$block = @(
-    $TwBegin,
-    "function tokenwar { & '$shim' @args }",
-    $TwEnd
-)
-Set-Content -LiteralPath $PROFILE -Value ($kept + $block) -Encoding UTF8
-
-# -- 3. user PATH -----------------------------------------------------
-# So tokenwar.cmd resolves from Command Prompt, which has no profile to wire.
+# -- 2. user PATH -----------------------------------------------------
+# PATH first, on purpose. It is the mechanism that actually delivers the command
+# -- to PowerShell AND to Command Prompt, which has no profile to wire. The
+# $PROFILE function below is a convenience on top, and it must never be able to
+# stop this from happening.
 $binDir = Join-Path $TwDir 'bin'
 $userPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
 if ($null -eq $userPath) { $userPath = '' }
@@ -148,10 +117,61 @@ if (($userPath -split ';') -notcontains $binDir) {
     Write-Step 'bin already on your user PATH'
 }
 
+# -- 3. PowerShell profile (best effort) ------------------------------
+# Mirrors the ~/.bashrc block install.sh writes. Idempotent: an existing block is
+# replaced, never duplicated.
+#
+# Best effort because $PROFILE is not always writable. With OneDrive Known Folder
+# Move redirecting Documents, `New-Item -ItemType Directory` REPORTS SUCCESS and
+# creates nothing -- the next write then dies on a path that was never made. So
+# verify the directory exists rather than trusting the return, and treat failure
+# as a warning: PATH above already gives the user the command.
+$profileWired = $false
+try {
+    $profileDir = Split-Path -Parent $PROFILE
+    if (-not (Test-Path -LiteralPath $profileDir)) {
+        New-Item -ItemType Directory -Path $profileDir -Force -ErrorAction SilentlyContinue | Out-Null
+    }
+    if (-not (Test-Path -LiteralPath $profileDir)) {
+        throw "profile directory could not be created: $profileDir"
+    }
+
+    $existing = @(Get-Content -LiteralPath $PROFILE -ErrorAction SilentlyContinue)
+    $kept = New-Object System.Collections.Generic.List[string]
+    $inBlock = $false
+    foreach ($line in $existing) {
+        if ($line -eq $TwBegin) { $inBlock = $true; continue }
+        if ($line -eq $TwEnd) { $inBlock = $false; continue }
+        if (-not $inBlock) { $kept.Add($line) }
+    }
+
+    # Point at the .cmd, not a .ps1. Windows PowerShell's default ExecutionPolicy
+    # is Restricted, which blocks .ps1 files outright; .cmd is not
+    # policy-controlled and runs identically from PowerShell. Shipping a
+    # tokenwar.ps1 in bin/ was worse than useless: PATH resolution prefers .ps1
+    # over .cmd, so it shadowed the working entry point with one that could not run.
+    $shim = Join-Path $TwDir 'bin\tokenwar.cmd'
+    $block = @(
+        $TwBegin,
+        "function tokenwar { & '$shim' @args }",
+        $TwEnd
+    )
+    Set-Content -LiteralPath $PROFILE -Value ($kept + $block) -Encoding UTF8
+    Write-Step "Wired the tokenwar function into $PROFILE"
+    $profileWired = $true
+} catch {
+    Write-Warn "Could not write $PROFILE ($($_.Exception.Message))."
+    Write-Warn 'Skipped -- tokenwar still works: bin\ is on your PATH.'
+}
+
 Write-Host ''
 Write-Host 'tokenwar installed.' -ForegroundColor Green
 Write-Host ''
-Write-Host 'Reload PowerShell (or run  . $PROFILE ) then:'
+if ($profileWired) {
+    Write-Host 'Open a new PowerShell window (or run  . $PROFILE ) then:'
+} else {
+    Write-Host 'Open a new PowerShell or Command Prompt window, then:'
+}
 Write-Host '  tokenwar status'
 Write-Host '  tokenwar check'
 Write-Host ''
