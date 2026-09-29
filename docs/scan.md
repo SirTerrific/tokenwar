@@ -194,3 +194,61 @@ carried them.
 - "Never invoked in the window" is not "unwanted": a release skill used twice a
   year still earns its listing cost. `tokenwar prune` prints a review list and
   deletes nothing.
+
+## Sanitized snapshots and report history
+
+For a central API or another consumer, request the versioned aggregate contract:
+
+```bash
+TOKENWAR_SCAN_SKIP_STATUS=1 tokenwar scan --summary-json --source-id ora-agents --days 30 --max-sessions 400
+tokenwar scan --summary-json --source-id ora-agents --client codex --history ~/.local/state/tokenwar/history
+```
+
+The summary explicitly projects numeric telemetry, client coverage and the known
+recommendations. It excludes session paths, prompts, command arguments, tool
+results, skill names and inventory sources. It makes no network request.
+`TOKENWAR_SCAN_SKIP_STATUS=1` also skips status subprocesses; recommendation
+tool states then remain unknown. Ordinary `--json` remains the detailed local
+report and is **not** the upload contract.
+
+Snapshot schema version 1 contains `id`, `generatedAt`, `sourceId`, `scope`,
+`coverage`, `metrics`, `recommendations`, `limitations` and `comparison`.
+The scope records selected clients, duration, session cap and selection method.
+The current method selects files by modification time, then includes each whole
+session: these are not exact event-time windows. Metrics include fresh input,
+cache writes, cache reads, output, input per turn and cache hit ratio; dollar
+comparisons are excluded because mixed models and provider tariffs need separate
+reconciliation.
+
+`scripts/lib/history.mjs` exports pure `buildSnapshot` and `compareSnapshots`.
+Comparisons return `baseline` with no previous report, `incomparable` when
+source, schema, window duration, client selection or sampling settings differ,
+and `unknown` for incomplete coverage. Comparable scopes retain observed
+metric deltas under `basis: "observed-partial"`, with previous/current coverage
+counts, even when coverage is incomplete. These deltas must be shown neutrally,
+without improvement colors or an inference about recommendation efficacy. Truncation, parse errors, unread files
+and clients without token telemetry make coverage partial. Metrics show numeric
+changes and increased/decreased/unchanged directions, never causal savings.
+A zero baseline has no percentage change; an unknown ratio is null.
+
+Recommendations have stable IDs such as `tokenwar:rtk:v1`. Changes show observed
+verdicts and states. A disappearing recommendation is `not-assessed`; action
+completion always remains unknown to the scanner. The central API owns
+recommendation action records and is the source of truth for the board.
+
+Optional `--history DIR` writes private append-only sanitized snapshot files
+(mode 0600), compares with the latest snapshot for the same source, and fails
+explicitly if history is corrupt. Run one collector per source to keep a serial
+history. No history files are written unless this flag is supplied.
+
+Validation: `bats tests/history.bats tests/scan.bats tests/parse.bats`.
+Central Ora integration should expose this same coverage, report comparison and
+action-tracking capability on its existing `/tests` page.
+
+On GCP, a seven-day scan with a 3,200-file cap per client took 27 seconds
+and approximately 800 MiB peak RAM across Claude and Codex logs. Allow 90 seconds
+for remote collection and adequate host memory; this is an observed benchmark,
+not a runtime guarantee. Whole-file parsing currently retains normalized
+session data for the selected sample.
+
+An installed client with no supported session files has **partial coverage**: other stores may contain sessions. The sanitized summary excludes OpenWiki while it is suspended.
