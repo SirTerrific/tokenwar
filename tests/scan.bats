@@ -74,6 +74,34 @@ JSON_STATUS
     '
 }
 
+@test "scan finds user-local tools in noninteractive shells" {
+    unset TOKENWAR_SCAN_SKIP_STATUS
+    export HOME="${FIXTURE_ROOT}/home"
+    mkdir -p "$HOME/.local/bin"
+    printf '#!/usr/bin/env bash\nexit 0\n' > "$HOME/.local/bin/tokenwar-local-probe"
+    chmod +x "$HOME/.local/bin/tokenwar-local-probe"
+    local status_script="${FIXTURE_ROOT}/status-path.sh"
+    cat > "$status_script" <<'JSON_STATUS'
+#!/usr/bin/env bash
+if command -v tokenwar-local-probe >/dev/null 2>&1; then
+    printf '%s\n' '{"tools":{"rtk":{"state":"OK"}},"ok":true}'
+else
+    printf '%s\n' '{"tools":{"rtk":{"state":"not-installed"}},"ok":false}'
+fi
+JSON_STATUS
+    export TOKENWAR_STATUS_SCRIPT="$status_script"
+    run bash "$SCAN" --client claude --days 3650 --summary-json --source-id fixture
+    [ "$status" -eq 0 ]
+    printf '%s' "$output" | node -e '
+      let body = "";
+      process.stdin.on("data", chunk => body += chunk);
+      process.stdin.on("end", () => {
+        const rtk = JSON.parse(body).recommendations.find(r => r.toolId === "rtk");
+        if (rtk?.observedState !== "OK") process.exit(1);
+      });
+    '
+}
+
 @test "scan runs and reports the fixture session" {
     run bash "$SCAN" --client claude --days 3650
     [ "$status" -eq 0 ]
