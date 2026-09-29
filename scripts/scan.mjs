@@ -4,7 +4,7 @@
 // what was actually used, and reports the cost honestly: cache-adjusted price,
 // plus the context-window occupancy that caching does not discount.
 
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { hostname } from "node:os";
@@ -153,8 +153,14 @@ function loadToolStates() {
   const script = process.env.TOKENWAR_STATUS_SCRIPT || join(new URL(".", import.meta.url).pathname, "status.sh");
   if (!existsSync(script)) return {};
   try {
-    const out = execFileSync("bash", [script, "--json"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
-    const parsed = JSON.parse(out);
+    // status.sh exits 1 when any tool is absent, after writing a complete
+    // JSON inventory. Preserve those known states instead of marking all tools
+    // unknown. Other exit codes, timeouts and malformed output remain unknown.
+    const result = spawnSync("bash", [script, "--json"], {
+      encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 45000,
+    });
+    if (result.error || result.signal || ![0, 1].includes(result.status)) return {};
+    const parsed = JSON.parse(result.stdout);
     const states = {};
     for (const [id, value] of Object.entries(parsed.tools || {})) states[id] = value.state;
     return states;

@@ -52,6 +52,28 @@ teardown() {
     rm -rf "$FIXTURE_ROOT"
 }
 
+@test "status JSON remains usable when one tool is missing" {
+    unset TOKENWAR_SCAN_SKIP_STATUS
+    local status_script="${FIXTURE_ROOT}/status.sh"
+    cat > "$status_script" <<'JSON_STATUS'
+#!/usr/bin/env bash
+printf '%s\n' '{"tools":{"rtk":{"state":"OK"},"pxpipe":{"state":"not-installed"}},"ok":false}'
+exit 1
+JSON_STATUS
+    export TOKENWAR_STATUS_SCRIPT="$status_script"
+    run bash "$SCAN" --client claude --days 3650 --summary-json --source-id fixture
+    [ "$status" -eq 0 ]
+    printf '%s' "$output" | node -e '
+      let body = "";
+      process.stdin.on("data", chunk => body += chunk);
+      process.stdin.on("end", () => {
+        const rows = JSON.parse(body).recommendations;
+        if (rows.find(r => r.toolId === "rtk")?.observedState !== "OK") process.exit(1);
+        if (rows.find(r => r.toolId === "pxpipe")?.observedState !== "not-installed") process.exit(1);
+      });
+    '
+}
+
 @test "scan runs and reports the fixture session" {
     run bash "$SCAN" --client claude --days 3650
     [ "$status" -eq 0 ]
