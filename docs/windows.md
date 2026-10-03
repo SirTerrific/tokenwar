@@ -217,6 +217,15 @@ $PROFILE
 Test-Path (Split-Path -Parent $PROFILE)
 ```
 
+**`tokenwar upgrade` says `no uv/pipx/pip found — cannot update graphify`.** Often
+`uv` is installed but off PATH: `pip install --user uv` puts it in
+`%APPDATA%\Python\Python3XX\Scripts`, which Python's installer never adds to PATH.
+Check, then add that directory to your user PATH and open a new window:
+
+```powershell
+Get-ChildItem "$env:APPDATA\Python\*\Scripts\uv.exe"
+```
+
 ## Running the tests
 
 ```bash

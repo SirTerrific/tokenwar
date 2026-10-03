@@ -27,6 +27,7 @@ readonly MARKETPLACE_CAVE="caveman"
 
 readonly MARKETPLACE_ROOT="${HOME}/.claude/plugins/marketplaces"
 readonly MARKETPLACE_MANIFEST_REL=".claude-plugin/marketplace.json"
+readonly PLUGIN_MANIFEST_REL=".claude-plugin/plugin.json"
 readonly RTK_BIN="rtk"
 readonly PXPIPE_BIN="pxpipe"
 readonly PXPIPE_NPM_VERSION="0.10.0"
@@ -114,15 +115,19 @@ refresh_marketplaces() {
 # Read `version` from a marketplace.json's plugins[] entry matching `name`.
 # Reads the manifest from the fetched upstream ref (origin/<branch>) first, so
 # a clone that is behind upstream — or has local working-tree edits — never
-# reports a stale "latest". Falls back to the on-disk manifest (no upstream),
-# then to the upstream/local short git SHA when the manifest carries no
-# `version` field — caveman, e.g., versions by SHA only.
+# reports a stale "latest". Falls back to the on-disk manifest (no upstream).
+# When the marketplace entry carries no `version`, the plugin's own
+# .claude-plugin/plugin.json is next: caveman declares its version only there,
+# and that is the version Claude Code installs and reports. Comparing the
+# installed "3.1.0" against a git SHA instead flagged a permanent phantom
+# update. The short git SHA is the last resort, for a plugin versioned by
+# commit alone.
 readonly MARKETPLACE_GIT_SHA_LEN=12
 marketplace_version() {
     local marketplace="$1" plugin_name="$2"
     local marketplace_dir
     marketplace_dir="$(tw_node_path "${MARKETPLACE_ROOT}/${marketplace}")"
-    local upstream="" manifest_json="" v=""
+    local upstream="" manifest_json="" v="" src=""
 
     if [[ -d "${marketplace_dir}/.git" ]]; then
         upstream=$(git -C "$marketplace_dir" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo "")
@@ -134,11 +139,31 @@ marketplace_version() {
         manifest_json=$(cat "${marketplace_dir}/${MARKETPLACE_MANIFEST_REL}" 2>/dev/null || echo "")
     fi
     if [[ -n "$manifest_json" ]]; then
-        v=$(MANIFEST_JSON="$manifest_json" PLUGIN_NAME="$plugin_name" node --input-type=module -e "
+        # "<version>|<plugin dir relative to the marketplace root>"
+        local entry
+        entry=$(MANIFEST_JSON="$manifest_json" PLUGIN_NAME="$plugin_name" node --input-type=module -e "
             const m = JSON.parse(process.env.MANIFEST_JSON);
             const list = Array.isArray(m.plugins) ? m.plugins : [];
             const entry = list.find(p => p.name === process.env.PLUGIN_NAME);
-            process.stdout.write(entry?.version || '');
+            const src = typeof entry?.source === 'string'
+                ? entry.source.replace(/^\.\/?/, '').replace(/\/+$/, '') : '';
+            process.stdout.write((entry?.version || '') + '|' + src);
+        " 2>/dev/null || echo "")
+        v="${entry%%|*}"
+        src="${entry#*|}"
+        if [[ -n "$v" ]]; then echo "$v"; return; fi
+    fi
+
+    local plugin_rel="${src:+${src}/}${PLUGIN_MANIFEST_REL}" plugin_json=""
+    if [[ -n "$upstream" ]]; then
+        plugin_json=$(git -C "$marketplace_dir" show "${upstream}:${plugin_rel}" 2>/dev/null || echo "")
+    fi
+    if [[ -z "$plugin_json" && -f "${marketplace_dir}/${plugin_rel}" ]]; then
+        plugin_json=$(cat "${marketplace_dir}/${plugin_rel}" 2>/dev/null || echo "")
+    fi
+    if [[ -n "$plugin_json" ]]; then
+        v=$(PLUGIN_JSON="$plugin_json" node --input-type=module -e "
+            process.stdout.write(JSON.parse(process.env.PLUGIN_JSON).version || '');
         " 2>/dev/null || echo "")
         if [[ -n "$v" ]]; then echo "$v"; return; fi
     fi
@@ -149,12 +174,13 @@ marketplace_version() {
     echo ""
 }
 
+# claude runs from bash, not from node's execSync: on Windows node spawns
+# through cmd.exe, which resolves a different `claude` than this shell's PATH.
 installed_plugin_version() {
-    local slug="$1"
-    PLUGIN_QUERY="$slug" node --input-type=module -e "
-        import { execSync } from 'node:child_process';
-        const out = execSync('claude plugin list --json', { encoding: 'utf8' });
-        const arr = JSON.parse(out || '[]');
+    local slug="$1" list
+    list=$(claude plugin list --json 2>/dev/null) || list=""
+    PLUGIN_LIST_JSON="$list" PLUGIN_QUERY="$slug" node --input-type=module -e "
+        const arr = JSON.parse(process.env.PLUGIN_LIST_JSON || '[]');
         const entry = arr.find(p => p.id === process.env.PLUGIN_QUERY);
         process.stdout.write(entry?.version || '');
     " 2>/dev/null || echo ""
