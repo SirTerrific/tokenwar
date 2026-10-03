@@ -187,6 +187,31 @@ EOF
     [[ "$output" == *"graphify"*"ping=ok"* ]]
 }
 
+@test "--test pings claude-mem 13 through its worker when it ships no CLI" {
+    mock_claude_with_plugins '[
+      {"id":"claude-mem@thedotmack","version":"13.18.0","enabled":true}
+    ]'
+    mock_rtk_alive
+    rm -f "$MOCK_BIN/claude-mem"
+    mkdir -p "$HOME/.claude-mem"
+    echo '{"CLAUDE_MEM_WORKER_PORT":"41234"}' > "$HOME/.claude-mem/settings.json"
+    export CURL_LOG="$HOME/curl.log"
+    cat > "$MOCK_BIN/curl" <<'EOF2'
+#!/usr/bin/env bash
+echo "$*" >> "$CURL_LOG"
+exit "${CURL_EXIT:-0}"
+EOF2
+    chmod +x "$MOCK_BIN/curl"
+
+    run bash "$SCRIPT" --test
+    [[ "$output" == *"claude-mem"*"ping=ok"* ]]
+    grep -q "http://127.0.0.1:41234/api/health" "$CURL_LOG"
+
+    # A worker that does not answer is a failed ping, not a pass.
+    CURL_EXIT=7 run bash "$SCRIPT" --test
+    [[ "$output" == *"claude-mem"*"ping=FAIL"* ]]
+}
+
 @test "exit 1 when pxpipe is missing" {
     mock_claude_with_plugins '[
       {"id":"context-mode@context-mode","version":"1.0.107","enabled":true},

@@ -136,7 +136,7 @@ for local code navigation TokenWar should test lighter alternatives first:
 numbers as real savings.
 
 - Actual savings: only from native telemetry (`rtk gain`, `pxpipe stats`,
-  `graphify benchmark`, Codex/opencode/Copilot token databases, `ctx_stats`).
+  `graphify benchmark`, Codex/opencode/Copilot token databases, context-mode's stores).
 - Estimated opportunity: derived from local logs by matching command, search,
   scrape, memory, verbosity, and code-generation signals.
 - Recommendation output must include both: `estimated avoidable tokens` and

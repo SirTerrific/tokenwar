@@ -201,7 +201,7 @@ After a successful upgrade, re-run `check-updates.sh --force` then `status` so t
 Run `bash ~/.claude/skills/tokenwar/scripts/status.sh --test`. For each of the 7 tools, the script issues a minimal end-to-end ping:
 
 - **context-mode**: call the `ctx_stats` MCP tool. Alive iff it returns a JSON-shaped reply.
-- **claude-mem**: `claude-mem --version` exits 0.
+- **claude-mem**: `claude-mem --version` exits 0 when that CLI exists; claude-mem 13+ ships none, so its worker's `/api/health` must answer on the port in `~/.claude-mem/settings.json`.
 - **RTK**: `rtk --version` exits 0 AND `rtk gain` returns non-empty stats.
 - **pxpipe**: `pxpipe --version` exits 0. Proxy savings are read separately from `~/.pxpipe/events.jsonl`.
 - **caveman**: `test -d ~/.claude/plugins/cache/caveman/caveman/*/skills/caveman` AND the plugin appears in `claude plugin list`.
@@ -220,13 +220,13 @@ Run `bash ~/.claude/skills/tokenwar/scripts/gain.sh`. It aggregates from:
 | Tool         | Source of truth                                                |
 | ------------ | -------------------------------------------------------------- |
 | RTK          | `rtk gain` (parse `Tokens saved:` line + per-command table)    |
-| context-mode | `ctx_stats` MCP tool (KB stored × 0.25 = approx tokens saved)  |
+| context-mode | its own SQLite stores under `~/.claude/context-mode/` — bytes kept out of context (`session_events.bytes_avoided` + indexed `chunks`), context-mode's strict formula (its ADR-0004), ÷ 4 = tokens |
 | claude-mem   | `~/.claude-mem/claude-mem.db` — sum of real `discovery_tokens` minus the read cost of each observation (claude-mem's own savings formula). Older releases: `chroma-sync-state.json` counts × `MEM_EST_TOKENS_PER_ITEM` (est.) |
 | pxpipe       | `~/.pxpipe/events.jsonl` — real proxy events; parse explicit saved-token fields or baseline-minus-actual token fields |
 | caveman      | none — a SessionStart style nudge with no buffer transform, so no measurable byte delta → honest `N/A` |
 | graphify     | `graphify benchmark ~/.graphify/global-graph.json` — deterministic, offline, and REAL, but it reports a per-QUERY reduction ratio, not a cumulative saved-token counter. Print the ratio in the note, keep the token column `N/A`, and never add it to TOTAL |
 
-For `context-mode`: invoke the `ctx_stats` MCP tool and parse the `total_size_kb` field, multiply by `1024 / TOKEN_CHARS_PER_TOKEN` (~4) to estimate tokens kept out of the context window.
+For `context-mode`: `gain.sh` reads the stores itself — no MCP call needed. `ctx_stats` now answers in prose rather than JSON, and its lifetime headline also counts hook-captured event data, which context-mode's own ADR-0004 says never entered the context window; `gain.sh` excludes it, so its number is lower than that headline. A caller may still set `CTX_STATS_JSON` to override.
 
 **Monthly $ value.** After the per-tool table, `gain.sh` renders a per-month financial breakdown driven by `rtk gain --monthly` (RTK's `history.db` is the only timestamped source — claude-mem/caveman `gain.jsonl` has no history, context-mode reports a single total). Each month's saved tokens are valued at two providers' **input** list prices (savings are input-side context offload, so output price is not applied):
 
@@ -261,7 +261,7 @@ Monthly value — API-equivalent $ saved (RTK)
 
 If the complementary check is `FAIL`, prefix the TOTAL line with `⚠️` and add `effective gain may be lower than reported — see /tokenwar check`. The user MUST not be told they're winning when two tools are double-processing the same buffer.
 
-Each tool is read from its OWN native telemetry — never fabricate. If a source is missing (no `~/.claude-mem/claude-mem.db` or `chroma-sync-state.json`, no `CTX_STATS_JSON`, no `rtk`, no `~/.pxpipe/events.jsonl`), that tool shows `N/A`, never `0`. caveman is always `N/A` by design — it has no telemetry surface.
+Each tool is read from its OWN native telemetry — never fabricate. If a source is missing (no `~/.claude-mem/claude-mem.db` or `chroma-sync-state.json`, no `~/.claude/context-mode/` store, no `rtk`, no `~/.pxpipe/events.jsonl`), that tool shows `N/A`, never `0`. caveman is always `N/A` by design — it has no telemetry surface.
 
 ## Subcommand: check
 
@@ -376,7 +376,7 @@ Only the four Claude Code plugins are toggleable — `context-mode`, `claude-mem
 Each tool is read from its own native telemetry — `gain.sh` never fabricates:
 
 - **RTK** — `rtk gain` / `rtk gain --monthly` (from its `history.db`).
-- **context-mode** — the `ctx_stats` MCP tool (caller injects `CTX_STATS_JSON`).
+- **context-mode** — its SQLite stores under `~/.claude/context-mode/` (bytes kept out of context, strict formula).
 - **claude-mem** — `~/.claude-mem/claude-mem.db` (real discovery tokens minus read cost); older releases `chroma-sync-state.json` (counts, estimated).
 - **pxpipe** — `~/.pxpipe/events.jsonl` (real proxy-side savings from teamchong/pxpipe).
 - **caveman** — none. It's a SessionStart prompt-style nudge with no buffer transform, so there is no before/after byte delta to measure. It is always `N/A` — do not wire a byte-logging hook for it; that would only fabricate numbers.
@@ -389,6 +389,6 @@ Each tool is read from its own native telemetry — `gain.sh` never fabricates:
 After any subcommand:
 
 1. Did every CLI call return exit code 0? If not, surface the failure — do not silently swallow.
-2. Did you actually call `ctx_stats` (MCP tool), or did you skip context-mode because shell scripts can't reach it? Calling it is mandatory whenever the subcommand needs context-mode numbers.
+2. For `test`, did you actually call `ctx_stats` (MCP tool) to prove context-mode is alive? `gain` reads context-mode's stores itself and needs no MCP call.
 3. Are the numbers you printed derived from real telemetry, or fabricated? If a tool's native source is missing, say `N/A`, not `0`.
 4. Did you propose any auto-fix without asking via `AskUserQuestion`? That's a bug — every fix path goes through confirmation.
