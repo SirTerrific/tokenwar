@@ -96,7 +96,7 @@ bash ~/.claude/skills/tokenwar/scripts/gain.sh
 
 `gain.sh` reads each tool from its **own native telemetry** — never fabricated:
 RTK (`rtk gain`), context-mode (`ctx_stats`), claude-mem
-(`~/.claude-mem/chroma-sync-state.json` stored-memory counts), pxpipe
+(`~/.claude-mem/claude-mem.db` discovery tokens minus read cost; older releases: `chroma-sync-state.json` counts), pxpipe
 (`~/.pxpipe/events.jsonl` proxy events), and graphify (`graphify benchmark` on
 `~/.graphify/global-graph.json`). caveman is a
 style-only nudge with no measurable buffer, so it is always `N/A`; graphify's

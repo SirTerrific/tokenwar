@@ -221,7 +221,7 @@ Run `bash ~/.claude/skills/tokenwar/scripts/gain.sh`. It aggregates from:
 | ------------ | -------------------------------------------------------------- |
 | RTK          | `rtk gain` (parse `Tokens saved:` line + per-command table)    |
 | context-mode | `ctx_stats` MCP tool (KB stored × 0.25 = approx tokens saved)  |
-| claude-mem   | `~/.claude-mem/chroma-sync-state.json` — real per-project counts of stored observations + summaries, × `MEM_EST_TOKENS_PER_ITEM` (est.) |
+| claude-mem   | `~/.claude-mem/claude-mem.db` — sum of real `discovery_tokens` minus the read cost of each observation (claude-mem's own savings formula). Older releases: `chroma-sync-state.json` counts × `MEM_EST_TOKENS_PER_ITEM` (est.) |
 | pxpipe       | `~/.pxpipe/events.jsonl` — real proxy events; parse explicit saved-token fields or baseline-minus-actual token fields |
 | caveman      | none — a SessionStart style nudge with no buffer transform, so no measurable byte delta → honest `N/A` |
 | graphify     | `graphify benchmark ~/.graphify/global-graph.json` — deterministic, offline, and REAL, but it reports a per-QUERY reduction ratio, not a cumulative saved-token counter. Print the ratio in the note, keep the token column `N/A`, and never add it to TOTAL |
@@ -261,7 +261,7 @@ Monthly value — API-equivalent $ saved (RTK)
 
 If the complementary check is `FAIL`, prefix the TOTAL line with `⚠️` and add `effective gain may be lower than reported — see /tokenwar check`. The user MUST not be told they're winning when two tools are double-processing the same buffer.
 
-Each tool is read from its OWN native telemetry — never fabricate. If a source is missing (no `~/.claude-mem/chroma-sync-state.json`, no `CTX_STATS_JSON`, no `rtk`, no `~/.pxpipe/events.jsonl`), that tool shows `N/A`, never `0`. caveman is always `N/A` by design — it has no telemetry surface.
+Each tool is read from its OWN native telemetry — never fabricate. If a source is missing (no `~/.claude-mem/claude-mem.db` or `chroma-sync-state.json`, no `CTX_STATS_JSON`, no `rtk`, no `~/.pxpipe/events.jsonl`), that tool shows `N/A`, never `0`. caveman is always `N/A` by design — it has no telemetry surface.
 
 ## Subcommand: check
 
@@ -377,7 +377,7 @@ Each tool is read from its own native telemetry — `gain.sh` never fabricates:
 
 - **RTK** — `rtk gain` / `rtk gain --monthly` (from its `history.db`).
 - **context-mode** — the `ctx_stats` MCP tool (caller injects `CTX_STATS_JSON`).
-- **claude-mem** — `~/.claude-mem/chroma-sync-state.json` (real stored-memory counts).
+- **claude-mem** — `~/.claude-mem/claude-mem.db` (real discovery tokens minus read cost); older releases `chroma-sync-state.json` (counts, estimated).
 - **pxpipe** — `~/.pxpipe/events.jsonl` (real proxy-side savings from teamchong/pxpipe).
 - **caveman** — none. It's a SessionStart prompt-style nudge with no buffer transform, so there is no before/after byte delta to measure. It is always `N/A` — do not wire a byte-logging hook for it; that would only fabricate numbers.
 - **graphify** — `graphify benchmark` on `~/.graphify/global-graph.json` (per-repo graphs live in `<repo>/graphify-out/` and are not host-level). Real and deterministic, but a per-query ratio: report `45.3x fewer tokens per query vs naive corpus read`, never a summed token figure.

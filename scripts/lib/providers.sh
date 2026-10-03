@@ -5,7 +5,7 @@
 # To iterate: for i in $(seq 0 $((PROVIDER_COUNT - 1))); do ... done
 #
 # Telemetry sources (native, never fabricated):
-#   Claude — RTK (rtk gain), context-mode (ctx_stats MCP), claude-mem (chroma-sync-state)
+#   Claude — RTK (rtk gain), context-mode (ctx_stats MCP), claude-mem (claude-mem.db)
 #   Codex  — ~/.codex/state_5.sqlite → threads.tokens_used (real per-session counts)
 #   Gemini — no local token store; CLI detection only, telemetry N/A
 #   Kimi   — ~/.kimi-code stores sessions/config, but no documented token store

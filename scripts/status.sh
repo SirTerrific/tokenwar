@@ -212,7 +212,7 @@ if $json_mode; then
         pver=$(provider_version "$i")
         pstate=$(provider_state_str "$i")
         case "$pid" in
-            claude) pnote="telemetry: RTK + ctx_stats + chroma-sync-state" ;;
+            claude) pnote="telemetry: RTK + ctx_stats + claude-mem.db" ;;
             codex)  pnote="telemetry: ~/.codex/state_5.sqlite (tokens_used)" ;;
             gemini) pnote="telemetry: N/A (server-side sessions)" ;;
             kimi)   pnote="telemetry: N/A (~/.kimi-code has no token store)" ;;
@@ -312,7 +312,7 @@ for i in $(seq 0 $((PROVIDER_COUNT - 1))); do
 
     # Build note: telemetry source
     case "$pid" in
-        claude) pnote="telemetry: RTK + ctx_stats + chroma-sync-state" ;;
+        claude) pnote="telemetry: RTK + ctx_stats + claude-mem.db" ;;
         codex)  pnote="telemetry: ~/.codex/state_5.sqlite (tokens_used)" ;;
         gemini) pnote="telemetry: N/A (server-side sessions)" ;;
         kimi)   pnote="telemetry: N/A (~/.kimi-code has no token store)" ;;

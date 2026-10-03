@@ -5,7 +5,8 @@
 #   RTK          — `rtk gain` (+ `rtk gain --monthly` for the $ breakdown)
 #   context-mode — `ctx_stats` MCP tool; shell can't call MCP, so the caller
 #                  injects its JSON via CTX_STATS_JSON. Absent → N/A.
-#   claude-mem   — its chroma-sync-state.json (real stored-memory counts).
+#   claude-mem   — its claude-mem.db (real per-observation discovery tokens);
+#                  older releases: chroma-sync-state.json (counts, estimated).
 #   caveman      — a SessionStart style nudge with no buffer transform, hence
 #                  no measurable byte delta → honest N/A (no telemetry surface).
 #   pxpipe       — ~/.pxpipe/events.jsonl (real proxy-side token deltas).
@@ -32,12 +33,23 @@ source "${SCRIPT_DIR}/lib/providers.sh"
 readonly CHARS_PER_TOKEN=4
 readonly RTK_BIN="rtk"
 
-# claude-mem native telemetry: its chroma-sync-state.json holds real per-project
+# claude-mem legacy telemetry (before 13): chroma-sync-state.json holds real per-project
 # counts of stored observations/summaries (the compact memory it injects on
 # resume instead of re-reading full transcripts). Counts are real; the
 # tokens-per-item multiplier is a conservative estimate (memory items are short
 # — typically a sentence or two), surfaced as "~est" and never as hard truth.
 readonly MEM_SYNC_STATE="${HOME}/.claude-mem/chroma-sync-state.json"
+# claude-mem 13+ dropped chroma-sync-state.json; its SQLite store records, per
+# observation, the tokens spent producing it (discovery_tokens). claude-mem's own
+# context header reports savings as that work minus the cost of reading the
+# memory back — read cost being (title + subtitle + narrative + facts JSON)
+# characters / 4. This is the same formula, summed over every observation.
+readonly MEM_DB="${HOME}/.claude-mem/claude-mem.db"
+readonly MEM_SQL_SAVINGS="SELECT COUNT(*), COALESCE(SUM(discovery_tokens), 0),
+           COALESCE(SUM((COALESCE(length(title),0) + COALESCE(length(subtitle),0)
+                + COALESCE(length(narrative),0) + COALESCE(length(facts) + 2, 2) + 3) / 4), 0),
+           COUNT(DISTINCT project)
+    FROM observations"
 readonly MEM_EST_TOKENS_PER_ITEM=40
 readonly PXPIPE_EVENTS_LOG="${HOME}/.pxpipe/events.jsonl"
 
@@ -116,9 +128,19 @@ ctx_summary() {
     " 2>/dev/null || echo "N/A|ctx_stats JSON parse failed|0"
 }
 
-# === claude-mem from its native chroma-sync-state.json ===
-# Real counts (observations + summaries across all projects); tokens estimated.
+# === claude-mem from its native store ===
+# claude-mem.db when it carries discovery-token telemetry (real numbers);
+# otherwise the legacy chroma-sync-state.json (real counts, tokens estimated).
 mem_summary() {
+    if [[ -f "$MEM_DB" && "$(tw_sqlite_engine)" != "none" ]]; then
+        local obs work cost projects
+        read -r obs work cost projects <<<"$(tw_sqlite_rows "$MEM_DB" "$MEM_SQL_SAVINGS")"
+        # An unreadable DB, or rows predating discovery_tokens, fall through.
+        if [[ -n "${work:-}" && "$work" -gt "${cost:-0}" ]]; then
+            echo "$(tw_human_tokens "$((work - cost))")|${obs} obs across ${projects} projects: $(tw_human_tokens "$work") work tokens recalled for $(tw_human_tokens "$cost") read (claude-mem.db)|$((work - cost))"
+            return
+        fi
+    fi
     if [[ ! -f "$MEM_SYNC_STATE" ]]; then
         echo "N/A|claude-mem store not found ($MEM_SYNC_STATE)|0"; return
     fi

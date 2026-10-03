@@ -116,7 +116,7 @@ jobs:
         # shebang and every `case` pattern, so fail loudly rather than watch the
         # suite die with unreadable errors.
         run: |
-          if grep -rlU $'\r' --include='*.sh' --include='*.bats' . ; then
+          if grep -rlU $'\r' --include='*.sh' --include='*.bats' --include='*.bash' . ; then
             echo "CRLF found in shell sources — check .gitattributes"
             exit 1
           fi

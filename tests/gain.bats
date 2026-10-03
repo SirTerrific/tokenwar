@@ -12,6 +12,8 @@ setup() {
     mkdir -p "$HOME/.claude/tokenwar"
 }
 
+load sqlite_helper
+
 teardown() {
     rm -rf "$HOME" "$MOCK_BIN"
     export PATH="$ORIG_PATH"
@@ -62,6 +64,49 @@ EOF
     # (20000+5000) items × MEM_EST_TOKENS_PER_ITEM(40) = 1,000,000 → "1.0M"
     [[ "$output" == *"claude-mem"*"1.0M"* ]]
     [[ "$output" == *"25000 obs"* || "$output" == *"20000 obs"* ]]
+}
+
+# claude-mem 13+ keeps memories in claude-mem.db and no longer writes
+# chroma-sync-state.json. Only the columns the savings formula reads.
+MEM_DB_SCHEMA="CREATE TABLE observations (
+  id integer PRIMARY KEY, project text, title text, subtitle text,
+  narrative text, facts text, discovery_tokens integer DEFAULT 0);"
+
+@test "claude-mem reads real savings from claude-mem.db (claude-mem 13+)" {
+    mock_rtk
+    mkdir -p "$HOME/.claude-mem"
+    # Read cost per row = ceil((title + subtitle + narrative + facts JSON) / 4):
+    #   row 1: 8 + 0 + 8 + len('[]')+2 = 20 chars -> 5 tokens
+    #   row 2: 8 + 0 + 0 + 2 (no facts -> "[]")  = 10 chars -> 3 tokens
+    # work 30000 - read 8 = 29992 saved.
+    make_sqlite_db "$HOME/.claude-mem/claude-mem.db" "$MEM_DB_SCHEMA
+INSERT INTO observations (project, title, narrative, facts, discovery_tokens)
+  VALUES ('projA', 'abcdefgh', 'abcdefgh', '[]', 10000);
+INSERT INTO observations (project, title, discovery_tokens)
+  VALUES ('projB', 'abcdefgh', 20000);
+" || skip "no SQLite engine available to build the fixture"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"claude-mem"*"30.0K"*"2 obs across 2 projects: 30.0K work tokens recalled for 8 read"* ]]
+    run bash "$SCRIPT" --json
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+        let s = "";
+        process.stdin.on("data", d => s += d).on("end", () => {
+            process.exit(JSON.parse(s).tools["claude-mem"].saved_tokens === 29992 ? 0 : 1);
+        });
+    '
+}
+
+@test "claude-mem falls back to chroma-sync-state.json when the DB has no discovery telemetry" {
+    mock_rtk
+    mkdir -p "$HOME/.claude-mem"
+    make_sqlite_db "$HOME/.claude-mem/claude-mem.db" "$MEM_DB_SCHEMA
+INSERT INTO observations (project, title) VALUES ('projA', 'abcdefgh');
+" || skip "no SQLite engine available to build the fixture"
+    echo '{"projA": {"observations": 25000, "summaries": 0}}' > "$HOME/.claude-mem/chroma-sync-state.json"
+    run bash "$SCRIPT"
+    [[ "$output" == *"claude-mem"*"1.0M"*"~est"* ]]
 }
 
 @test "caveman is always N/A (no telemetry surface)" {
