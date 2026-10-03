@@ -115,11 +115,48 @@ INSERT INTO observations (project, title) VALUES ('projA', 'abcdefgh');
     [[ "$output" == *"caveman"*"N/A"*"style-only"* ]]
 }
 
-@test "ctx_stats absence → context-mode shows N/A" {
+@test "no context-mode store → context-mode shows N/A" {
     mock_rtk
     unset CTX_STATS_JSON
     run bash "$SCRIPT"
     [[ "$output" == *"context-mode"*"N/A"* ]]
+}
+
+@test "context-mode is read from its own stores with the strict kept-out formula" {
+    mock_rtk
+    unset CTX_STATS_JSON
+    local ctx="$HOME/.claude/context-mode"
+    mkdir -p "$ctx/sessions" "$ctx/content"
+    # Two session DBs: 2048 diverted bytes each. The 10000-byte captured event
+    # payload in the first one never entered the context window, so it must NOT
+    # count (context-mode's ADR-0004).
+    make_sqlite_db "$ctx/sessions/a.db" "
+CREATE TABLE session_events (data TEXT, bytes_avoided INTEGER DEFAULT 0);
+INSERT INTO session_events VALUES (hex(zeroblob(5000)), 2048);
+" || skip "no SQLite engine available to build the fixture"
+    make_sqlite_db "$ctx/sessions/b.db" "
+CREATE TABLE session_events (data TEXT, bytes_avoided INTEGER DEFAULT 0);
+INSERT INTO session_events VALUES ('x', 2048);
+"
+    # A pre-bytes_avoided schema: unreadable by the query, and must not zero the rest.
+    make_sqlite_db "$ctx/sessions/0old.db" "CREATE TABLE session_events (data TEXT);
+INSERT INTO session_events VALUES ('x');"
+    # Indexed content: title 2 + content 4094 = 4096 bytes.
+    make_sqlite_db "$ctx/content/c.db" "
+CREATE TABLE chunks (title TEXT, content TEXT);
+INSERT INTO chunks VALUES ('ab', hex(zeroblob(2047)));
+"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    # 2048 + 2048 + 4096 = 8192 bytes = 8 KB; / 4 chars per token = 2048 tokens.
+    [[ "$output" == *"context-mode"*"2.0K"*"8 KB kept out of context (diverted + indexed) over 2 captures"* ]]
+}
+
+@test "CTX_STATS_JSON, when a caller sets it, still overrides the stores" {
+    mock_rtk
+    mkdir -p "$HOME/.claude/context-mode/sessions"
+    CTX_STATS_JSON='{"total_size_kb":4,"entry_count":7}' run bash "$SCRIPT"
+    [[ "$output" == *"context-mode"*"1.0K"*"7 entries indexed"* ]]
 }
 
 @test "rtk absent → RTK shows N/A" {

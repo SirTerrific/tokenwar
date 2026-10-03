@@ -3,8 +3,9 @@
 #
 # Each tool is read from its OWN native telemetry — we never fabricate:
 #   RTK          — `rtk gain` (+ `rtk gain --monthly` for the $ breakdown)
-#   context-mode — `ctx_stats` MCP tool; shell can't call MCP, so the caller
-#                  injects its JSON via CTX_STATS_JSON. Absent → N/A.
+#   context-mode — its SQLite stores under ~/.claude/context-mode (bytes kept
+#                  out of context, its own strict formula). CTX_STATS_JSON, when
+#                  a caller sets it, still overrides.
 #   claude-mem   — its claude-mem.db (real per-observation discovery tokens);
 #                  older releases: chroma-sync-state.json (counts, estimated).
 #   caveman      — a SessionStart style nudge with no buffer transform, hence
@@ -51,6 +52,9 @@ readonly MEM_SQL_SAVINGS="SELECT COUNT(*), COALESCE(SUM(discovery_tokens), 0),
            COUNT(DISTINCT project)
     FROM observations"
 readonly MEM_EST_TOKENS_PER_ITEM=40
+readonly CTX_DATA_DIR="${CLAUDE_CONFIG_DIR:-${HOME}/.claude}/context-mode"
+readonly CTX_SQL_AVOIDED="SELECT COALESCE(SUM(bytes_avoided), 0), COUNT(*) FROM session_events"
+readonly CTX_SQL_CONTENT="SELECT COALESCE(SUM(LENGTH(content) + LENGTH(title)), 0) FROM chunks"
 readonly PXPIPE_EVENTS_LOG="${HOME}/.pxpipe/events.jsonl"
 
 # graphify keeps per-repo graphs under <repo>/graphify-out/ and an optional
@@ -112,10 +116,38 @@ rtk_summary() {
 }
 
 # === context-mode ===
-# Expects $CTX_STATS_JSON to be set by the caller (Claude runs ctx_stats first).
+# Read from context-mode's own SQLite stores, so `tokenwar gain` measures it from
+# any shell. ctx_stats (the MCP tool) now answers in prose, not JSON, so the old
+# caller-injected CTX_STATS_JSON can no longer be produced; it is still honoured
+# when set. The measure is context-mode's strict "kept out" formula (its
+# ADR-0004): bytes its hooks diverted (session_events.bytes_avoided) plus the
+# bytes it indexed instead of returning (content chunks). Hook-captured event
+# data is excluded, as that ADR rules: it never entered the context window.
 ctx_summary() {
     if [[ -z "${CTX_STATS_JSON:-}" ]]; then
-        echo "N/A|ctx_stats not provided by caller — pass via env CTX_STATS_JSON|0"; return
+        local sessions=() contents=()
+        shopt -s nullglob
+        sessions=("${CTX_DATA_DIR}"/sessions/*.db)
+        contents=("${CTX_DATA_DIR}"/content/*.db)
+        shopt -u nullglob
+        if (( ${#sessions[@]} + ${#contents[@]} == 0 )); then
+            echo "N/A|context-mode store not found (${CTX_DATA_DIR})|0"; return
+        fi
+        if [[ "$(tw_sqlite_engine)" == "none" ]]; then
+            echo "N/A|$(tw_no_sqlite_note) to read context-mode|0"; return
+        fi
+        local avoided events content bytes tokens
+        read -r avoided events <<<"$(tw_sqlite_rows_each "$CTX_SQL_AVOIDED" ${sessions[@]+"${sessions[@]}"} \
+            | awk '{ a += $1; n += $2 } END { printf "%d %d", a, n }')"
+        content="$(tw_sqlite_rows_each "$CTX_SQL_CONTENT" ${contents[@]+"${contents[@]}"} \
+            | awk '{ c += $1 } END { printf "%d", c }')"
+        bytes=$((avoided + content))
+        if (( bytes == 0 )); then
+            echo "N/A|no measured context-mode redirects yet|0"; return
+        fi
+        tokens=$((bytes / CHARS_PER_TOKEN))
+        echo "$(tw_human_tokens "$tokens")|$((bytes / 1024)) KB kept out of context (diverted + indexed) over ${events} captures|${tokens}"
+        return
     fi
     node --input-type=module -e "
         const j = JSON.parse(process.env.CTX_STATS_JSON);

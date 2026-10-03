@@ -81,36 +81,50 @@ tw_sqlite_engine() {
 # tw_sqlite_rows <db> <sql> — run a read-only query; echo one line per row with
 # fields space-separated and NULL as empty. Silent (empty output) on any failure.
 tw_sqlite_rows() {
-    local db sql
+    tw_sqlite_rows_each "$2" "$1"
+}
+
+# tw_sqlite_rows_each <sql> <db>... — the same query against every DB, in ONE
+# engine process (one process per DB is seconds of spawn time on Windows). A DB
+# that cannot be read — missing table, older schema, corrupt — contributes no
+# rows rather than silencing the others.
+tw_sqlite_rows_each() {
+    local sql="$1" dbs="" db
+    shift
     # Both engines are native Windows binaries and cannot open an MSYS path.
-    db="$(tw_node_path "$1")"
-    sql="$2"
+    for db in "$@"; do dbs+="$(tw_node_path "$db")"$'\n'; done
+    [[ -n "$dbs" ]] || return 0
     case "$(tw_sqlite_engine)" in
         python3)
-            TW_DB="$db" TW_SQL="$sql" python3 -c '
-import os, sqlite3, sys
-try:
-    # Read-only, so a report never mutates the user store. Normalise to
-    # file:///<abs> so a Windows drive letter is a path segment, not a scheme.
-    p = os.environ["TW_DB"].replace("\\", "/")
-    if not p.startswith("/"):
-        p = "/" + p
-    db = sqlite3.connect("file://" + p + "?mode=ro", uri=True)
-    for row in db.execute(os.environ["TW_SQL"]).fetchall():
-        print(" ".join("" if v is None else str(v) for v in row))
-except Exception:
-    sys.exit(0)
+            TW_DBS="$dbs" TW_SQL="$sql" python3 -c '
+import os, sqlite3
+for p in filter(None, os.environ["TW_DBS"].split("\n")):
+    try:
+        # Read-only, so a report never mutates the user store. Normalise to
+        # file:///<abs> so a Windows drive letter is a path segment, not a scheme.
+        p = p.replace("\\", "/")
+        if not p.startswith("/"):
+            p = "/" + p
+        db = sqlite3.connect("file://" + p + "?mode=ro", uri=True)
+        for row in db.execute(os.environ["TW_SQL"]).fetchall():
+            print(" ".join("" if v is None else str(v) for v in row))
+        db.close()
+    except Exception:
+        pass
 ' 2>/dev/null || printf ''
             ;;
         node)
-            TW_DB="$db" TW_SQL="$sql" node -e '
-try {
-    const { DatabaseSync } = require("node:sqlite");
-    const db = new DatabaseSync(process.env.TW_DB, { readOnly: true });
-    for (const row of db.prepare(process.env.TW_SQL).all()) {
-        console.log(Object.values(row).map(v => v === null ? "" : String(v)).join(" "));
-    }
-} catch { process.exit(0); }
+            TW_DBS="$dbs" TW_SQL="$sql" node -e '
+const { DatabaseSync } = require("node:sqlite");
+for (const p of process.env.TW_DBS.split("\n").filter(Boolean)) {
+    try {
+        const db = new DatabaseSync(p, { readOnly: true });
+        for (const row of db.prepare(process.env.TW_SQL).all()) {
+            console.log(Object.values(row).map(v => v === null ? "" : String(v)).join(" "));
+        }
+        db.close();
+    } catch {}
+}
 ' 2>/dev/null || printf ''
             ;;
         *) printf '' ;;

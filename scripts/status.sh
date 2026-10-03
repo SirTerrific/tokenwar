@@ -30,6 +30,8 @@ readonly SLUG_PONY="ponytail@ponytail"
 
 readonly RTK_BIN="rtk"
 readonly MEM_BIN="claude-mem"
+# claude-mem's worker port when its settings name none (its own default).
+readonly MEM_WORKER_DEFAULT_PORT=37777
 readonly CLAUDE_BIN="claude"
 readonly PXPIPE_BIN="pxpipe"
 readonly GRAPHIFY_BIN="graphify"
@@ -156,8 +158,21 @@ format_line() {
 }
 
 # Liveness pings used in --test mode (shell-only — caller handles context-mode)
+# claude-mem 13 ships no `claude-mem` command; it runs a local worker service
+# instead. Use the CLI when one exists, otherwise ask the worker's own health
+# endpoint on the port its settings declare.
 ping_claude_mem() {
-    "$MEM_BIN" --version >/dev/null 2>&1
+    if command -v "$MEM_BIN" >/dev/null 2>&1; then
+        "$MEM_BIN" --version >/dev/null 2>&1
+        return
+    fi
+    local port="" settings="${HOME}/.claude-mem/settings.json"
+    if [[ -f "$settings" ]]; then
+        port=$(node -e '
+            try { process.stdout.write(String(JSON.parse(require("fs").readFileSync(0, "utf8")).CLAUDE_MEM_WORKER_PORT || "")); } catch {}
+        ' < "$settings" 2>/dev/null)
+    fi
+    curl -fsS -m 3 "http://127.0.0.1:${port:-$MEM_WORKER_DEFAULT_PORT}/api/health" >/dev/null 2>&1
 }
 ping_rtk() {
     "$RTK_BIN" --version >/dev/null 2>&1 && "$RTK_BIN" gain >/dev/null 2>&1
@@ -212,7 +227,7 @@ if $json_mode; then
         pver=$(provider_version "$i")
         pstate=$(provider_state_str "$i")
         case "$pid" in
-            claude) pnote="telemetry: RTK + ctx_stats + claude-mem.db" ;;
+            claude) pnote="telemetry: RTK + context-mode store + claude-mem.db" ;;
             codex)  pnote="telemetry: ~/.codex/state_5.sqlite (tokens_used)" ;;
             gemini) pnote="telemetry: N/A (server-side sessions)" ;;
             kimi)   pnote="telemetry: N/A (~/.kimi-code has no token store)" ;;
@@ -312,7 +327,7 @@ for i in $(seq 0 $((PROVIDER_COUNT - 1))); do
 
     # Build note: telemetry source
     case "$pid" in
-        claude) pnote="telemetry: RTK + ctx_stats + claude-mem.db" ;;
+        claude) pnote="telemetry: RTK + context-mode store + claude-mem.db" ;;
         codex)  pnote="telemetry: ~/.codex/state_5.sqlite (tokens_used)" ;;
         gemini) pnote="telemetry: N/A (server-side sessions)" ;;
         kimi)   pnote="telemetry: N/A (~/.kimi-code has no token store)" ;;
