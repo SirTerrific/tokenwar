@@ -3,13 +3,13 @@
 #
 #   curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/install.sh | bash
 #   curl -fsSL .../install.sh | bash -s -- --with-plugins   # + the 4 plugins
-#   curl -fsSL .../install.sh | bash -s -- --all            # + plugins + RTK + pxpipe
+#   curl -fsSL .../install.sh | bash -s -- --all            # + plugins + RTK + pxpipe + graphify + OpenWiki
 #
 # Does:
 #   1. git clone https://github.com/SirTerrific/tokenwar ~/.claude/skills/tokenwar
 #   2. chmod +x scripts/*.sh
 #   3. patch ~/.claude/settings.json to wire the statusLine
-#   4. wire the tokenwar/codex/gemini/kimi/opencode shell functions
+#   4. wire the tokenwar/codex/gemini/kimi/opencode/copilot shell functions
 #   5. opt-in installs (none by default — no surprise mutation):
 #      --with-plugins  marketplace add + install + enable the 4 Claude Code
 #                      plugins (context-mode, claude-mem, caveman, ponytail),
@@ -17,8 +17,14 @@
 #      --with-rtk      install the RTK binary via rtk's official prebuilt
 #                      installer (prebuilt, no toolchain), then wire its hook.
 #      --with-pxpipe  install pxpipe proxy from a pinned npm package.
-#      --all           plugins + RTK + pxpipe. After plugins/RTK, RTK's hook is
-#                      wired via `rtk init -g`.
+#      --with-graphify install the graphify CLI (PyPI `graphifyy`) and register
+#                      its assistant skill via `graphify install`.
+#      --with-openwiki install the pinned OpenWiki CLI. Repository initialization
+#                      remains explicit because it writes docs and invokes an LLM.
+#      --with-copilot  point the installed tools at GitHub Copilot CLI's own
+#                      extension points (hook / skills / MCP) via copilot.sh.
+#      --all           plugins + RTK + pxpipe + graphify + OpenWiki + Copilot wiring. After
+#                      plugins/RTK, RTK's hook is wired via `rtk init -g`.
 #      Without any flag, plugin/RTK setup is left to /tokenwar activate.
 #
 # Idempotent: re-running pulls the latest tokenwar and only patches settings.json
@@ -67,6 +73,29 @@ readonly PXPIPE_NPM_VERSION="0.10.0"
 readonly PXPIPE_NPM_SPEC="${PXPIPE_NPM_PACKAGE}@${PXPIPE_NPM_VERSION}"
 readonly USER_LOCAL_BIN="$HOME/.local/bin"
 
+# graphify (--with-graphify): the repo/doc structure lane. Published on PyPI as
+# `graphifyy` — the plain `graphify` name there is an unaffiliated package, per
+# upstream's README — while the installed command stays `graphify`. Installed
+# through an isolated-env manager when one exists (uv tool, then pipx): a plain
+# `pip install` into a shared environment is what produces the upstream
+# "ModuleNotFoundError: No module named 'graphify'" report, because the skill
+# resolves its interpreter at runtime and can land on a different env.
+readonly UV_BIN="uv"
+readonly PIPX_BIN="pipx"
+readonly PIP_BIN="pip"
+readonly GRAPHIFY_BIN="graphify"
+readonly GRAPHIFY_PYPI_PACKAGE="graphifyy"
+
+# OpenWiki is shared project memory. Installation is safe and pinned; generating
+# a wiki remains a deliberate per-repository action because it invokes an LLM.
+readonly OPENWIKI_BIN="openwiki"
+readonly OPENWIKI_NPM_SPEC="openwiki@0.5.1"
+
+# Copilot wiring (--with-copilot). The tools are published for Claude Code and
+# do not reach Copilot for free; copilot.sh points each at Copilot's own
+# extension point. It is idempotent and no-ops when the CLI is absent.
+readonly COPILOT_BIN="copilot"
+readonly COPILOT_WIRE_SCRIPT_REL="scripts/copilot.sh"
 # Shell-integration block markers — used to idempotently inject/remove the
 # `tokenwar`, `codex`, `gemini`, `kimi`, and `opencode` wrapper functions in the
 # user's shell rc.
@@ -77,6 +106,7 @@ readonly WRAPPED_PROVIDER_CLIS=(
     "gemini"
     "kimi"
     "opencode"
+    "copilot"
 )
 
 # Deliberately duplicated from scripts/lib/osdetect.sh: this script is piped
@@ -135,20 +165,29 @@ die()    { printf '%s %s\n' "$(red 'ERR')" "$*" >&2; exit 1; }
 WITH_PLUGINS=false
 WITH_RTK=false
 WITH_PXPIPE=false
+WITH_GRAPHIFY=false
+WITH_OPENWIKI=false
+WITH_COPILOT=false
 for arg in "$@"; do
     case "$arg" in
-        --with-plugins) WITH_PLUGINS=true ;;
-        --with-rtk)     WITH_RTK=true ;;
-        --with-pxpipe)  WITH_PXPIPE=true ;;
-        --all)          WITH_PLUGINS=true; WITH_RTK=true; WITH_PXPIPE=true ;;
+        --with-plugins)  WITH_PLUGINS=true ;;
+        --with-rtk)      WITH_RTK=true ;;
+        --with-pxpipe)   WITH_PXPIPE=true ;;
+        --with-graphify) WITH_GRAPHIFY=true ;;
+        --with-openwiki) WITH_OPENWIKI=true ;;
+        --with-copilot)  WITH_COPILOT=true ;;
+        --all)           WITH_PLUGINS=true; WITH_RTK=true; WITH_PXPIPE=true; WITH_GRAPHIFY=true; WITH_OPENWIKI=true; WITH_COPILOT=true ;;
         -h|--help)
-            printf 'Usage: install.sh [--with-plugins] [--with-rtk] [--with-pxpipe] [--all]\n'
-            printf '  --with-plugins  install+enable the 4 Claude Code plugins (incl. ponytail)\n'
-            printf '  --with-rtk      install the RTK binary (official prebuilt installer) + wire its hook\n'
-            printf '  --with-pxpipe   install pxpipe proxy (%s)\n' "$PXPIPE_NPM_SPEC"
-            printf '  --all           all of the above\n'
+            printf 'Usage: install.sh [--with-plugins] [--with-rtk] [--with-pxpipe] [--with-graphify] [--with-openwiki] [--with-copilot] [--all]\n'
+            printf '  --with-plugins   install+enable the 4 Claude Code plugins (incl. ponytail)\n'
+            printf '  --with-rtk       install the RTK binary (official prebuilt installer) + wire its hook\n'
+            printf '  --with-pxpipe    install pxpipe proxy (%s)\n' "$PXPIPE_NPM_SPEC"
+            printf '  --with-graphify  install the graphify CLI (PyPI %s) + register its skill\n' "$GRAPHIFY_PYPI_PACKAGE"
+            printf '  --with-openwiki install OpenWiki (%s); per-repo initialization stays explicit\n' "$OPENWIKI_NPM_SPEC"
+            printf '  --with-copilot   wire the installed tools into GitHub Copilot CLI\n'
+            printf '  --all            all of the above\n'
             exit 0 ;;
-        *) die "unknown argument: $arg (supported: --with-plugins, --with-rtk, --with-pxpipe, --all)" ;;
+        *) die "unknown argument: $arg (supported: --with-plugins, --with-rtk, --with-pxpipe, --with-graphify, --with-openwiki, --with-copilot, --all)" ;;
     esac
 done
 
@@ -219,9 +258,10 @@ console.log(`    patched (backup at ${path}.bak-${stamp})`);
 
 # 4. wire shell integration (tokenwar + provider functions) into shell rc.
 #
-# Claude Code shows the native statusLine; Codex, Gemini, Kimi, and opencode do not expose a
-# status-bar API, so we wrap their launch with a banner + reminder + upgrade
-# prompt. The `tokenwar` function makes `tokenwar status` work in any shell.
+# Claude Code shows the native statusLine; Codex, Gemini, Kimi, opencode, and
+# GitHub Copilot CLI do not expose a status-bar API, so we wrap their launch with
+# a banner + reminder. The `tokenwar` function makes `tokenwar status` work in
+# any shell.
 # Idempotent: an existing tokenwar block is replaced, never duplicated.
 wire_shell_rc() {
     local rc_file="$1"
@@ -254,7 +294,7 @@ wire_shell_rc() {
     if ! mv -f "$tmp" "$rc_file"; then
         warn "could not write $rc_file"; rm -f "$tmp"; return 1
     fi
-    say "Wired tokenwar/codex/gemini/kimi/opencode shell functions in $rc_file"
+    say "Wired tokenwar/codex/gemini/kimi/opencode/copilot shell functions in $rc_file"
 }
 
 # Print the ids of every currently-enabled plugin, one per line (from
@@ -426,6 +466,82 @@ install_pxpipe() {
         || warn "pxpipe install finished, but pxpipe is not on PATH. Add npm's global bin directory or $USER_LOCAL_BIN to PATH."
 }
 
+# --with-graphify: install the graphify CLI, then register its assistant skill.
+# Both halves are required — the CLI alone builds graphs no agent knows to query.
+install_graphify() {
+    if command -v "$GRAPHIFY_BIN" >/dev/null 2>&1; then
+        say "graphify already installed ($("$GRAPHIFY_BIN" --version 2>/dev/null || echo present)) — skipping install"
+    elif command -v "$UV_BIN" >/dev/null 2>&1; then
+        say "Installing graphify via uv tool ($GRAPHIFY_PYPI_PACKAGE)"
+        "$UV_BIN" tool install "$GRAPHIFY_PYPI_PACKAGE" >/dev/null 2>&1 \
+            || warn "uv tool install $GRAPHIFY_PYPI_PACKAGE failed — see https://github.com/Graphify-Labs/graphify"
+    elif command -v "$PIPX_BIN" >/dev/null 2>&1; then
+        say "Installing graphify via pipx ($GRAPHIFY_PYPI_PACKAGE)"
+        "$PIPX_BIN" install "$GRAPHIFY_PYPI_PACKAGE" >/dev/null 2>&1 \
+            || warn "pipx install $GRAPHIFY_PYPI_PACKAGE failed — see https://github.com/Graphify-Labs/graphify"
+    elif command -v "$PIP_BIN" >/dev/null 2>&1; then
+        warn "no uv/pipx found — falling back to pip. Upstream recommends an isolated env (uv tool / pipx)."
+        "$PIP_BIN" install "$GRAPHIFY_PYPI_PACKAGE" >/dev/null 2>&1 \
+            || warn "pip install $GRAPHIFY_PYPI_PACKAGE failed — see https://github.com/Graphify-Labs/graphify"
+    else
+        warn "no uv/pipx/pip found — cannot install graphify. See https://github.com/Graphify-Labs/graphify"
+        return 0
+    fi
+
+    # Both managers drop the command in ~/.local/bin, which the shell block above
+    # exports but this process may not have picked up yet.
+    case ":$PATH:" in *":$USER_LOCAL_BIN:"*) : ;; *) PATH="$USER_LOCAL_BIN:$PATH" ;; esac
+
+    if command -v "$GRAPHIFY_BIN" >/dev/null 2>&1; then
+        say "Registering the graphify skill (graphify install)"
+        "$GRAPHIFY_BIN" install >/dev/null 2>&1 \
+            || warn "graphify install failed — run it manually to register the skill"
+        say "graphify installed ($("$GRAPHIFY_BIN" --version 2>/dev/null || echo ok))."
+    else
+        warn "graphify install finished, but graphify is not on PATH. Add $USER_LOCAL_BIN to PATH (or run \`uv tool update-shell\`)."
+    fi
+}
+
+# --with-openwiki: install the shared project-memory CLI. Never initialize a
+# repository here: `openwiki --init` writes generated docs and invokes an LLM.
+install_openwiki() {
+    if command -v "$OPENWIKI_BIN" >/dev/null 2>&1; then
+        say "OpenWiki already installed ($("$OPENWIKI_BIN" --version 2>/dev/null || echo present)) — skipping install"
+        return 0
+    fi
+    if ! command -v "$NPM_BIN" >/dev/null 2>&1; then
+        warn "npm not found — cannot install OpenWiki. Node.js 22+ is required; see https://github.com/langchain-ai/openwiki"
+        return 0
+    fi
+
+    say "Installing shared project memory via npm ($OPENWIKI_NPM_SPEC)"
+    "$NPM_BIN" install -g "$OPENWIKI_NPM_SPEC" >/dev/null 2>&1 || {
+        warn "OpenWiki install failed. Node.js 22+ is required; see https://github.com/langchain-ai/openwiki"
+        return 0
+    }
+    case ":$PATH:" in *":$USER_LOCAL_BIN:"*) : ;; *) PATH="$USER_LOCAL_BIN:$PATH" ;; esac
+    command -v "$OPENWIKI_BIN" >/dev/null 2>&1 \
+        && say "OpenWiki installed ($("$OPENWIKI_BIN" --version 2>/dev/null || echo ok)). Initialize it deliberately inside a repository with: openwiki --init" \
+        || warn "OpenWiki installed, but is not on PATH. Add npm's global bin directory to PATH."
+}
+
+# --with-copilot: point the installed tools at Copilot CLI's extension points.
+# Delegates to scripts/copilot.sh so the wiring has ONE implementation, shared
+# with `tokenwar copilot wire` — no second copy to drift.
+wire_copilot_stack() {
+    if ! command -v "$COPILOT_BIN" >/dev/null 2>&1; then
+        warn "GitHub Copilot CLI not found — skipping --with-copilot (npm install -g @github/copilot, then re-run \`tokenwar copilot wire\`)."
+        return 0
+    fi
+    local wire_script="${INSTALL_DIR}/${COPILOT_WIRE_SCRIPT_REL}"
+    if [[ ! -f "$wire_script" ]]; then
+        warn "copilot wiring script not found at $wire_script"
+        return 0
+    fi
+    say "Wiring the stack into GitHub Copilot CLI"
+    bash "$wire_script" wire --yes || warn "Copilot wiring reported failures — see \`tokenwar copilot\`"
+}
+
 say "Wiring shell integration"
 wired_any=false
 for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
@@ -439,14 +555,21 @@ if ! $wired_any; then
     wire_shell_rc "$HOME/.bashrc" || warn "could not create shell integration in ~/.bashrc"
 fi
 
-# 5. plugins + rtk + pxpipe (opt-in)
+# 5. plugins + rtk + pxpipe + graphify + OpenWiki (opt-in)
 if $WITH_PLUGINS; then install_plugins; fi
 if $WITH_RTK; then install_rtk; fi
 if $WITH_PXPIPE; then install_pxpipe; fi
+if $WITH_GRAPHIFY; then install_graphify; fi
+if $WITH_OPENWIKI; then install_openwiki; fi
 if $WITH_PLUGINS || $WITH_RTK; then wire_rtk_hook; fi
+# Copilot wiring runs LAST: it reflects whatever the steps above installed, so a
+# tool added in this same run is picked up rather than reported as missing.
+if $WITH_COPILOT; then wire_copilot_stack; fi
 
-if $WITH_PLUGINS && $WITH_RTK && $WITH_PXPIPE; then
-    next_steps="Plugins + RTK + pxpipe installed and RTK's hook wired. Restart Claude Code to load the plugins. Start pxpipe when you want proxy-side prompt-to-PNG savings."
+if $WITH_PLUGINS && $WITH_RTK && $WITH_PXPIPE && $WITH_GRAPHIFY && $WITH_OPENWIKI; then
+    next_steps="The complete stack and shared project-memory layer are installed. Restart Claude Code. Inside each long-lived repository, run \`graphify .\` once and \`openwiki --init\` once; then keep them current with \`graphify update .\` after code changes and \`openwiki --update\` after merges."
+elif $WITH_PLUGINS && $WITH_RTK && $WITH_PXPIPE; then
+    next_steps="Plugins + RTK + pxpipe installed. Add --with-graphify for structural navigation and --with-openwiki for shared project memory."
 elif $WITH_PLUGINS && $WITH_RTK; then
     next_steps="Plugins + RTK installed and RTK's hook wired. pxpipe not installed — add --with-pxpipe if you want proxy-side prompt-to-PNG savings. Restart Claude Code to load the plugins."
 elif $WITH_PLUGINS; then
@@ -456,9 +579,14 @@ elif $WITH_RTK; then
 elif $WITH_PXPIPE; then
     next_steps="pxpipe installed. Start it when you want proxy-side prompt-to-PNG savings; install the Claude plugins/RTK with --all for the full stack."
 else
-    next_steps="Activate the tools (4 plugins incl. ponytail + the RTK hook + pxpipe) via the tokenwar skill:
+    next_steps="Activate the core tools via the tokenwar skill:
   /tokenwar activate
-(or re-run with --all to install everything in one shot)"
+Or re-run with --all. OpenWiki is strongly recommended for active team repositories: its LLM generation costs tokens once, then its committed wiki saves repeated exploration for every developer and agent."
+fi
+
+if ! command -v "$OPENWIKI_BIN" >/dev/null 2>&1; then
+    next_steps+="
+  Recommended project memory is not active: re-run with --with-openwiki, then use openwiki --init in the repository."
 fi
 
 cat <<EOF
@@ -473,9 +601,9 @@ Sanity check now:
 Statusline appears after restarting Claude Code.
 
 Shell integration wired (reload your shell or 'source ~/.bashrc'):
-  tokenwar status      # works in any shell — Codex, Gemini, Kimi, opencode, plain terminal
-  codex / gemini / kimi / opencode
-                       # now print the tokenwar banner + upgrade prompt on launch
+  tokenwar status      # works in any shell — Codex, Gemini, Kimi, opencode, Copilot, plain terminal
+  codex / gemini / kimi / opencode / copilot
+                       # now print the tokenwar banner on launch
 
 $next_steps
 

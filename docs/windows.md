@@ -13,7 +13,7 @@ covers what the platform changes and what it costs you.
 | Claude Code | The four plugins and the status bar | `claude --version` |
 
 Node 22 or newer is worth having: it ships `node:sqlite`, which is how tokenwar
-reads Codex and opencode token telemetry when Python is unavailable — the normal
+reads Codex, opencode and Copilot token telemetry when Python is unavailable — the normal
 case on Windows (see [Known limitations](#known-limitations)).
 
 ## Install
@@ -30,6 +30,10 @@ Pick the shell you actually live in — both end at the same installed state.
 `install.sh` your flags, and then adds only what Bash cannot reach: `bin\` on your
 user PATH, then a `tokenwar` function in your `$PROFILE`. Pass `-SkipProfile` to
 leave both alone.
+
+Instead of `-All`, pick tools individually with `-WithPlugins`, `-WithRtk`,
+`-WithPxpipe`, `-WithGraphify`, `-WithOpenwiki` and `-WithCopilot` — one switch
+per `install.sh` flag, which a test keeps in step.
 
 PATH comes first because it is what actually delivers the command — to PowerShell
 and to Command Prompt alike. The `$PROFILE` function is a convenience, and it is
@@ -61,7 +65,7 @@ Restart Claude Code to load the plugins and the status bar.
 
 Removes the `$PROFILE` block and the PATH entry, then delegates to
 `uninstall.sh` for the statusLine, the `~/.bashrc` block and the install
-directory. As upstream, it leaves the six tools themselves installed.
+directory. As upstream, it leaves the managed tools themselves installed.
 
 ## Running tokenwar outside Git Bash
 
@@ -116,6 +120,18 @@ caller. So `install.sh` writes:
 also puts `~/.local/bin` on its own PATH, so `rtk` is found even if its installer
 did not add it.
 
+**Versions are read with the CR stripped.** Python and npm-shim CLIs (graphify,
+pxpipe, provider CLIs) end their output lines with `
+` on Windows. A version
+of `0.9.64` never matches a registry version, so every version probe strips
+the `` before comparing.
+
+**Paths handed to node are converted.** `scan`, `prune` and `copilot` pass file
+paths to node, a native Windows binary that cannot open an MSYS path such as
+`/c/Users/...`. They convert with `cygpath -m` first, so they keep working even
+with `MSYS_NO_PATHCONV=1`. `tokenwar scan --html --open` opens the report with
+`start` on Windows.
+
 **pxpipe is copied, not symlinked.** npm's global bin directory is `<prefix>` on
 Windows, not `<prefix>/bin`, and MSYS turns `ln -s` into a silent file *copy*
 unless Developer Mode or `MSYS=winsymlinks:nativestrict` is set. The installer
@@ -142,11 +158,11 @@ with `cargo install --path`, so you manage that binary directly.
 
 ## Known limitations
 
-**Codex and opencode telemetry needs a real Python or Node 22+.** Both stores are
-SQLite. Windows ships a `python3` "app execution alias" that only opens the
+**Codex, opencode and Copilot telemetry needs a real Python or Node 22+.** All
+three stores are SQLite. Windows ships a `python3` "app execution alias" that only opens the
 Microsoft Store: it satisfies `command -v python3` and fails on every actual run,
 so tokenwar probes engines by *running* them and falls back to `node:sqlite`.
-With neither available both providers report `N/A` — never a fabricated zero.
+With neither available all three providers report `N/A` — never a fabricated zero.
 
 **The interactive upgrade prompt needs a terminal.** `tokenwar upgrade` reads
 `[y/N]` from `/dev/tty`. Run it from Git Bash, or pass `--yes`.
@@ -213,6 +229,12 @@ use an em dash — and reports `bats: unknown test name` for each, silently runn
 only the ASCII-named subset while still **exiting 0**. The tell is a trailing
 `# bats warning: Executed 74 instead of expected 110 tests`. CI sets the locale
 for exactly this reason.
+
+Tests that need a real `node` (or `bash`, `curl`) inside a narrowed PATH write a
+two-line `exec` shim rather than `ln -s`. Under MSYS `ln -s` silently copies the
+binary, so each such test copied the 95 MB `node.exe`; after it runs, Windows
+keeps the copy locked for about two seconds, and the test's own cleanup then
+failed with `Device or resource busy`.
 
 `bats` and `shellcheck` install from npm on Windows:
 

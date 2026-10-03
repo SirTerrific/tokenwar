@@ -40,6 +40,27 @@ echo "\$*" >> "$RTK_LOG"
 exit 0
 EOF
     chmod +x "$MOCK_BIN/rtk"
+
+    # Mock graphify (records args). Present by default so every test that is NOT
+    # about graphify takes the "already installed — skipping" short-circuit
+    # instead of reaching a real uv/pipx/pip on the runner.
+    export GRAPHIFY_LOG="$HOME/graphify-calls.log"
+    cat > "$MOCK_BIN/graphify" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$GRAPHIFY_LOG"
+[[ "\$1" == "--version" ]] && echo "graphify 0.0.0-test"
+exit 0
+EOF
+    chmod +x "$MOCK_BIN/graphify"
+
+    export OPENWIKI_LOG="$HOME/openwiki-calls.log"
+    cat > "$MOCK_BIN/openwiki" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$OPENWIKI_LOG"
+[[ "\$1" == "--version" ]] && echo "openwiki 0.5.1-test"
+exit 0
+EOF
+    chmod +x "$MOCK_BIN/openwiki"
 }
 
 # Write a fake rtk binary at $1 that records its args to $RTK_LOG.
@@ -157,7 +178,7 @@ EOF
 
 @test "--with-plugins skips the rtk opencode plugin when opencode is absent" {
     mock_claude_empty
-    ln -s "$(command -v node)" "$MOCK_BIN/node"  # keep node reachable (rtk mock already in MOCK_BIN)
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"  # keep node reachable (rtk mock already in MOCK_BIN)
     PATH="$MOCK_BIN:/usr/bin:/bin"                # excludes ~/.bun/bin → opencode not found
     run bash "$SCRIPT" --with-plugins
     [ "$status" -eq 0 ]
@@ -168,7 +189,7 @@ EOF
 @test "--with-plugins warns + skips the hook when the rtk binary is absent" {
     mock_claude_empty
     rm -f "$MOCK_BIN/rtk"                       # drop our mock
-    ln -s "$(command -v node)" "$MOCK_BIN/node" # keep node reachable
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node" # keep node reachable
     PATH="$MOCK_BIN:/usr/bin:/bin"              # excludes ~/.cargo/bin → real rtk not found
     run bash "$SCRIPT" --with-plugins
     [ "$status" -eq 0 ]
@@ -178,7 +199,7 @@ EOF
 
 @test "--with-rtk installs rtk via the official prebuilt installer when absent" {
     rm -f "$MOCK_BIN/rtk"                          # rtk not yet installed
-    ln -s "$(command -v node)" "$MOCK_BIN/node"
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
     PATH="$MOCK_BIN:/usr/bin:/bin"                 # excludes ~/.cargo/bin → real rtk hidden
     make_fake_rtk "$HOME/fake-rtk"
     # Mock curl = rtk's official installer: drops the binary into ~/.local/bin.
@@ -209,7 +230,7 @@ EOF
 @test "--with-pxpipe installs pinned pxpipe-proxy package when absent" {
     mock_claude_empty
     rm -f "$MOCK_BIN/pxpipe"
-    ln -s "$(command -v node)" "$MOCK_BIN/node"
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
     cat > "$MOCK_BIN/npm" <<EOF
 #!/usr/bin/env bash
 if [[ "\$1 \$2 \$3" == "config get prefix" ]]; then
@@ -250,7 +271,7 @@ EOF
     #     purpose rather than claiming a link it did not make.
     mock_claude_empty
     rm -f "$MOCK_BIN/pxpipe"
-    ln -s "$(command -v node)" "$MOCK_BIN/node"
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
     local npm_prefix="$HOME/.npm-global"
     local npm_bindir="$npm_prefix/bin"
     if is_windows; then npm_bindir="$npm_prefix"; fi
@@ -287,7 +308,7 @@ EOF
 
 @test "--all installs plugins AND handles rtk and pxpipe" {
     mock_claude_empty
-    ln -s "$(command -v node)" "$MOCK_BIN/node"
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
     cat > "$MOCK_BIN/npm" <<EOF
 #!/usr/bin/env bash
 if [[ "\$1 \$2 \$3" == "config get prefix" ]]; then
@@ -323,6 +344,140 @@ EOF
     else
         [ "$cmd" = "bash ~/.claude/skills/tokenwar/scripts/tokenwar-statusline.sh" ]
     fi
+}
+
+@test "--with-graphify installs via uv tool and registers the skill when absent" {
+    mock_claude_empty
+    rm -f "$MOCK_BIN/graphify"
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
+    export UV_LOG="$HOME/uv-calls.log"
+    cat > "$MOCK_BIN/uv" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$UV_LOG"
+mkdir -p "$HOME/.local/bin"
+cat > "$HOME/.local/bin/graphify" <<'GRAPHIFY'
+#!/usr/bin/env bash
+echo "\$*" >> "$GRAPHIFY_LOG"
+[[ "\$1" == "--version" ]] && echo "graphify 0.9.53"
+exit 0
+GRAPHIFY
+chmod +x "$HOME/.local/bin/graphify"
+exit 0
+EOF
+    chmod +x "$MOCK_BIN/uv"
+    PATH="$MOCK_BIN:/usr/bin:/bin"
+    run bash "$SCRIPT" --with-graphify
+    [ "$status" -eq 0 ]
+    grep -qx "tool install graphifyy" "$UV_LOG"
+    # The CLI alone is half the tool — the skill has to be registered too.
+    grep -qx "install" "$GRAPHIFY_LOG"
+    [ -x "$HOME/.local/bin/graphify" ]
+}
+
+@test "--with-graphify skips the install when graphify is already present" {
+    mock_claude_empty
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
+    export UV_LOG="$HOME/uv-calls.log"
+    cat > "$MOCK_BIN/uv" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$UV_LOG"
+exit 0
+EOF
+    chmod +x "$MOCK_BIN/uv"
+    PATH="$MOCK_BIN:/usr/bin:/bin"
+    run bash "$SCRIPT" --with-graphify
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"graphify already installed"* ]]
+    [ ! -s "${UV_LOG:-/dev/null}" ]
+}
+
+@test "--all also covers graphify" {
+    mock_claude_empty
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
+    cat > "$MOCK_BIN/npm" <<EOF
+#!/usr/bin/env bash
+if [[ "\$1 \$2 \$3" == "config get prefix" ]]; then
+    echo "$HOME/.local"
+    exit 0
+fi
+echo "\$*" >> "$NPM_LOG"
+exit 0
+EOF
+    chmod +x "$MOCK_BIN/npm"
+    PATH="$MOCK_BIN:/usr/bin:/bin"
+    run bash "$SCRIPT" --all
+    [ "$status" -eq 0 ]
+    grep -qx "install" "$GRAPHIFY_LOG"
+}
+
+@test "--with-openwiki installs the pinned CLI without initializing a repository" {
+    mock_claude_empty
+    rm -f "$MOCK_BIN/openwiki"
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
+    cat > "$MOCK_BIN/npm" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$NPM_LOG"
+mkdir -p "$HOME/.local/bin"
+cat > "$HOME/.local/bin/openwiki" <<'OPENWIKI'
+#!/usr/bin/env bash
+[[ "\$1" == "--version" ]] && echo "openwiki 0.5.1"
+OPENWIKI
+chmod +x "$HOME/.local/bin/openwiki"
+exit 0
+EOF
+    chmod +x "$MOCK_BIN/npm"
+    PATH="$MOCK_BIN:/usr/bin:/bin"
+    run bash "$SCRIPT" --with-openwiki
+    [ "$status" -eq 0 ]
+    grep -qx "install -g openwiki@0.5.1" "$NPM_LOG"
+    [ ! -s "$OPENWIKI_LOG" ]
+    [[ "$output" == *"openwiki --init"* ]]
+}
+
+@test "--all includes OpenWiki" {
+    mock_claude_empty
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
+    cat > "$MOCK_BIN/npm" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$NPM_LOG"
+exit 0
+EOF
+    chmod +x "$MOCK_BIN/npm"
+    rm -f "$MOCK_BIN/openwiki"
+    PATH="$MOCK_BIN:/usr/bin:/bin"
+    run bash "$SCRIPT" --all
+    [ "$status" -eq 0 ]
+    grep -q "install -g openwiki@0.5.1" "$NPM_LOG"
+}
+
+@test "--with-copilot delegates to scripts/copilot.sh rather than re-implementing it" {
+    # One implementation of the wiring, shared with `tokenwar copilot wire`.
+    # If install.sh ever grows its own copy, this test stops seeing the call.
+    mock_claude_empty
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
+    export COPILOT_WIRE_LOG="$HOME/copilot-wire.log"
+    cat > "$TOKENWAR_DIR/scripts/copilot.sh" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$COPILOT_WIRE_LOG"
+exit 0
+EOF
+    chmod +x "$TOKENWAR_DIR/scripts/copilot.sh"
+    printf '#!/usr/bin/env bash\nexit 0\n' > "$MOCK_BIN/copilot"
+    chmod +x "$MOCK_BIN/copilot"
+    PATH="$MOCK_BIN:/usr/bin:/bin"
+    run bash "$SCRIPT" --with-copilot
+    [ "$status" -eq 0 ]
+    grep -qx "wire --yes" "$COPILOT_WIRE_LOG"
+}
+
+@test "--with-copilot warns and skips when the Copilot CLI is absent" {
+    mock_claude_empty
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
+    rm -f "$MOCK_BIN/copilot"
+    PATH="$MOCK_BIN:/usr/bin:/bin"
+    run bash "$SCRIPT" --with-copilot
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Copilot CLI not found"* ]]
 }
 
 @test "unknown argument exits non-zero" {

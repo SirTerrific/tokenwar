@@ -362,3 +362,16 @@ JSON
     run bash -c "source '$PROVIDERS'; tw_human_tokens 42"
     [ "$output" = "42" ]
 }
+
+@test "install.ps1 forwards every --with-* flag install.sh accepts" {
+    # install.ps1 is a thin wrapper, so a flag upstream adds to install.sh is
+    # silently unreachable from PowerShell until it is forwarded here too.
+    local sh="$REPO_ROOT/install.sh" ps="$REPO_ROOT/install.ps1"
+    [ -f "$ps" ] || skip "install.ps1 not present"
+    local flags flag
+    flags="$(grep -oE '^ *--with-[a-z]+\)' "$sh" | tr -d ' )')"
+    [ -n "$flags" ]
+    for flag in $flags; do
+        grep -q -- "'$flag'" "$ps" || { echo "install.ps1 does not forward $flag"; return 1; }
+    done
+}

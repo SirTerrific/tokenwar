@@ -1,402 +1,120 @@
 <h1 align="center">TokenWar</h1>
 
-<p align="center">
-  <img src="docs/logo.png" alt="TokenWar logo" width="160">
-</p>
-
-<p align="center">
-  <img src="docs/tokenwar-stack.png" alt="tokenwar — 1 project → 6 token-saving lanes. The savings stack." width="100%">
-</p>
+<p align="center"><img src="docs/logo.png" alt="TokenWar logo" width="160"></p>
+<p align="center"><img src="docs/tokenwar-stack.png" alt="TokenWar token-saving stack" width="100%"></p>
 
 [![CI](https://github.com/SirTerrific/tokenwar/actions/workflows/ci.yml/badge.svg)](https://github.com/SirTerrific/tokenwar/actions/workflows/ci.yml)
 
-**Six token-saving tools, run as one stack.** Built for Claude Code first — but the stack reaches further: RTK, ponytail, caveman, context-mode, and pxpipe work across agents (Codex, Gemini, Kimi, opencode, Cursor…), with provider token usage tracked only where native telemetry exists. Each saves a buffer or lane the others can't touch — the model's response, tool stdout, heavy data, cross-session memory, provider-bound prompt payloads, and the code itself — so the savings stack instead of competing. None of the six is the headliner; the point is running all six at once. **6-in-1.**
+**Seven complementary token-saving tools plus a shared project-memory layer.**
+TokenWar reduces shell output, heavy context, repeated memory, provider payloads,
+verbose responses, oversized code, and repository exploration. OpenWiki adds a
+durable wiki that lets an entire team reuse the cost of understanding a project.
 
-Stack diagram: <https://studio.oratelecom.net/tokenwar/>
+This fork adds **Windows support** (Git Bash runtime, PowerShell and Command
+Prompt entry points) and tracks [upstream](https://github.com/oratelecom/tokenwar).
 
-## The six tools
+## Documentation menu
 
-| Tool             | What it compresses                  | Buffer / flow                     |
-| ---------------- | ----------------------------------- | --------------------------------- |
-| **caveman**      | The LLM's response                  | `LLM → USER`                      |
-| **RTK**          | Shell / tool stdout                 | `SHELL → LLM`                     |
-| **context-mode** | Heavy data (HTTP, large files, MCP) | `LLM → SANDBOX → (FTS5) → LLM`    |
-| **claude-mem**   | Cross-session knowledge             | `LLM → store → LLM (next session)`|
-| **pxpipe**       | Provider-bound prompt/context payloads | `LLM → proxy → PNG blocks → API` |
-| **ponytail**     | The code the LLM writes             | `LLM → CODE (recurs on read)`     |
-
-## Complementarity diagram
-
-```mermaid
-flowchart LR
-    USER([👤 User])
-    LLM{{🧠 LLM}}
-    SHELL[/💻 Shell · tools/]
-    SANDBOX[(🧪 Sandbox + FTS5)]
-    MEM[(💾 claude-mem store)]
-    PROXY[[🖼️ pxpipe proxy]]
-    CODE[/📄 Source on disk/]
-
-    USER -->|prompt| LLM
-    LLM -->|caveman ⤵ output compress| USER
-    LLM -->|tool calls| SHELL
-    SHELL -->|RTK ⤵ stdout compress| LLM
-    LLM -->|context-mode ⤵ offload heavy ops| SANDBOX
-    SANDBOX -->|FTS5 search results| LLM
-    LLM -.->|persist session| MEM
-    MEM -.->|recall on resume| LLM
-    LLM -->|pxpipe ⤵ text to PNG blocks| PROXY
-    PROXY -->|provider API payload| LLM
-    LLM ==>|ponytail ⤵ generate less code| CODE
-    CODE -.->|RECURS · every future read · review · diff · grep| LLM
-
-    classDef caveman fill:#fde68a,stroke:#b45309,color:#000;
-    classDef rtk fill:#bae6fd,stroke:#0369a1,color:#000;
-    classDef ctx fill:#bbf7d0,stroke:#15803d,color:#000;
-    classDef mem fill:#e9d5ff,stroke:#7e22ce,color:#000;
-    classDef pxpipe fill:#fed7aa,stroke:#c2410c,color:#000;
-    classDef pony fill:#fbcfe8,stroke:#be185d,color:#000;
-    class USER caveman
-    class SHELL rtk
-    class SANDBOX ctx
-    class MEM mem
-    class PROXY pxpipe
-    class CODE pony
-```
-
-Each tool acts on a **distinct buffer or lane** — no buffer is double-processed, so the gains stack additively. Five lanes save on the live conversation or provider request path; ponytail's lane saves on the artifact on disk (replayed on every future read via the dotted `CODE -.-> LLM` loop). Different shapes of saving, same stack.
-
-## Why we picked each one — and why all six
-
-No tool here is the headliner. Each was chosen because it owns a buffer the others physically can't reach, and on its own lane each is a killer. The point isn't any single one — it's that the six run together with zero overlap, so every saving stacks. **Six tools, one stack, 6-in-1.**
-
-### RTK — the shell/tool firehose
-Tool output is the heaviest, most frequent buffer in an agent loop: every `git diff`, `ls`, test run, and API dump lands in context raw. RTK rewrites those commands at the hook level so only a compressed form reaches the model — transparently, zero prompt overhead, written in Rust so it's instant. It's the single biggest *measured* saver in the stack. **Picked because the firehose is where the tokens actually are.**
-
-### context-mode — the heavy-data sandbox
-One large file read or HTTP fetch can blow the whole window in a single call. context-mode runs the operation in a sandbox and indexes the result in FTS5, so you keep the derived answer (~3 KB) while the raw bytes (~700 KB) never enter the conversation — *think in code, not in raw output*. **Picked because some payloads should be processed, never read.**
-
-### claude-mem — memory across sessions
-Re-explaining the project every time you `/clear` or restart is pure repeated cost. claude-mem persists decisions, errors, and context to a store that survives compaction and is recalled next session — no re-priming. **Picked because the most expensive tokens are the ones you'd otherwise pay twice.**
-
-### pxpipe — the provider-bound prompt payload
-[teamchong/pxpipe](https://github.com/teamchong/pxpipe) is a local API proxy that converts selected prompt/context text into PNG blocks before forwarding the request to the provider. That attacks a different lane from RTK: RTK compresses shell output before it enters model context; pxpipe compresses expensive prompt payloads at the provider boundary and records savings in `~/.pxpipe/events.jsonl`. **Picked because some repeated or bulky text is cheaper as pixels than as input tokens.**
-
-### caveman — the response on a diet
-The model's own prose is tokens too. caveman strips articles, filler, and hedging from what the LLM says while keeping the technical substance exact — terse output, same information. **Picked because a 5-line answer beats three paragraphs, every single turn.** (It's the prose twin of ponytail's code.)
-
-### ponytail — the code itself
-The lazy-senior-dev ruleset ([DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)): a YAGNI ladder — stdlib before custom, native before dependency, one line before fifty, deletion before addition — so the model writes the *smallest correct* code, not an over-engineered one. Its saving lands twice: fewer **output** tokens at generation, then fewer **input** tokens on every future read/review/diff of a smaller file. **Picked because the cheapest code to maintain is the code that was never written.**
-
-> Five save on the conversation/provider path, one saves on the artifact. One's a Rust hook, one's an MCP sandbox, one's a memory store, one's a proxy, one's a response filter, one's a ruleset. Different shapes, different lanes — that's exactly why they stack. Run one and you compress one buffer; run all six and almost nothing in the loop is left uncompressed. **That's the 6-in-1.**
-
-> Honest accounting: RTK / context-mode / claude-mem / pxpipe report real telemetry; caveman and ponytail are presence-only (a style nudge and a plugin ruleset — no metered buffer), so they show `on`, never a fabricated number. pxpipe savings come only from its native `~/.pxpipe/events.jsonl`; if no events exist, tokenwar prints `N/A`. Measure ponytail by A/B-ing `/ponytail` on vs off — the [`examples/`](https://github.com/DietrichGebert/ponytail/tree/main/examples) show before/after diffs.
-
-## Why complementary (not conflicting)
-
-The tokenwar `check.sh` script enforces 5 rules:
-
-| Rule | What it verifies                                                                   | Status                  |
-| ---- | ---------------------------------------------------------------------------------- | ----------------------- |
-| R1   | Single `PreToolUse` Bash hook in `settings.json` (RTK only — no double-rewrite)    | settings.json inspected |
-| R2   | `claude-mem` writes to `~/.claude-mem`, `context-mode` to `~/.claude/projects/...` | Disjoint storage sinks  |
-| R3   | RTK targets tool stdout; caveman targets LLM output                                | Disjoint buffers        |
-| R4   | Core hook/plugin tools installed at current versions                               | `claude plugin list`    |
-| R5   | Active providers keep disjoint config dirs (no tool/hook collision)                | config dirs inspected   |
-
-When all four PASS, the verdict is `COMPLEMENTARY`. ponytail isn't in the conflict table because it owns no hook, store, or output buffer — it only shapes what the model writes. pxpipe is tracked in `status`, `gain`, `updates`, and `upgrade`; it sits at the provider proxy boundary, separate from RTK's shell-output lane. Six tools, still zero overlap.
-
-## Commands
-
-Inside Claude Code (`/tokenwar <subcommand>`) or standalone (`bash ~/.claude/skills/tokenwar/scripts/<script>.sh`):
-
-| Command | What it does |
+| Page | Use it for |
 | --- | --- |
-| `/tokenwar status` | Health of the 6 tools — installed, enabled, version |
-| `/tokenwar gain` | Per-tool token savings + per-provider telemetry/status (Codex/Gemini/Kimi/opencode) + **monthly $ value** |
-| `/tokenwar upgrade` | Bump each tool to latest (asks confirmation) |
-| `/tokenwar check` | Conflict detector — verifies the 6 tools stack additively |
-| `/tokenwar test` | End-to-end ping: is each tool actually working? |
-| `/tokenwar doctor` | Full pipeline: status → test → check → gain |
-| `/tokenwar disable <tool>` | Turn off one plugin (`context-mode`/`claude-mem`/`caveman`/`ponytail`) without uninstalling it |
-| `/tokenwar enable <tool>` | Turn a disabled plugin back on |
-
-## Status in every CLI (Claude, Codex, Gemini, Kimi, opencode)
-
-The persistent **bottom status bar** is a Claude Code feature — it ships a
-`statusLine` API and tokenwar wires it automatically. It renders in the
-`claude` **terminal CLI**; the desktop app does not draw statusLine, so use a
-terminal when you want the bar. **Codex, Gemini, Kimi, and
-opencode do not expose a status-bar API** (their footers are hardcoded; their
-hooks inject only into the model context, not the screen). So tokenwar surfaces
-the stack the best way each CLI allows, with **zero daily effort** — `install.sh`
-wires it once:
-
-| CLI         | What you get                                                          |
-| ----------- | --------------------------------------------------------------------- |
-| Claude Code | Native persistent bottom bar (always visible)                         |
-| Codex       | Launch banner + `tokenwar status` reminder + inline upgrade prompt    |
-| Gemini CLI  | Launch banner + `tokenwar status` reminder + inline upgrade prompt    |
-| Kimi Code CLI | Launch banner + `tokenwar status` reminder + inline upgrade prompt  |
-| opencode    | Launch banner + `tokenwar status` reminder + inline upgrade prompt    |
-
-After install you simply type `codex`, `gemini`, `kimi`, or `opencode` as usual —
-the banner prints, and if updates are pending you get **"⬆ N updates available.
-Upgrade now? [y/N]"** which bumps managed tools. A `tokenwar` command also works
-in any shell:
-
-```bash
-tokenwar status     # state of the 6 tools + providers
-tokenwar gain       # token savings + monthly $ value
-tokenwar upgrade    # bump managed tools (asks confirmation)
-tokenwar doctor     # status → check → gain
-tokenwar disable context-mode   # turn off one plugin without uninstalling it
-tokenwar enable  context-mode   # turn it back on
-```
-
-> The banner is silent for non-interactive launches (`codex exec`,
-> `gemini -p …`, `kimi -p …`, `opencode run …`, pipes) so it never pollutes
-> scripted output.
-
-## How to activate tokenwar per client
-
-Run the installer **once** — it wires every client it can find. There is no
-per-client install step; the difference is only *how the stack shows up* in each.
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/install.sh | bash -s -- --all
-```
-
-| Client        | What `install.sh` does for it                                         | How you confirm it's active |
-| ------------- | --------------------------------------------------------------------- | --------------------------- |
-| **Claude Code** | Installs the 4 plugins + RTK hook + pxpipe, patches `statusLine` in `~/.claude/settings.json` | Restart Claude Code → persistent bottom bar `[ctx][mem][rtk][caveman][ponytail]` |
-| **Codex**     | Wraps `codex` with a shell function that prints the tokenwar banner on launch | Open a new shell, run `codex` → banner appears; `tokenwar status` works |
-| **Gemini CLI** | Wraps `gemini` the same way                                          | New shell, run `gemini` → banner |
-| **Kimi Code CLI** | Wraps `kimi` the same way                                         | New shell, run `kimi` → banner |
-| **opencode**  | Wraps `opencode` the same way; reads its real token telemetry from `~/.local/share/opencode/opencode.db` | New shell, run `opencode` → banner; `tokenwar gain` shows opencode session tokens |
-
-After install, **reload your shell** (`source ~/.bashrc` or open a new terminal)
-so the `codex` / `gemini` / `kimi` / `opencode` / `tokenwar` functions take effect.
-That's the whole activation — every subsequent launch of any wrapped CLI is
-tokenwar-aware with zero extra effort.
-
-Only want one client? The wrappers are wired for all of them regardless, but you
-never pay for a client you don't use: an absent CLI is simply never invoked, and
-`tokenwar status` reports it as *not installed* without failing.
+| [Install](docs/installation.md) | Default behavior, `--all`, optional flags, verification |
+| [Windows](docs/windows.md) | Git Bash runtime, PowerShell / Command Prompt entry points, limitations |
+| [Project memory](docs/project-memory.md) | Graphify + OpenWiki, team workflow, CI, costs and refresh policy |
+| [Tool map](docs/tokenwar-tools.md) | What each tool saves and when to use it |
+| [Savings](docs/savings.md) | Why the lanes stack and how gains are measured honestly |
+| [Commands](docs/operations.md) | Status, gain, doctor, providers and maintenance |
+| [Local scan](docs/scan.md) | Log audit, recommendations and break-even method |
+| [Copilot](docs/copilot.md) | GitHub Copilot CLI wiring |
 
 ## Quick start
 
-Two ways in — pick your interface. **A human runs one curl. An agent gets a
-prompt.** Both end at the same installed-activated-verified state.
-
-### 🤖 Agent install (the future default)
-
-Paste this prompt into any coding agent (Claude Code, Codex, Gemini, Cursor,
-opencode…). The agent reads the installer, runs it, then proves it works — no
-copy-pasting flags:
-
-```text
-Install, activate, and verify that https://github.com/SirTerrific/tokenwar works.
-
-Steps:
-1. Install: run `curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/install.sh | bash -s -- --all`
-   (fetch and read the script first if you want to inspect it — it only wires
-   the statusline, shell functions, the 4 Claude plugins, the RTK binary, and pxpipe).
-2. Activate: reload the shell (`source ~/.bashrc`) so the tokenwar / codex /
-   gemini / kimi / opencode wrappers take effect. For Claude Code, restart it so
-   the statusLine loads.
-3. Verify: run `tokenwar status` — every one of the 6 tools must report OK.
-   Then run `tokenwar check` (must print COMPLEMENTARY) and `tokenwar gain`
-   (must show real per-tool token savings, not all N/A).
-4. Report back the status table and the total tokens saved. If any tool is
-   red, run `tokenwar upgrade` and re-check.
-```
-
-One line, if your agent likes it terse:
-
-```text
-Install, activate, and verify https://github.com/SirTerrific/tokenwar — run its install.sh --all, reload the shell, then confirm `tokenwar status` shows all 6 tools OK, `tokenwar check` says COMPLEMENTARY, and `tokenwar gain` reports real savings.
-```
-
-### 👤 Human install
-
-One command — the whole stack: the 4 Claude Code plugins (context-mode, claude-mem, caveman, **ponytail**), the **RTK** binary (via rtk's official prebuilt installer), **pxpipe** (via pinned `pxpipe-proxy@0.10.0`), the statusline + shell functions, and RTK's hook:
+Install everything, including Graphify and OpenWiki:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/install.sh | bash -s -- --all
+source ~/.bashrc
+tokenwar status
+tokenwar check
+tokenwar gain
 ```
 
-Then activate + verify:
+A bare install is intentionally non-invasive: it installs TokenWar and its shell
+integration, but none of the managed tools. See [installation modes](docs/installation.md).
 
-```bash
-source ~/.bashrc      # load the shell wrappers (or open a new terminal)
-tokenwar status       # all 6 tools should report OK
-tokenwar check        # must print COMPLEMENTARY
-tokenwar gain         # real per-tool token savings
-```
+### Windows
 
-Restart Claude Code to load the plugins. `--all` = `--with-plugins --with-rtk --with-pxpipe`; use individual flags if you only want one part. RTK installs from a prebuilt binary (no toolchain, no compiling) on every major platform via rtk's own official installer. pxpipe installs from the pinned npm package `pxpipe-proxy@0.10.0`.
-
-Prefer no surprise mutations? Drop the flags — `… | bash` just wires the statusline + shell functions, then `/tokenwar activate` installs the plugins on confirmation:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/install.sh | bash
-/tokenwar activate
-```
-
-Uninstall:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/uninstall.sh | bash
-```
-
-### 🪟 Windows install
-
-Requires [Git for Windows](https://git-scm.com/download/win) — its MSYS2 bash is
-the engine. From **PowerShell**:
+Requires [Git for Windows](https://git-scm.com/download/win): its bash is the
+engine. From PowerShell, in a clone of this repository:
 
 ```powershell
 .\install.ps1 -All
 ```
 
-Or from **Git Bash**:
+Or run the `curl … | bash -s -- --all` line above from Git Bash. `install.ps1` is
+a thin wrapper: it finds Git Bash, hands `install.sh` your flags, then puts `bin\`
+on your PATH so `tokenwar` also works from PowerShell and Command Prompt. The
+status bar is a feature of the `claude` terminal CLI; the desktop app does not
+draw it. Details, limitations and troubleshooting: [docs/windows.md](docs/windows.md).
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/install.sh | bash -s -- --all
-```
+## The stack
 
-`install.ps1` is a thin wrapper: it finds Git Bash, hands `install.sh` your
-flags, then wires a `tokenwar` function into your `$PROFILE` and puts `bin\` on
-your PATH so the command also works from Command Prompt.
+| Tool | Lane |
+| --- | --- |
+| caveman | Compact model responses |
+| RTK | Compress shell and tool output |
+| context-mode | Keep heavy data outside the context window |
+| claude-mem | Preserve personal cross-session memory |
+| pxpipe | Reduce provider-bound prompt payloads |
+| Graphify | Query repository structure instead of repeatedly sweeping files |
+| ponytail | Produce smaller code that stays cheaper to read |
+| **OpenWiki** | **Create shared, versioned project memory for the whole team** |
 
-The installer adapts three things for the platform: the `statusLine` command
-names `bash.exe` by full Windows path (Claude Code spawns it as a native Windows
-process, where a bare `bash` may not resolve), pxpipe is copied rather than
-symlinked, and rtk is expected from PATH instead of a piped POSIX installer.
-Codex and opencode telemetry falls back to `node:sqlite` because the stock
-Windows `python3` is a Microsoft Store stub that fails on every run.
-
-See **[docs/windows.md](docs/windows.md)** for requirements, limitations and
-troubleshooting.
-
-### Manual install
-
-```bash
-git clone https://github.com/SirTerrific/tokenwar ~/.claude/skills/tokenwar
-chmod +x ~/.claude/skills/tokenwar/scripts/*.sh
-
-# Diagnose current state
-bash ~/.claude/skills/tokenwar/scripts/status.sh
-
-# Verify complementarity
-bash ~/.claude/skills/tokenwar/scripts/check.sh
-
-# Token savings report (per-tool + monthly $ value)
-bash ~/.claude/skills/tokenwar/scripts/gain.sh
-```
-
-`gain.sh` reads each tool from its **own native telemetry** — never fabricated:
-RTK (`rtk gain`), context-mode (`ctx_stats`), claude-mem
-(`~/.claude-mem/chroma-sync-state.json` stored-memory counts), and pxpipe
-(`~/.pxpipe/events.jsonl` proxy events). caveman is a
-style-only nudge with no measurable buffer, so it is always `N/A`. It also
-prints a per-month breakdown from `rtk gain --monthly`, valuing each month's
-saved tokens at Claude and Codex input list prices (the API-equivalent $ saved).
-
-### What the savings look like (live run)
-
-A real `tokenwar gain` on an active dev machine — every number comes from each
-tool's own telemetry, nothing invented:
+OpenWiki is deliberately shown separately from the seven live compression lanes.
+It spends tokens to synthesize grounded Markdown, then amortizes that cost across
+developers, agents, providers, sessions, onboarding, reviews and incidents.
 
 ```text
-# /tokenwar gain — token savings
-
-  tool            saved       note
-  ─────────────────────────────────────────────────────────────
-  RTK             8.5M        13837 commands (68.6%)
-  context-mode    N/A         ctx_stats not provided by caller
-  claude-mem      4.9M        ~est: 98401 obs + 23338 summaries across 36 projects
-  caveman         N/A         style-only hook — no measurable buffer
-  pxpipe          N/A         pxpipe events log not found
-  ─────────────────────────────────────────────────────────────
-  TOTAL (tools)   13.4M       summed across tools with telemetry
-
-  provider        tokens      note
-  ─────────────────────────────────────────────────────────────
-  Codex           3680.3M     320 Codex sessions (real tokens_used)
-  Gemini CLI      N/A         no local token telemetry (server-side sessions)
-  Kimi Code CLI   N/A         no documented local token telemetry
-  opencode        105.3K      10 opencode sessions (real token cols)
-
-Monthly value — API-equivalent $ saved (Claude Opus 4.8 · input $5.00/M)
-  2026-07    8.2M        $41.00
-  TOTAL      8.4M        $42.16
+claude-mem = what my agent learned
+OpenWiki   = what the team knows about the project
 ```
 
-That's **13.4M tokens saved** on Claude-side context alone (RTK compressing tool
-stdout at 68.6%, claude-mem offloading cross-session memory), worth ~**$42/month**
-in Opus 4.8 input-equivalent — and the provider rows show each wrapped CLI's real
-usage read from its native store (**opencode from `opencode.db`, Codex from its
-SQLite**), so you see per-agent token flow next to the savings. Run it yourself
-with `tokenwar gain` after a few days of use.
+## Recommended project routine
 
-Wire the combined statusline (Claude Code, `~/.claude/settings.json`):
-
-```json
-"statusLine": {
-  "type": "command",
-  "command": "bash ~/.claude/skills/tokenwar/scripts/tokenwar-statusline.sh"
-}
-```
-
-Statusline renders `[ctx <v>] [mem <v>] [rtk <saved>] [caveman <v>] [ponytail on]` — green if active, red if down. The `ponytail` badge reflects the plugin's real runtime mode: green with the active intensity (`on` for full, else `lite`/`ultra`) when the `ponytail@ponytail` plugin is enabled and not toggled off, red `off` when disabled or after `/ponytail off` — read live from the plugin's `~/.claude/.ponytail-active` flag, no version, no telemetry, by design. A yellow `⬆` is appended to any tool with an available update (from the throttled `check-updates.sh` cache, refreshed in the background), and when ≥1 update exists the bar ends with a `⬆ N updates · /tokenwar upgrade` call-to-action. The bar is **Claude-only** — Codex/Gemini/Kimi/opencode are tracked in `/tokenwar gain`, not on the Claude status bar.
-
-## Settings.json wipe protection
-
-Claude Code can rewrite `~/.claude/settings.json` on session start (migration logic). A backup is kept at `~/.claude/settings.local.json` and a restore script merges it back:
+Inside every active, long-lived repository:
 
 ```bash
-bash ~/.claude/skills/tokenwar/scripts/restore-settings.sh
+graphify .             # initial structural graph
+openwiki --init        # initial grounded project wiki (uses an LLM)
+
+graphify update .      # after code changes; AST update needs no LLM
+openwiki --update      # after merges; clean no-op uses no LLM
 ```
 
-Add to `~/.bashrc` to auto-restore before each Claude Code launch:
+For teams, commit the OpenWiki output and run updates in CI so one generation is
+shared by everyone. Details and a CI pattern are in
+[Project memory](docs/project-memory.md).
+
+## Commands
 
 ```bash
-alias claude='bash ~/.claude/skills/tokenwar/scripts/restore-settings.sh && command claude'
+tokenwar status
+tokenwar test
+tokenwar check
+tokenwar gain
+tokenwar doctor
+tokenwar scan
+tokenwar upgrade
 ```
 
-## Plugin-state detection (robust on any host)
-
-`tokenwar status` reads the 4 Claude Code plugins' state from `claude plugin list --json` — the authoritative source (installed **and** enabled state in one shot). On hosts where that command returns nothing (an older `claude` CLI without the subcommand, or `claude` not on `PATH` in the shell running tokenwar), status falls back to on-disk config instead of reporting every plugin as *not installed*:
-
-- `~/.claude/plugins/installed_plugins.json` → what is installed,
-- `enabledPlugins` OR-merged from `settings.json` **and** `settings.local.json` → the enabled/disabled bit (Claude Code merges both at runtime).
-
-An installed plugin absent from `enabledPlugins` is treated as enabled (Claude default); an explicit `false` stays `installed-disabled` — so `tokenwar disable <tool>` is always reflected correctly. Override the config dir with `CLAUDE_CONFIG_DIR`.
-
-## Tests + CI
-
-```bash
-bats tests/
-```
-
-CI on every push to `main` and every PR — installs bats + shellcheck, runs full suite on `ubuntu-latest`.
+TokenWar never fabricates savings. Native telemetry is reported where available;
+otherwise the result is `N/A` or an explicitly labelled estimate.
 
 ## Credits
 
 **Original project — [Ora Studio](https://studio.oratelecom.net) · Ora Telecom.**
-tokenwar is their design: the six-lane thesis, the complementarity rules, the
-honest-telemetry stance, and the scripts this fork builds on. Token economics,
-productized. Upstream: [oratelecom/tokenwar](https://github.com/oratelecom/tokenwar).
-
-Ora's own open-source footprint on the stack:
-
-| Status | Project | Role |
-| :----: | ------- | ---- |
-| ✓ | **RTK**          | upstream contributor |
-| ✓ | **context-mode** | upstream contributor |
-| ✓ | **claude-mem**   | upstream contributor |
-| ✦ | **caveman**      | Ora maintenance landing soon |
+TokenWar is their design: the lane thesis, the complementarity rules, the
+honest-telemetry stance, and the scripts this fork builds on. Upstream:
+[oratelecom/tokenwar](https://github.com/oratelecom/tokenwar).
 
 **Windows port — [Jerome Carbel](https://github.com/SirTerrific) (@SirTerrific).**
 This fork adds and maintains Windows support: the Git Bash runtime path, the OS
@@ -406,4 +124,3 @@ Prompt entry points, the `windows-latest` CI job, and `docs/windows.md`.
 ## License
 
 [MIT](LICENSE) — © 2026 Ora Telecom, © 2026 Jerome Carbel (Windows port).
-Use, fork, ship — no strings.

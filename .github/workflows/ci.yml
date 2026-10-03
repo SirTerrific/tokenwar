@@ -26,7 +26,7 @@ jobs:
 
       - name: shellcheck all .sh files
         run: |
-          shellcheck -S warning scripts/*.sh scripts/lib/*.sh
+          shellcheck -S warning scripts/*.sh scripts/lib/*.sh install.sh uninstall.sh
 
       - name: Make scripts executable
         run: chmod +x scripts/*.sh
@@ -42,6 +42,45 @@ jobs:
           bash scripts/tokenwar.sh help
           bash scripts/upgrade.sh </dev/null || true
           bash scripts/tokenwar-launch.sh codex </dev/null
+          bash scripts/tokenwar-launch.sh copilot </dev/null
+          bash scripts/copilot.sh check || true
+
+      # The text tables and the JSON contract are rendered by separate code
+      # paths, so a tool can be added to one and forgotten in the other. `scan`
+      # and any downstream consumer read the JSON, so assert every managed tool
+      # is present there. Exit code is ignored on purpose: a bare runner has none
+      # of the tools installed, and this step checks the CONTRACT, not health.
+      - name: JSON contract smoke (every managed tool is exposed)
+        run: |
+          bash scripts/status.sh --json > status.json || true
+          bash scripts/gain.sh --json > gain.json || true
+          node -e '
+            const fs = require("fs");
+            const MANAGED = ["context-mode","claude-mem","rtk","caveman","ponytail","pxpipe","graphify"];
+            const status = JSON.parse(fs.readFileSync("status.json","utf8"));
+            for (const t of MANAGED) {
+              if (!(t in status.tools)) throw new Error(`status --json is missing tool: ${t}`);
+            }
+            const GAIN_TOOLS = ["RTK","context-mode","claude-mem","caveman","pxpipe","graphify"];
+            const gain = JSON.parse(fs.readFileSync("gain.json","utf8"));
+            for (const t of GAIN_TOOLS) {
+              if (!(t in gain.tools)) throw new Error(`gain --json is missing tool: ${t}`);
+            }
+            // Providers are registry-driven (lib/providers.sh). A provider added
+            // to the registry but forgotten in a note map or a telemetry switch
+            // surfaces here rather than as a blank column at runtime.
+            const PROVIDERS = ["claude","codex","gemini","kimi","opencode","copilot"];
+            for (const p of PROVIDERS) {
+              if (!(p in status.providers)) throw new Error(`status --json is missing provider: ${p}`);
+              if (!status.providers[p].name) throw new Error(`provider ${p} has no name`);
+            }
+            const gainProviders = (gain.providers || []).map(p => p.id);
+            for (const p of PROVIDERS.filter(x => x !== "claude")) {
+              if (!gainProviders.includes(p)) throw new Error(`gain --json is missing provider: ${p}`);
+            }
+            console.log("JSON contract OK — " + MANAGED.length + " tools in status, " +
+                        GAIN_TOOLS.length + " in gain, " + PROVIDERS.length + " providers");
+          '
 
   test-windows:
     # tokenwar runs on Windows through Git Bash (the MSYS2 bash shipped with Git
@@ -108,3 +147,42 @@ jobs:
           bash scripts/tokenwar.sh help
           bash scripts/upgrade.sh </dev/null || true
           bash scripts/tokenwar-launch.sh codex </dev/null
+          bash scripts/tokenwar-launch.sh copilot </dev/null
+          bash scripts/copilot.sh check || true
+
+      # The text tables and the JSON contract are rendered by separate code
+      # paths, so a tool can be added to one and forgotten in the other. `scan`
+      # and any downstream consumer read the JSON, so assert every managed tool
+      # is present there. Exit code is ignored on purpose: a bare runner has none
+      # of the tools installed, and this step checks the CONTRACT, not health.
+      - name: JSON contract smoke (every managed tool is exposed)
+        run: |
+          bash scripts/status.sh --json > status.json || true
+          bash scripts/gain.sh --json > gain.json || true
+          node -e '
+            const fs = require("fs");
+            const MANAGED = ["context-mode","claude-mem","rtk","caveman","ponytail","pxpipe","graphify"];
+            const status = JSON.parse(fs.readFileSync("status.json","utf8"));
+            for (const t of MANAGED) {
+              if (!(t in status.tools)) throw new Error(`status --json is missing tool: ${t}`);
+            }
+            const GAIN_TOOLS = ["RTK","context-mode","claude-mem","caveman","pxpipe","graphify"];
+            const gain = JSON.parse(fs.readFileSync("gain.json","utf8"));
+            for (const t of GAIN_TOOLS) {
+              if (!(t in gain.tools)) throw new Error(`gain --json is missing tool: ${t}`);
+            }
+            // Providers are registry-driven (lib/providers.sh). A provider added
+            // to the registry but forgotten in a note map or a telemetry switch
+            // surfaces here rather than as a blank column at runtime.
+            const PROVIDERS = ["claude","codex","gemini","kimi","opencode","copilot"];
+            for (const p of PROVIDERS) {
+              if (!(p in status.providers)) throw new Error(`status --json is missing provider: ${p}`);
+              if (!status.providers[p].name) throw new Error(`provider ${p} has no name`);
+            }
+            const gainProviders = (gain.providers || []).map(p => p.id);
+            for (const p of PROVIDERS.filter(x => x !== "claude")) {
+              if (!gainProviders.includes(p)) throw new Error(`gain --json is missing provider: ${p}`);
+            }
+            console.log("JSON contract OK — " + MANAGED.length + " tools in status, " +
+                        GAIN_TOOLS.length + " in gain, " + PROVIDERS.length + " providers");
+          '

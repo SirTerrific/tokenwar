@@ -1,0 +1,382 @@
+#!/usr/bin/env bats
+#
+# tokenwar scan — structured parser, cache-aware economics, profile inference.
+
+setup() {
+    REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
+    SCAN="${REPO_ROOT}/scripts/scan.sh"
+    FIXTURE_ROOT="$(mktemp -d)"
+    mkdir -p "${FIXTURE_ROOT}/logs"
+
+    # A synthetic session: 3 turns, a shell call, a search, one skill invocation.
+    # Usage numbers are deliberately explicit so the economics can be asserted.
+    cat > "${FIXTURE_ROOT}/logs/session.jsonl" <<'JSONL'
+{"sessionId":"s1","cwd":"/tmp/proj","type":"assistant","message":{"role":"assistant","model":"claude-sonnet-5","usage":{"input_tokens":1000,"cache_creation_input_tokens":5000,"cache_read_input_tokens":0,"output_tokens":100},"content":[{"type":"text","text":"starting"},{"type":"tool_use","id":"t1","name":"Bash","input":{"command":"docker ps -a"}}]}}
+{"sessionId":"s1","type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"t1","content":"CONTAINER ID   IMAGE   STATUS"}]}}
+{"sessionId":"s1","type":"assistant","message":{"role":"assistant","usage":{"input_tokens":0,"cache_creation_input_tokens":200,"cache_read_input_tokens":6000,"output_tokens":80},"content":[{"type":"tool_use","id":"t2","name":"Bash","input":{"command":"grep -rn TODO src/"}}]}}
+{"sessionId":"s1","type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"t2","content":"src/a.js:1:TODO fix"}]}}
+{"sessionId":"s1","type":"assistant","message":{"role":"assistant","usage":{"input_tokens":0,"cache_creation_input_tokens":150,"cache_read_input_tokens":6200,"output_tokens":60},"content":[{"type":"tool_use","id":"t3","name":"Skill","input":{"skill":"askcodex"}}]}}
+JSONL
+
+    # Provide a skills directory of our own. Without this the tests would read
+    # whatever the host has installed, so they would pass on a developer machine
+    # and fail on CI, where nothing is installed and every cost is zero.
+    export TOKENWAR_SKILLS_DIR="${FIXTURE_ROOT}/skills"
+    mkdir -p "${TOKENWAR_SKILLS_DIR}/askcodex" "${TOKENWAR_SKILLS_DIR}/never-used"
+    cat > "${TOKENWAR_SKILLS_DIR}/askcodex/SKILL.md" <<'SKILL'
+---
+name: askcodex
+description: Ask Codex for an independent critique and preserve the exchange.
+---
+SKILL
+    # A folded description, to keep the block-scalar parse covered.
+    cat > "${TOKENWAR_SKILLS_DIR}/never-used/SKILL.md" <<'SKILL'
+---
+name: never-used
+description: >
+  A skill that is installed but never invoked, carrying a description long
+  enough that its listing cost is clearly non-zero and measurable.
+---
+SKILL
+    export TOKENWAR_PLUGIN_CACHE_DIR="${FIXTURE_ROOT}/plugins"
+    mkdir -p "$TOKENWAR_PLUGIN_CACHE_DIR"
+    # Isolate MCP config too, so the host's servers do not leak into results.
+    export TOKENWAR_MCP_CONFIG="${FIXTURE_ROOT}/claude.json"
+    printf '{"mcpServers":{}}' > "$TOKENWAR_MCP_CONFIG"
+
+    export TOKENWAR_CLAUDE_LOG_ROOT="${FIXTURE_ROOT}/logs"
+    export TOKENWAR_SCAN_SKIP_STATUS=1
+}
+
+teardown() {
+    rm -rf "$FIXTURE_ROOT"
+}
+
+@test "status JSON remains usable when one tool is missing" {
+    unset TOKENWAR_SCAN_SKIP_STATUS
+    local status_script="${FIXTURE_ROOT}/status.sh"
+    cat > "$status_script" <<'JSON_STATUS'
+#!/usr/bin/env bash
+printf '%s\n' '{"tools":{"rtk":{"state":"OK"},"pxpipe":{"state":"not-installed"}},"ok":false}'
+exit 1
+JSON_STATUS
+    export TOKENWAR_STATUS_SCRIPT="$status_script"
+    run bash "$SCAN" --client claude --days 3650 --summary-json --source-id fixture
+    [ "$status" -eq 0 ]
+    printf '%s' "$output" | node -e '
+      let body = "";
+      process.stdin.on("data", chunk => body += chunk);
+      process.stdin.on("end", () => {
+        const rows = JSON.parse(body).recommendations;
+        if (rows.find(r => r.toolId === "rtk")?.observedState !== "OK") process.exit(1);
+        if (rows.find(r => r.toolId === "pxpipe")?.observedState !== "not-installed") process.exit(1);
+      });
+    '
+}
+
+@test "scan finds user-local tools in noninteractive shells" {
+    unset TOKENWAR_SCAN_SKIP_STATUS
+    export HOME="${FIXTURE_ROOT}/home"
+    mkdir -p "$HOME/.local/bin"
+    printf '#!/usr/bin/env bash\nexit 0\n' > "$HOME/.local/bin/tokenwar-local-probe"
+    chmod +x "$HOME/.local/bin/tokenwar-local-probe"
+    local status_script="${FIXTURE_ROOT}/status-path.sh"
+    cat > "$status_script" <<'JSON_STATUS'
+#!/usr/bin/env bash
+if command -v tokenwar-local-probe >/dev/null 2>&1; then
+    printf '%s\n' '{"tools":{"rtk":{"state":"OK"}},"ok":true}'
+else
+    printf '%s\n' '{"tools":{"rtk":{"state":"not-installed"}},"ok":false}'
+fi
+JSON_STATUS
+    export TOKENWAR_STATUS_SCRIPT="$status_script"
+    run bash "$SCAN" --client claude --days 3650 --summary-json --source-id fixture
+    [ "$status" -eq 0 ]
+    printf '%s' "$output" | node -e '
+      let body = "";
+      process.stdin.on("data", chunk => body += chunk);
+      process.stdin.on("end", () => {
+        const rtk = JSON.parse(body).recommendations.find(r => r.toolId === "rtk");
+        if (rtk?.observedState !== "OK") process.exit(1);
+      });
+    '
+}
+
+@test "scan runs and reports the fixture session" {
+    run bash "$SCAN" --client claude --days 3650
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"TOKENWAR SCAN"* ]]
+}
+
+@test "scan emits valid JSON with --json" {
+    run bash "$SCAN" --client claude --days 3650 --json
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e 'let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{JSON.parse(r)})'
+}
+
+@test "token counts come from usage fields, not byte estimates" {
+    run bash "$SCAN" --client claude --days 3650 --json
+    [ "$status" -eq 0 ]
+    # 3 turns; cache_read 0 + 6000 + 6200 = 12200 exactly.
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        const j=JSON.parse(r);
+        if(j.meta.turns!==3) throw new Error("expected 3 turns, got "+j.meta.turns);
+        if(j.cacheStats.cacheRead!==12200) throw new Error("expected cacheRead 12200, got "+j.cacheStats.cacheRead);
+      })'
+}
+
+@test "cached cost is materially lower than the uncached figure" {
+    run bash "$SCAN" --client claude --days 3650 --json
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        const p=JSON.parse(r).prefixCost;
+        if(!(p.cachedDollars < p.naiveDollars)) throw new Error("cached cost must be below the uncached figure");
+        if(!(p.overstatementFactor > 1)) throw new Error("overstatement factor must exceed 1");
+      })'
+}
+
+@test "compound shell commands are split into separate commands" {
+    run bash "$SCAN" --client claude --days 3650 --json
+    [ "$status" -eq 0 ]
+    # docker (devops) and grep (search) must both be seen; a line-regex scanner
+    # would have attributed each whole JSON line to several families at once.
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        const f=JSON.parse(r).profile.distribution;
+        if(!Array.isArray(f)) throw new Error("expected a profile distribution");
+      })'
+}
+
+@test "skill invocations are counted from tool_use, not prose" {
+    run bash "$SCAN" --client claude --days 3650 --json
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        const used=JSON.parse(r).inventory.skills.used.map(s=>s.name);
+        if(!used.includes("askcodex")) throw new Error("askcodex should be marked used, got: "+used.join(","));
+      })'
+}
+
+@test "profile never claims SEO, product or design" {
+    run bash "$SCAN" --client claude --days 3650 --json
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        const j=JSON.parse(r);
+        for(const m of j.profile.distribution.map(d=>d.mode))
+          if(["seo","po","designer"].includes(m)) throw new Error("must not infer "+m+" from coding logs");
+        for(const k of ["seo","po","designer"])
+          if(!j.profile.notInferrable[k]) throw new Error("missing not-inferrable note for "+k);
+      })'
+}
+
+@test "recommendations carry a signal, a cost and a break-even rule" {
+    run bash "$SCAN" --client claude --days 3650 --json
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        for(const item of JSON.parse(r).recommendations){
+          for(const field of ["signal","cost","breakEven","verdict"])
+            if(!item[field]) throw new Error(item.tool+" is missing "+field);
+        }
+      })'
+}
+
+@test "pxpipe is not recommended for a code-heavy profile" {
+    run bash "$SCAN" --client claude --days 3650 --json
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        const px=JSON.parse(r).recommendations.find(i=>i.id==="pxpipe");
+        if(!px) throw new Error("pxpipe should be assessed");
+        if(px.verdict!=="AVOID") throw new Error("pxpipe should be AVOID, got "+px.verdict);
+      })'
+}
+
+@test "overlapping tools are flagged so savings are not summed" {
+    run bash "$SCAN" --client claude --days 3650 --json
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        if(!Array.isArray(JSON.parse(r).overlaps)) throw new Error("overlaps must be reported");
+      })'
+}
+
+@test "html report is written and self-contained" {
+    local out="${FIXTURE_ROOT}/report.html"
+    run bash "$SCAN" --client claude --days 3650 --html "$out"
+    [ "$status" -eq 0 ]
+    [ -f "$out" ]
+    grep -q "TokenWar Scan" "$out"
+    grep -q "YellowLabTools" "$out"
+    # No unresolved template values should reach the page.
+    ! grep -q "undefined" "$out"
+}
+
+@test "malformed JSONL lines are skipped rather than aborting the scan" {
+    printf 'not json at all\n' >> "${FIXTURE_ROOT}/logs/session.jsonl"
+    run bash "$SCAN" --client claude --days 3650 --json
+    [ "$status" -eq 0 ]
+}
+
+@test "an empty log directory exits with a clear message" {
+    export TOKENWAR_CLAUDE_LOG_ROOT="${FIXTURE_ROOT}/empty"
+    mkdir -p "$TOKENWAR_CLAUDE_LOG_ROOT"
+    run bash "$SCAN" --client claude --days 3650
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"no agent sessions found"* ]]
+}
+
+@test "unknown arguments are rejected" {
+    run bash "$SCAN" --nonsense
+    [ "$status" -eq 2 ]
+}
+
+@test "help is available" {
+    run bash "$SCAN" --help
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"tokenwar scan"* ]]
+}
+
+@test "codex rollout sessions are parsed with their own telemetry" {
+    local codex="${FIXTURE_ROOT}/codex/sessions/2026/01/01"
+    mkdir -p "$codex"
+    # total_token_usage is cumulative, so the adapter must difference snapshots
+    # rather than summing them.
+    cat > "${codex}/rollout-2026-01-01T00-00-00-abc.jsonl" <<'JSONL'
+{"type":"session_meta","payload":{"id":"c1","cwd":"/tmp/proj","model":"gpt-5"}}
+{"type":"response_item","payload":{"type":"function_call","id":"f1","name":"exec_command","arguments":"{\"cmd\":\"kubectl get pods\"}"}}
+{"type":"response_item","payload":{"type":"function_call_output","id":"f1","output":"pod/foo Running"}}
+{"type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":1000,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":50},"model_context_window":258400}}}
+{"type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":3000,"cached_input_tokens":900,"cache_write_input_tokens":0,"output_tokens":120},"model_context_window":258400}}}
+JSONL
+    export TOKENWAR_CODEX_LOG_ROOT="${FIXTURE_ROOT}/codex/sessions"
+    run bash "$SCAN" --client codex --days 3650 --json
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        const j=JSON.parse(r);
+        if(j.meta.sessions!==1) throw new Error("expected 1 codex session, got "+j.meta.sessions);
+        // Two snapshots -> two turns; cached delta is 900.
+        if(j.meta.turns!==2) throw new Error("expected 2 turns, got "+j.meta.turns);
+        if(j.cacheStats.cacheRead!==900) throw new Error("expected cacheRead 900, got "+j.cacheStats.cacheRead);
+      })'
+}
+
+@test "every client is reported with a coverage status" {
+    run bash "$SCAN" --days 3650 --json
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        const clients=JSON.parse(r).meta.clients;
+        const valid=["ok","unparsed","no-logs","not-installed"];
+        for(const c of clients){
+          if(!valid.includes(c.status)) throw new Error(c.id+" has invalid status "+c.status);
+        }
+        if(!clients.some(c=>c.id==="codex")) throw new Error("codex must be reported");
+        if(!clients.some(c=>c.id==="copilot")) throw new Error("copilot must be reported");
+      })'
+}
+
+@test "pricing follows the model that did most of the work" {
+    # A short Haiku subagent transcript alongside a large Opus session must not
+    # price the whole workload at Haiku rates.
+    cat > "${FIXTURE_ROOT}/logs/haiku-small.jsonl" <<'JSONL'
+{"sessionId":"h1","type":"assistant","message":{"role":"assistant","model":"claude-haiku-4-5-20251001","usage":{"input_tokens":10,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":5},"content":[{"type":"text","text":"hi"}]}}
+JSONL
+    cat > "${FIXTURE_ROOT}/logs/opus-large.jsonl" <<'JSONL'
+{"sessionId":"o1","type":"assistant","message":{"role":"assistant","model":"claude-opus-5","usage":{"input_tokens":50000,"cache_creation_input_tokens":10000,"cache_read_input_tokens":900000,"output_tokens":5000},"content":[{"type":"text","text":"work"}]}}
+JSONL
+    run bash "$SCAN" --client claude --days 3650 --json
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        const model=JSON.parse(r).meta.model;
+        if(model!=="claude-opus") throw new Error("expected claude-opus pricing, got "+model);
+      })'
+}
+
+@test "an explicit --model overrides inference" {
+    run bash "$SCAN" --client claude --days 3650 --model claude-sonnet --json
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        const model=JSON.parse(r).meta.model;
+        if(model!=="claude-sonnet") throw new Error("expected claude-sonnet, got "+model);
+      })'
+}
+
+@test "summary contains only aggregates and stable recommendation IDs" {
+    run bash "$SCAN" --client claude --summary-json --source-id fixture --days 3650
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        const j=JSON.parse(r);
+        if(j.schemaVersion!==1 || j.sourceId!=="fixture") throw new Error("bad schema");
+        if(j.metrics.cacheReadTokens!==12200) throw new Error("bad telemetry");
+        if(j.coverage.status!=="complete") throw new Error("unexpected coverage");
+        if(r.includes(process.env.FIXTURE_ROOT)) throw new Error("raw path leaked");
+        if(j.recommendations.some(x=>!x.id.startsWith("tokenwar:"))) throw new Error("unstable IDs");
+      })'
+}
+
+@test "summary records and compares sanitized local history" {
+    local history="${FIXTURE_ROOT}/history"
+    run bash "$SCAN" --client claude --summary-json --history "$history" --source-id fixture --days 3650
+    [ "$status" -eq 0 ]
+    run bash "$SCAN" --client claude --summary-json --history "$history" --source-id fixture --days 3650
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        const j=JSON.parse(r);
+        if(j.comparison.status!=="comparable") throw new Error("missing comparison");
+        if(j.comparison.metrics.cacheReadTokens.delta!==0) throw new Error("bad delta");
+      })'
+}
+
+@test "empty summary reports missing coverage instead of fabricated improvement" {
+    export TOKENWAR_CLAUDE_LOG_ROOT="${FIXTURE_ROOT}/empty"
+    mkdir -p "$TOKENWAR_CLAUDE_LOG_ROOT"
+    run bash "$SCAN" --client claude --summary-json --source-id fixture
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        const j=JSON.parse(r);
+        if(j.coverage.status!=="partial") throw new Error("missing partial coverage");
+        if(j.metrics.cacheHitRatio!==null) throw new Error("unknown cache ratio must be null");
+      })'
+}
+
+@test "summary detects an actual session limit rather than an exact count match" {
+    run bash "$SCAN" --client claude --summary-json --max-sessions 1 --days 3650
+    [ "$status" -eq 0 ]
+    [[ "$output" == *'"limitReached": false'* ]]
+    cp "${FIXTURE_ROOT}/logs/session.jsonl" "${FIXTURE_ROOT}/logs/second.jsonl"
+    run bash "$SCAN" --client claude --summary-json --max-sessions 1 --days 3650
+    [ "$status" -eq 0 ]
+    [[ "$output" == *'"limitReached": true'* ]]
+    [[ "$output" == *'"status": "partial"'* ]]
+}
+
+@test "invalid clients and session limits fail without creating history" {
+    for args in "--client absent" "--max-sessions 0" "--max-sessions NaN" "--max-sessions 1.5"; do
+        run bash "$SCAN" --summary-json $args
+        [ "$status" -eq 2 ]
+    done
+}
+
+@test "all-zero usage placeholder is unknown telemetry rather than zero spend" {
+    cat > "${FIXTURE_ROOT}/logs/session.jsonl" <<'JSONL'
+{"type":"assistant","message":{"usage":{"input_tokens":0,"output_tokens":0},"content":[]}}
+JSONL
+    run bash "$SCAN" --client claude --summary-json
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+      let r="";process.stdin.on("data",c=>r+=c);process.stdin.on("end",()=>{
+        const j=JSON.parse(r);
+        if(j.coverage.status!=="partial" || j.coverage.clients[0].telemetrySessions!==0) throw new Error("zero placeholder was treated as telemetry");
+        if(j.metrics.freshInputTokens!==null || j.metrics.inputTokensPerTurn!==null) throw new Error("missing telemetry must be null");
+      })'
+}

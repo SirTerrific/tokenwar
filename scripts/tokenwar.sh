@@ -5,10 +5,12 @@
 # Gemini, plain shell) there is no slash command, so this dispatcher gives the
 # same verbs as a normal command:
 #
-#   tokenwar status     # state of the 6 tools + providers
+#   tokenwar status     # state of the 7 tools + providers
 #   tokenwar gain       # per-tool + per-provider token savings
+#   tokenwar scan       # local agent-log scan + recommendations
 #   tokenwar check      # complementarity / conflict detector
 #   tokenwar test       # end-to-end ping: is each tool actually working?
+#   tokenwar copilot    # report/wire the stack into GitHub Copilot CLI
 #   tokenwar upgrade    # bump managed tools (asks confirmation)
 #   tokenwar updates    # show available updates (throttled cache)
 #   tokenwar doctor     # full pipeline: status → test → check → gain
@@ -30,8 +32,12 @@ tokenwar — token-saving stack manager
 Usage: tokenwar <command>
 
 Commands:
-  status     state of the 6 tools + providers (codex, gemini, kimi, opencode)
+  status     state of the 7 tools + providers (codex, gemini, kimi, opencode, copilot)
   gain       per-tool + per-provider token savings + monthly \$ value
+  scan       audit local agent logs: what loads every request vs what you use
+  prune      list skills and MCP servers that load but were never invoked
+  bundle X   apply a session-start tool bundle (dev|devops|architect|testing)
+  copilot    report which tools reach GitHub Copilot CLI ('copilot wire' to fix)
   check      complementarity / conflict detector
   test       end-to-end ping: is each tool actually working?
   upgrade    bump managed tools to latest (asks confirmation)
@@ -49,7 +55,11 @@ shift || true
 case "$cmd" in
     status)  exec bash "${SCRIPT_DIR}/status.sh" "$@" ;;
     gain)    exec bash "${SCRIPT_DIR}/gain.sh" "$@" ;;
+    scan)    exec bash "${SCRIPT_DIR}/scan.sh" "$@" ;;
+    prune)   exec bash "${SCRIPT_DIR}/prune.sh" "$@" ;;
+    bundle)  exec bash "${SCRIPT_DIR}/bundle.sh" "$@" ;;
     check)   exec bash "${SCRIPT_DIR}/check.sh" "$@" ;;
+    copilot) exec bash "${SCRIPT_DIR}/copilot.sh" "$@" ;;
     test)
         bash "${SCRIPT_DIR}/status.sh" --test "$@"
         rc=$?

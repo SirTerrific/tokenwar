@@ -25,6 +25,15 @@
 .PARAMETER WithPxpipe
     Install the pinned pxpipe-proxy npm package.
 
+.PARAMETER WithGraphify
+    Install graphify (via uv tool, pipx or pip) and register its skill.
+
+.PARAMETER WithOpenwiki
+    Install the pinned OpenWiki npm package. Never initializes a repository.
+
+.PARAMETER WithCopilot
+    Wire the stack into GitHub Copilot CLI, when that CLI is installed.
+
 .PARAMETER All
     All of the above.
 
@@ -39,6 +48,9 @@ param(
     [switch]$WithPlugins,
     [switch]$WithRtk,
     [switch]$WithPxpipe,
+    [switch]$WithGraphify,
+    [switch]$WithOpenwiki,
+    [switch]$WithCopilot,
     [switch]$All,
     [switch]$SkipProfile
 )
@@ -83,6 +95,9 @@ else {
     if ($WithPlugins) { $flags += '--with-plugins' }
     if ($WithRtk) { $flags += '--with-rtk' }
     if ($WithPxpipe) { $flags += '--with-pxpipe' }
+    if ($WithGraphify) { $flags += '--with-graphify' }
+    if ($WithOpenwiki) { $flags += '--with-openwiki' }
+    if ($WithCopilot) { $flags += '--with-copilot' }
 }
 
 $localInstaller = Join-Path $PSScriptRoot 'install.sh'

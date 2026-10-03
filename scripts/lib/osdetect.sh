@@ -93,6 +93,18 @@ tw_node_path() {
     printf '%s' "$p"
 }
 
+# tw_export_node_paths <VAR>... — rewrite each set, path-valued environment
+# variable in place so a native child process (node) can open it. MSYS does this
+# itself when it spawns one, unless MSYS_NO_PATHCONV switched that off.
+tw_export_node_paths() {
+    local var
+    for var in "$@"; do
+        if [[ -n "${!var:-}" ]]; then
+            export "${var}=$(tw_node_path "${!var}")"
+        fi
+    done
+}
+
 # tw_bash_path — Windows path to a bash.exe that a native Windows process can
 # spawn (Claude Code's statusLine, hooks). Empty + non-zero off Windows.
 tw_bash_path() {

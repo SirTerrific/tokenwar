@@ -10,9 +10,11 @@
 #   Gemini — no local token store; CLI detection only, telemetry N/A
 #   Kimi   — ~/.kimi-code stores sessions/config, but no documented token store
 #   opencode — ~/.local/share/opencode/opencode.db → session token cols (real)
+#   Copilot — ~/.copilot/session-store.db → assistant_usage_events (real, with
+#             per-model rows and the AI-credit cost GitHub actually bills)
 #
-# The two SQLite-backed sources are read through tw_sqlite_rows, which runs the
-# same SQL under python3 or node:sqlite — see the engine note there.
+# The three SQLite-backed sources are read through tw_sqlite_rows, which runs
+# the same SQL under python3 or node:sqlite — see the engine note there.
 
 set -euo pipefail
 
@@ -24,7 +26,7 @@ source "${TW_PROVIDERS_DIR}/osdetect.sh"
 # that source this file (gain.sh, status.sh, check.sh, check-updates.sh,
 # tokenwar-statusline.sh), not within this file, hence the SC2034 suppressions.
 # shellcheck disable=SC2034
-readonly PROVIDER_COUNT=5
+readonly PROVIDER_COUNT=6
 # shellcheck disable=SC2034
 readonly PROVIDER_IDX_CODEX=1
 # shellcheck disable=SC2034
@@ -33,6 +35,8 @@ readonly PROVIDER_IDX_GEMINI=2
 readonly PROVIDER_IDX_KIMI=3
 # shellcheck disable=SC2034
 readonly PROVIDER_IDX_OPENCODE=4
+# shellcheck disable=SC2034
+readonly PROVIDER_IDX_COPILOT=5
 
 # Store locations. The env overrides stay authoritative (tests and relocated
 # installs rely on them); tw_data_dir/tw_config_dir only supply the default, and
@@ -42,6 +46,12 @@ readonly CODEX_STATE_DB="${CODEX_HOME}/state_5.sqlite"
 readonly KIMI_CODE_HOME="${KIMI_CODE_HOME:-$(tw_config_dir kimi)}"
 readonly OPENCODE_DATA_HOME="${OPENCODE_DATA_HOME:-$(tw_data_dir opencode)}"
 readonly OPENCODE_STATE_DB="${OPENCODE_DATA_HOME}/opencode.db"
+# COPILOT_HOME is Copilot CLI's own override for its config + state dir.
+readonly COPILOT_HOME="${COPILOT_HOME:-${HOME}/.copilot}"
+readonly COPILOT_STATE_DB="${COPILOT_HOME}/session-store.db"
+# 1 AI credit = 1e9 nano-AIU — the unit `assistant_usage_events.total_nano_aiu`
+# stores, and what the CLI prints as "AI Credits" in its exit summary.
+readonly COPILOT_NANO_AIU_PER_CREDIT=1000000000
 # CHARS_PER_TOKEN is defined in gain.sh (primary consumer)
 
 # ── SQLite access ─────────────────────────────────────────────────────
@@ -130,6 +140,7 @@ provider_id() {
         2) echo "gemini" ;;
         3) echo "kimi"   ;;
         4) echo "opencode" ;;
+        5) echo "copilot" ;;
     esac
 }
 
@@ -140,6 +151,10 @@ provider_name() {
         2) echo "Gemini CLI"  ;;
         3) echo "Kimi Code CLI" ;;
         4) echo "opencode"    ;;
+        # Short form on purpose: the provider tables are %-14s columns and the
+        # official "GitHub Copilot CLI" overflows them. The full product name
+        # lives in provider_label, which is printed unaligned.
+        5) echo "Copilot CLI" ;;
     esac
 }
 
@@ -150,6 +165,7 @@ provider_cli() {
         2) echo "gemini" ;;
         3) echo "kimi"   ;;
         4) echo "opencode" ;;
+        5) echo "copilot" ;;
     esac
 }
 
@@ -160,6 +176,13 @@ provider_input_usd_per_mtok() {
         2) echo "1.25"  ;;  # Gemini 2.5 Pro input — VERIFY at ai.google.dev/pricing
         3) echo "0.30"  ;;  # Kimi K2/Kimi Code input — VERIFY at platform.kimi.ai/pricing
         4) echo "3.00"  ;;  # opencode is model-agnostic (BYO provider) — representative input rate, VERIFY per your model
+        # Copilot is NOT billed per token: it is a seat subscription plus AI
+        # credits (premium requests on the legacy plan), and GitHub publishes no
+        # per-token list price. This is a GPT-5-class input rate, so Copilot's $
+        # column is an API-equivalent valuation, never an invoice. The unit that
+        # IS billed — AI credits, read from total_nano_aiu — is surfaced in the
+        # telemetry note. VERIFY against your plan and model.
+        5) echo "1.25"  ;;
     esac
 }
 
@@ -170,6 +193,7 @@ provider_label() {
         2) echo "Gemini 2.5 Pro"        ;;
         3) echo "Kimi Code"             ;;
         4) echo "opencode (BYO model)"  ;;
+        5) echo "GitHub Copilot CLI (seat + AI credits)" ;;
     esac
 }
 
@@ -180,6 +204,7 @@ provider_config_dir() {
         2) tw_config_dir gemini ;;
         3) echo "$KIMI_CODE_HOME" ;;
         4) tw_config_dir opencode ;;
+        5) echo "$COPILOT_HOME" ;;
     esac
 }
 
@@ -189,13 +214,17 @@ provider_is_installed() {
     command -v "$cli" >/dev/null 2>&1
 }
 
+# Trailing punctuation is stripped because CLIs disagree on how a version line
+# ends: Copilot prints "GitHub Copilot CLI 1.0.83." (full stop, then a second
+# line about updates), which would otherwise be compared as the literal
+# "1.0.83." and never match a registry version.
 provider_version() {
     local cli
     cli=$(provider_cli "$1")
     if ! command -v "$cli" >/dev/null 2>&1; then echo "-"; return; fi
     # A provider CLI reached through an npm .cmd shim can answer with CRLF; the
     # version is the last field, so the \r would ride along into every compare.
-    "$cli" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}'
+    "$cli" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}' | sed 's/[.,;:]*$//'
 }
 
 # ── telemetry: total tokens saved per provider ────────────────────────
@@ -213,6 +242,7 @@ provider_telemetry_total() {
         2) gemini_telemetry_total ;;
         3) kimi_telemetry_total ;;
         4) opencode_telemetry_total ;;
+        5) copilot_telemetry_total ;;
     esac
 }
 
@@ -223,6 +253,7 @@ provider_telemetry_monthly() {
         2) gemini_telemetry_monthly ;;
         3) kimi_telemetry_monthly ;;
         4) opencode_telemetry_monthly ;;
+        5) copilot_telemetry_monthly ;;
     esac
 }
 
@@ -318,4 +349,41 @@ opencode_telemetry_monthly() {
     [[ -f "$OPENCODE_STATE_DB" ]] || { echo ""; return; }
     [[ "$(tw_sqlite_engine)" != "none" ]] || { echo ""; return; }
     tw_sqlite_rows "$OPENCODE_STATE_DB" "$OPENCODE_SQL_MONTHLY"
+}
+
+# ── Copilot CLI native telemetry (SQLite) ─────────────────────────────
+# Copilot CLI records one row per assistant call in `assistant_usage_events`,
+# with the token breakdown AND `total_nano_aiu` — the AI-credit cost GitHub
+# actually bills. Tokens go in the numeric field so the provider table stays
+# comparable across CLIs; the credits go in the note, because that is the unit
+# on the invoice and reporting only tokens would misstate what Copilot costs.
+
+readonly COPILOT_SQL_TOKENS="COALESCE(input_tokens,0)+COALESCE(output_tokens,0)+COALESCE(reasoning_tokens,0)"
+readonly COPILOT_SQL_TOTAL="SELECT COALESCE(SUM(${COPILOT_SQL_TOKENS}), 0), COUNT(DISTINCT session_id),
+           COALESCE(SUM(COALESCE(total_nano_aiu,0)), 0)
+    FROM assistant_usage_events"
+readonly COPILOT_SQL_MONTHLY="SELECT strftime('%Y-%m', created_at) AS m, SUM(${COPILOT_SQL_TOKENS}), COUNT(DISTINCT session_id)
+    FROM assistant_usage_events WHERE created_at IS NOT NULL
+    GROUP BY m HAVING m IS NOT NULL AND SUM(${COPILOT_SQL_TOKENS}) > 0 ORDER BY m"
+
+copilot_telemetry_total() {
+    if [[ ! -f "$COPILOT_STATE_DB" ]]; then
+        echo "N/A|Copilot session store not found ($COPILOT_STATE_DB)|0"; return
+    fi
+    if [[ "$(tw_sqlite_engine)" == "none" ]]; then
+        echo "N/A|$(tw_no_sqlite_note) to read the Copilot DB|0"; return
+    fi
+    local tokens sessions nano credits
+    read -r tokens sessions nano <<<"$(tw_sqlite_rows "$COPILOT_STATE_DB" "$COPILOT_SQL_TOTAL")"
+    if [[ -z "${tokens:-}" || "$tokens" == "0" ]]; then
+        echo "N/A|no Copilot sessions with token usage|0"; return
+    fi
+    credits="$(awk -v n="${nano:-0}" -v d="$COPILOT_NANO_AIU_PER_CREDIT" 'BEGIN { printf "%.2f", n / d }')"
+    echo "$(tw_human_tokens "$tokens")|${sessions} Copilot sessions (real assistant_usage_events) - ${credits} AI credits billed|${tokens}"
+}
+
+copilot_telemetry_monthly() {
+    [[ -f "$COPILOT_STATE_DB" ]] || { echo ""; return; }
+    [[ "$(tw_sqlite_engine)" != "none" ]] || { echo ""; return; }
+    tw_sqlite_rows "$COPILOT_STATE_DB" "$COPILOT_SQL_MONTHLY"
 }

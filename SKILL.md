@@ -1,12 +1,12 @@
 ---
 name: tokenwar
-description: Activate, upgrade, test, and benchmark the 6-tool token-saving stack (context-mode, claude-mem, RTK, pxpipe, caveman, ponytail). Reports per-tool + per-provider (Codex, Gemini, Kimi, opencode) token savings and detects conflicts that would erase the gains.
+description: Activate, upgrade, test, and benchmark the 7-tool token-saving stack (context-mode, claude-mem, RTK, pxpipe, graphify, caveman, ponytail). Reports per-tool + per-provider (Codex, Gemini, Kimi, opencode, GitHub Copilot CLI) token savings, wires the stack into Copilot, and detects conflicts that would erase the gains.
 trigger: /tokenwar
 ---
 
 # /tokenwar — token-saving stack manager
 
-Manages the 6 complementary token-saving tools:
+Manages the 7 complementary token-saving tools:
 
 | Tool         | Layer                       | Plugin slug                       | CLI / hook        |
 | ------------ | --------------------------- | --------------------------------- | ----------------- |
@@ -14,10 +14,21 @@ Manages the 6 complementary token-saving tools:
 | claude-mem   | session memory + compaction | `claude-mem@thedotmack`           | `claude-mem` CLI  |
 | RTK          | bash output compression     | (CLI; Claude hook + opencode plugin) | `rtk` (Rust)   |
 | pxpipe       | provider prompt payload proxy | (CLI only, npm package)         | `pxpipe`          |
+| graphify     | repo/doc discovery — graph instead of grep sweeps | (CLI + skill, PyPI `graphifyy`) | `graphify` |
 | caveman      | response-style compression  | `caveman@caveman`                 | hook              |
 | ponytail     | the code the LLM writes     | `ponytail@ponytail`               | plugin (mode-gated) |
 
-> ponytail and caveman are **presence-only** (a ruleset / a style nudge — no metered buffer): `status` and `activate` manage all six, but `gain` only prints real telemetry where the tool exposes it. pxpipe is CLI/proxy-managed via the pinned npm package `pxpipe-proxy@0.10.0` and reports savings only from its native `~/.pxpipe/events.jsonl`. ponytail upgrades via `claude plugin update ponytail@ponytail`, and is toggled per-session with `/ponytail off|lite|full|ultra`.
+> ponytail and caveman are **presence-only** (a ruleset / a style nudge — no metered buffer): `status` and `activate` manage all seven, but `gain` only prints real telemetry where the tool exposes it. pxpipe is CLI/proxy-managed via the pinned npm package `pxpipe-proxy@0.10.0` and reports savings only from its native `~/.pxpipe/events.jsonl`. ponytail upgrades via `claude plugin update ponytail@ponytail`, and is toggled per-session with `/ponytail off|lite|full|ultra`.
+
+> **graphify** is a CLI + skill, not a Claude Code plugin. Its PyPI package is `graphifyy` (the bare `graphify` name on PyPI is unaffiliated — see upstream's README) while the command stays `graphify`. `status` reports it OK only when BOTH halves are present: the CLI on `PATH` **and** a registered skill (`~/.claude/skills/graphify/SKILL.md`); a CLI with no skill is `installed-disabled`, because the assistant then never reaches for the graph. `check-updates` reads its latest version live from the PyPI JSON API (no pinned constant — graphify ships weekly, so a hardcoded number would report phantom up-to-date), and `upgrade` routes through whichever installer owns the package (`uv tool` → `pipx` → `pip`) then re-runs `graphify install` so the skill files match the new version.
+
+> **OpenWiki is the recommended shared project-memory layer**, not an eighth
+> live compression lane. `install.sh --with-openwiki` installs the pinned CLI,
+> and `--all` includes it. Never run `openwiki --init` implicitly: initialization
+> writes generated documentation and invokes an LLM. Recommend it strongly for
+> long-lived team repositories, where one reviewed wiki is reused by every human
+> and agent. Use `graphify update .` after code changes and `openwiki --update`
+> after merges or on a schedule. A clean OpenWiki update skips model work.
 
 ## Multi-provider support
 
@@ -31,37 +42,48 @@ tokenwar now tracks token usage across AI coding agents, each from its own
 | Gemini CLI   | N/A (server-side sessions — no local store)      | —                     |
 | Kimi Code CLI | N/A (`~/.kimi-code` has no documented token store) | —                  |
 | opencode     | `~/.local/share/opencode/opencode.db` → `session` token cols | per-session + monthly |
+| GitHub Copilot CLI | `~/.copilot/session-store.db` → `assistant_usage_events` | per-call + monthly, plus the AI credits actually billed (`total_nano_aiu`) |
 
 Each provider's token counts are valued at their own list prices (input-side).
 Provider prices are defined in `scripts/lib/providers.sh` — verify against
 official pricing pages.
 
-## Cross-CLI status (Claude vs Codex/Gemini/Kimi/opencode)
+> Copilot is the one provider that is **not** billed per token: it is a seat
+> subscription plus AI credits (premium requests on the legacy plan), and GitHub
+> publishes no per-token list price. Its `$` column is therefore an
+> API-equivalent valuation at a GPT-5-class input rate, never an invoice — while
+> the unit that IS billed, AI credits, is read from `total_nano_aiu` and printed
+> in the telemetry note. Do not present the `$` figure as a Copilot bill.
+
+## Cross-CLI status (Claude vs Codex/Gemini/Kimi/opencode/Copilot)
 
 The persistent **status bar** is a Claude Code feature (its `statusLine` API).
-Codex, Gemini, Kimi, and opencode do **not** expose a status-bar API — their
-footers are hardcoded in their TUIs, and their hooks only inject into the *model*
-context, never the screen. So tokenwar surfaces the stack differently per CLI:
+Codex, Gemini, Kimi, opencode, and GitHub Copilot CLI do **not** expose a
+status-bar API — their footers are hardcoded in their TUIs, and their hooks only
+inject into the *model* context, never the screen. So tokenwar surfaces the stack
+differently per CLI:
 
 | CLI        | How the stack is surfaced                                              |
 | ---------- | --------------------------------------------------------------------- |
-| Claude Code | Native persistent bottom bar via `statusLine` (terminal CLI only)   |
-| Codex      | **Launch banner** + reminder + upgrade prompt (via shell wrapper)     |
-| Gemini CLI | **Launch banner** + reminder + upgrade prompt (via shell wrapper)     |
-| Kimi Code CLI | **Launch banner** + reminder + upgrade prompt (via shell wrapper)  |
-| opencode   | **Launch banner** + reminder + upgrade prompt (via shell wrapper)     |
+| Claude Code | Native persistent bottom bar via `statusLine` (terminal CLI only)      |
+| Codex      | **Launch banner** + reminder + update status hint (via shell wrapper) |
+| Gemini CLI | **Launch banner** + reminder + update status hint (via shell wrapper) |
+| Kimi Code CLI | **Launch banner** + reminder + update status hint (via shell wrapper) |
+| opencode   | **Launch banner** + reminder + update status hint (via shell wrapper) |
+| GitHub Copilot CLI | **Launch banner** + reminder + update status hint (via shell wrapper) |
 
 `install.sh` wires the shell functions (one-time, then zero effort):
 
 - `tokenwar <cmd>` — the dispatcher; `tokenwar status` / `gain` / `check` /
   `upgrade` work in **any** shell (Codex, Gemini, Kimi, opencode, plain terminal).
-- `codex` / `gemini` / `kimi` / `opencode` — wrapped so that launching any of
+- `codex` / `gemini` / `kimi` / `opencode` / `copilot` — wrapped so that launching any of
   them prints the tokenwar banner (`scripts/tokenwar-launch.sh`), reminds the
-  user to run `tokenwar status`, and — if the throttled cache shows pending
-  updates — offers an inline **"Upgrade now? [y/N]"** that runs
-  `scripts/upgrade.sh` for managed tools. The banner is silent for
+  user to run `tokenwar status`, and leaves pending updates as the statusline's
+  informational **"⬆ N updates · /tokenwar upgrade"** hint. It never runs
+  `scripts/upgrade.sh` automatically from provider launch. The banner is silent for
   non-interactive launches (`codex exec`, `gemini -p …`, `kimi -p …`,
-  `opencode run …`, pipes) so it never pollutes scripted output.
+  `opencode run …`, `copilot -p …`, `copilot --acp`, `copilot mcp|skill|plugin …`,
+  pipes) so it never pollutes scripted output.
 
 ## Windows
 
@@ -73,9 +95,9 @@ platform facts rather than as faults:
 - **statusLine** is written as `"<full path>\bash.exe" -c '~/…/tokenwar-statusline.sh'`
   because Claude Code spawns it as a native Windows process, where a bare `bash`
   may not resolve and `~` is not expanded by the caller.
-- **Codex / opencode telemetry** reads SQLite through `node:sqlite` when Python is
+- **Codex / opencode / Copilot telemetry** reads SQLite through `node:sqlite` when Python is
   unusable — the stock Windows `python3` is a Microsoft Store stub that satisfies
-  `command -v` and fails on every run. With neither engine, both report `N/A`;
+  `command -v` and fails on every run. With neither engine, all three report `N/A`;
   never present that as `0`.
 - **rtk** is expected from PATH. `--with-rtk` does not pipe a POSIX installer into
   `sh` there, and `upgrade` skips rtk unless it was `cargo install --path`-ed.
@@ -93,12 +115,13 @@ Full detail in `docs/windows.md`.
 
 ```
 /tokenwar            # default → status
-/tokenwar status     # current state of the 6 tools (read-only)
+/tokenwar status     # current state of the 7 tools (read-only)
 /tokenwar activate   # install missing + enable disabled (asks confirmation)
 /tokenwar upgrade    # bump each to latest (asks confirmation)
 /tokenwar test       # ping each one-by-one, verify it actually responds
 /tokenwar gain       # per-tool + global token-savings report
-/tokenwar check      # conflict detector — verifies the 6 tools are complementary
+/tokenwar check      # conflict detector — verifies the 7 tools are complementary
+/tokenwar copilot    # which tools reach GitHub Copilot CLI (`copilot wire` to fix)
 /tokenwar doctor     # full pipeline: status → test → check → gain
 /tokenwar disable X  # turn off one plugin (context-mode|claude-mem|caveman|ponytail)
 /tokenwar enable X   # turn a disabled plugin back on
@@ -112,7 +135,7 @@ Read the args after `/tokenwar`. If empty, treat as `status`. Always print a one
 
 ## Subcommand: status
 
-Run `bash ~/.claude/skills/tokenwar/scripts/status.sh` and report its output verbatim. The script returns exit code `0` if all 6 are healthy, `1` if any is missing/disabled.
+Run `bash ~/.claude/skills/tokenwar/scripts/status.sh` and report its output verbatim. The script returns exit code `0` if all 7 are healthy, `1` if any is missing/disabled.
 
 If exit code is `1`, end with a single line: `→ Run \`/tokenwar activate\` to fix.` (do not auto-fix from `status`).
 
@@ -120,7 +143,7 @@ If exit code is `1`, end with a single line: `→ Run \`/tokenwar activate\` to 
 
 Two phases — detect, then fix with confirmation.
 
-**Phase 1 — detect.** Run `bash ~/.claude/skills/tokenwar/scripts/status.sh`. Parse which of the 6 are in state `not-installed` or `installed-disabled`.
+**Phase 1 — detect.** Run `bash ~/.claude/skills/tokenwar/scripts/status.sh`. Parse which of the 7 are in state `not-installed` or `installed-disabled`.
 
 **Phase 2 — fix.** If any are unhealthy, use `AskUserQuestion` to confirm the fix plan. Example phrasing:
 
@@ -135,8 +158,11 @@ On `Yes`, run for each tool:
 - `rtk` hook missing → `rtk init -g --auto-patch` (only run this if `rtk gain` output said `[warn] No hook installed`). `--auto-patch` is non-interactive and writes the native `rtk hook claude` command straight into `~/.claude/settings.json` — do NOT hand-wire a `~/.claude/hooks/rtk-rewrite.sh` path (that file no longer exists; the old mechanism is dead). Verify with `rtk init --show` (expect `[ok] Hook: rtk hook claude`).
 - `rtk` opencode plugin missing → `rtk init -g --opencode` **when opencode is installed**. RTK's Claude hook only rewrites bash inside Claude Code; opencode has a separate plugin runtime, so without this plugin (`~/.config/opencode/plugins/rtk.ts`) RTK saves zero tokens in opencode. Restart opencode after. Verify with `rtk init --show` (expect `[ok] OpenCode: plugin installed`).
 - `pxpipe` not installed → `npm install -g pxpipe-proxy@0.10.0`. This is the current pinned package for teamchong/pxpipe; do not install a floating version.
+- `graphify` not installed → `uv tool install graphifyy` (or `pipx install graphifyy`; plain `pip` only as a last resort — the skill resolves its interpreter at runtime and a shared env is what produces upstream's `ModuleNotFoundError: No module named 'graphify'`), then `graphify install` to register the skill.
+- `graphify` installed-disabled (CLI present, skill missing) → `graphify install`. Do NOT reinstall the package; the CLI is already there, only the skill registration is absent.
+- GitHub Copilot CLI present but tools not wired to it → `bash ~/.claude/skills/tokenwar/scripts/copilot.sh wire --yes` (see the `copilot` subcommand below).
 
-**One-shot alternative**: `install.sh --all` (or `curl … | bash -s -- --all`) installs the whole stack at install time — the 4 plugins (marketplace-add + install + enable, with the anti-clobber re-enable), the RTK binary (via rtk's official prebuilt installer — no toolchain), and pxpipe (`pxpipe-proxy@0.10.0`), then wires RTK's hook with `rtk init -g` (and, when opencode is present, RTK's opencode plugin with `rtk init -g --opencode`). Use `--with-plugins`, `--with-rtk`, or `--with-pxpipe` for just one part. So a fresh machine needs no separate `activate`.
+**One-shot alternative**: `install.sh --all` (or `curl … | bash -s -- --all`) installs the whole stack at install time — the 4 plugins (marketplace-add + install + enable, with the anti-clobber re-enable), the RTK binary (via rtk's official prebuilt installer — no toolchain), pxpipe (`pxpipe-proxy@0.10.0`), graphify (`graphifyy` + `graphify install`), and the pinned OpenWiki CLI, then wires RTK's hook with `rtk init -g` (and, when opencode is present, RTK's opencode plugin with `rtk init -g --opencode`). Use `--with-plugins`, `--with-rtk`, `--with-pxpipe`, `--with-graphify`, `--with-openwiki`, or `--with-copilot` for just one part. OpenWiki repository initialization remains explicit. So a fresh machine needs no separate `activate`.
 
 **Gotcha discovered 2026-05-18**: the *first* call to `claude plugin enable` on any plugin creates `enabledPlugins` in `~/.claude/settings.json` and **clobbers** plugins that were enabled implicitly at the marketplace level. Mitigation: after EVERY enable/install, snapshot the full `claude plugin list --json` and re-enable any plugin that flipped from `enabled:true` to `enabled:false`. The `activate` flow must do this snapshot-and-restore.
 
@@ -152,6 +178,7 @@ Two phases: detect, then confirm + apply.
 - Reads installed plugin versions from `claude plugin list --json`.
 - Reads latest plugin versions from each marketplace's `marketplace.json`. Falls back to the marketplace clone's short git SHA (12 chars) when no `version` field exists — caveman is SHA-versioned.
 - For RTK: parses `cargo install --list` to detect path-installed dev builds; latest = `Cargo.toml` `version` on the tracked upstream branch (`git fetch` + `git show origin/<branch>:Cargo.toml`). Skips the public `cargo search rtk` registry — the public crate name belongs to a different project (Rust Type Kit) and gives wrong numbers.
+- For graphify: installed = `graphify --version`; latest = the PyPI JSON API for `graphifyy`, piped straight into node (the payload lists every release file ever published and blows past the argv/env limit if staged in a variable). Any failure — no curl, no network, malformed payload — yields `unknown`, never a fabricated verdict.
 - Writes `~/.claude/tokenwar/upgrade-check.json` and exits `0` if all up-to-date, `2` if any update available.
 
 **Phase 2 — confirm + upgrade.** Read the cache, show a table `<tool>: <current> → <latest>` (skip tools already up-to-date), and use `AskUserQuestion` **once** to confirm. That single `AskUserQuestion` **is** the consent gate — do not ask again in any other form. On `Yes`, run the upgrade script exactly **once**:
@@ -171,13 +198,14 @@ After a successful upgrade, re-run `check-updates.sh --force` then `status` so t
 
 ## Subcommand: test
 
-Run `bash ~/.claude/skills/tokenwar/scripts/status.sh --test`. For each of the 6 tools, the script issues a minimal end-to-end ping:
+Run `bash ~/.claude/skills/tokenwar/scripts/status.sh --test`. For each of the 7 tools, the script issues a minimal end-to-end ping:
 
 - **context-mode**: call the `ctx_stats` MCP tool. Alive iff it returns a JSON-shaped reply.
 - **claude-mem**: `claude-mem --version` exits 0.
 - **RTK**: `rtk --version` exits 0 AND `rtk gain` returns non-empty stats.
 - **pxpipe**: `pxpipe --version` exits 0. Proxy savings are read separately from `~/.pxpipe/events.jsonl`.
 - **caveman**: `test -d ~/.claude/plugins/cache/caveman/caveman/*/skills/caveman` AND the plugin appears in `claude plugin list`.
+- **graphify**: `graphify --version` exits 0. That is the cheapest call proving the Python entrypoint still resolves — the common failure is a broken interpreter path after a pip/uv reinstall, which `--version` catches.
 
 Report a table `<tool> | alive | version | latency_ms`. **Do not infer aliveness from "the plugin is enabled" — actually run the ping.**
 
@@ -196,6 +224,7 @@ Run `bash ~/.claude/skills/tokenwar/scripts/gain.sh`. It aggregates from:
 | claude-mem   | `~/.claude-mem/chroma-sync-state.json` — real per-project counts of stored observations + summaries, × `MEM_EST_TOKENS_PER_ITEM` (est.) |
 | pxpipe       | `~/.pxpipe/events.jsonl` — real proxy events; parse explicit saved-token fields or baseline-minus-actual token fields |
 | caveman      | none — a SessionStart style nudge with no buffer transform, so no measurable byte delta → honest `N/A` |
+| graphify     | `graphify benchmark ~/.graphify/global-graph.json` — deterministic, offline, and REAL, but it reports a per-QUERY reduction ratio, not a cumulative saved-token counter. Print the ratio in the note, keep the token column `N/A`, and never add it to TOTAL |
 
 For `context-mode`: invoke the `ctx_stats` MCP tool and parse the `total_size_kb` field, multiply by `1024 / TOKEN_CHARS_PER_TOKEN` (~4) to estimate tokens kept out of the context window.
 
@@ -280,6 +309,46 @@ Verdict: <COMPLEMENTARY|DEGRADED|CONFLICT>
 
 `<evidence>` must cite an actual path or value (e.g., `~/.claude/settings.json:hooks[0]` or `claude-mem v12.1.4 vs latest 12.1.4`). No vague "looks fine" — show the bytes.
 
+## Subcommand: copilot
+
+Copilot CLI is a tracked provider, but the TOOLS do not reach it for free — they
+are published for Claude Code, and Copilot exposes exactly three extension
+points of its own: hooks (`~/.copilot/hooks/*.json`), skills
+(`~/.copilot/skills/<name>/SKILL.md`), and MCP (`~/.copilot/mcp-config.json`).
+
+Run `bash ~/.claude/skills/tokenwar/scripts/copilot.sh` (read-only) to report the
+mapping, and `… copilot.sh wire --yes` to apply the missing parts. Exit `0` when
+every installed tool is wired, `1` otherwise.
+
+| Tool | Via | Wiring command |
+| ---- | --- | -------------- |
+| rtk | hook | `rtk init -g --copilot --auto-patch` |
+| graphify | skill | `graphify copilot install` |
+| caveman | skill | `copilot skill add <plugin cache>/skills/caveman/SKILL.md` |
+| ponytail | skill | `copilot skill add <plugin cache>/skills/ponytail/SKILL.md` |
+| claude-mem | MCP | `copilot mcp add claude-mem -- <its own .mcp.json command+args>` |
+
+Rules for this subcommand:
+
+- **Never hand-write the claude-mem MCP command.** Read it from the plugin's own
+  `.mcp.json`: that definition wraps a locator which resolves the current plugin
+  version at runtime, so the registration survives `claude plugin update`. A
+  hardcoded `.../claude-mem/<version>/scripts/mcp-server.cjs` breaks on the next
+  upgrade.
+- **Never write into `~/.copilot/skills/` directly.** Go through
+  `copilot skill add <file>`; Copilot owns that directory's layout and derives
+  the skill name from the SKILL.md frontmatter.
+- **The timeouts are not optional.** claude-mem's MCP server calls a local worker
+  and aborts at `CLAUDE_MEM_API_TIMEOUT_MS` (30s default). The first search after
+  a cold worker path indexes the whole memory DB — measured 2m02s. With the
+  defaults, the first Copilot call always fails and looks like a broken
+  integration. The wiring raises both that variable and Copilot's own per-tool
+  timeout.
+- `context-mode` and `pxpipe` are reported `n/a` with a reason and are NOT
+  wired. Do not "fix" that: context-mode's manifest pins an absolute,
+  version-specific interpreter path, and pxpipe proxies the Anthropic-compatible
+  API path, which Copilot does not use.
+
 ## Subcommand: doctor
 
 Run, in order: `status` → `test` → `check` → `gain`. Print each section's header, run the corresponding subcommand, collect the result, and end with a one-line verdict:
@@ -298,7 +367,7 @@ Let a user turn ONE managed tool off (or back on) without uninstalling it. Run:
 bash ~/.claude/skills/tokenwar/scripts/toggle.sh <enable|disable> <tool>
 ```
 
-Only the four Claude Code plugins are toggleable — `context-mode`, `claude-mem`, `caveman`, `ponytail` — driven by the native `claude plugin enable|disable <slug>` (reversible, keeps the plugin installed). `rtk` and `pxpipe` are standalone binaries, not plugins: the script refuses them (exit 3) and prints the correct per-tool mechanism instead. Unknown tool/action exits 2. Remind the user to restart the CLI for the change to take effect. This is the safe alternative to hand-editing `enabledPlugins` in `~/.claude/settings.json`.
+Only the four Claude Code plugins are toggleable — `context-mode`, `claude-mem`, `caveman`, `ponytail` — driven by the native `claude plugin enable|disable <slug>` (reversible, keeps the plugin installed). `rtk`, `pxpipe`, and `graphify` are standalone binaries, not plugins: the script refuses them (exit 3) and prints the correct per-tool mechanism instead (`graphify install` / `graphify uninstall` for graphify — which adds and removes the skill while leaving the CLI and any built graphs alone). Unknown tool/action exits 2. Remind the user to restart the CLI for the change to take effect. This is the safe alternative to hand-editing `enabledPlugins` in `~/.claude/settings.json`.
 
 ---
 
@@ -311,6 +380,7 @@ Each tool is read from its own native telemetry — `gain.sh` never fabricates:
 - **claude-mem** — `~/.claude-mem/chroma-sync-state.json` (real stored-memory counts).
 - **pxpipe** — `~/.pxpipe/events.jsonl` (real proxy-side savings from teamchong/pxpipe).
 - **caveman** — none. It's a SessionStart prompt-style nudge with no buffer transform, so there is no before/after byte delta to measure. It is always `N/A` — do not wire a byte-logging hook for it; that would only fabricate numbers.
+- **graphify** — `graphify benchmark` on `~/.graphify/global-graph.json` (per-repo graphs live in `<repo>/graphify-out/` and are not host-level). Real and deterministic, but a per-query ratio: report `45.3x fewer tokens per query vs naive corpus read`, never a summed token figure.
 
 ---
 
