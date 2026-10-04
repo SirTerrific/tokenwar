@@ -312,6 +312,9 @@ done
 # pull rewrites this file.
 {
     if [[ " ${needing[*]} " == *" tokenwar "* ]]; then upgrade_tokenwar || rc=1; fi
+    # Re-check so the cache (and the statusline arrow) reflect the new versions
+    # now, not after its 24h expiry.
+    bash "$CHECK_UPDATES" --force --quiet >/dev/null 2>&1 || true
     echo ""
     if (( rc == 0 )); then
         say "Upgrade complete. ${COL_DIM}Restart your CLI for plugin changes to load.${COL_RESET}"

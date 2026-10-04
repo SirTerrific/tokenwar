@@ -109,6 +109,20 @@ EOF
     grep -qx -- "--force --quiet" "$CHECK_LOG"
 }
 
+@test "re-checks after applying, so the cache drops the update just installed" {
+    cat > "$MOCK_BIN/npm" <<EOF
+#!/usr/bin/env bash
+exit 0
+EOF
+    chmod +x "$MOCK_BIN/npm"
+    write_cache <<'EOF'
+{"tools":{"pxpipe":{"state":"update-available"}}}
+EOF
+    run bash "$SCRIPT" --yes </dev/null
+    [ "$status" -eq 0 ]
+    [ "$(grep -cx -- "--force --quiet" "$CHECK_LOG")" -eq 2 ]
+}
+
 @test "--all skips the update check" {
     run bash "$SCRIPT" --all </dev/null
     [ ! -f "$CHECK_LOG" ]
