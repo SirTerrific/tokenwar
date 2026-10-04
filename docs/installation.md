@@ -18,7 +18,7 @@ Steps:
 1. Install: run `curl -fsSL https://raw.githubusercontent.com/SirTerrific/tokenwar/main/install.sh | bash -s -- --all`
    (fetch and read the script first if you want to inspect it — it only wires
    the statusline, shell functions, the 4 Claude plugins, RTK, pxpipe,
-   Graphify, and the pinned OpenWiki CLI).
+   Graphify, and the OpenWiki CLI, each at its latest version).
 2. Activate: reload the shell (`source ~/.bashrc`) so the tokenwar / codex /
    gemini / kimi / opencode wrappers take effect. For Claude Code, restart it so
    the statusLine loads.
@@ -38,7 +38,7 @@ Install, activate, and verify https://github.com/SirTerrific/tokenwar — run it
 ### 👤 Human install
 
 One command installs the whole stack: the 4 Claude Code plugins, **RTK**,
-**pxpipe**, **Graphify**, the pinned **OpenWiki** CLI, statusline, shell
+**pxpipe**, **Graphify**, the **OpenWiki** CLI, statusline, shell
 functions, Copilot wiring, and RTK's hook:
 
 ```bash

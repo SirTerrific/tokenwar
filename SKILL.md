@@ -18,12 +18,12 @@ Manages the 7 complementary token-saving tools:
 | caveman      | response-style compression  | `caveman@caveman`                 | hook              |
 | ponytail     | the code the LLM writes     | `ponytail@ponytail`               | plugin (mode-gated) |
 
-> ponytail and caveman are **presence-only** (a ruleset / a style nudge — no metered buffer): `status` and `activate` manage all seven, but `gain` only prints real telemetry where the tool exposes it. pxpipe is CLI/proxy-managed via the pinned npm package `pxpipe-proxy@0.10.0` and reports savings only from its native `~/.pxpipe/events.jsonl`. ponytail upgrades via `claude plugin update ponytail@ponytail`, and is toggled per-session with `/ponytail off|lite|full|ultra`.
+> ponytail and caveman are **presence-only** (a ruleset / a style nudge — no metered buffer): `status` and `activate` manage all seven, but `gain` only prints real telemetry where the tool exposes it. pxpipe is CLI/proxy-managed via the npm package `pxpipe-proxy` (installed and upgraded at `@latest`) and reports savings only from its native `~/.pxpipe/events.jsonl`. ponytail upgrades via `claude plugin update ponytail@ponytail`, and is toggled per-session with `/ponytail off|lite|full|ultra`.
 
 > **graphify** is a CLI + skill, not a Claude Code plugin. Its PyPI package is `graphifyy` (the bare `graphify` name on PyPI is unaffiliated — see upstream's README) while the command stays `graphify`. `status` reports it OK only when BOTH halves are present: the CLI on `PATH` **and** a registered skill (`~/.claude/skills/graphify/SKILL.md`); a CLI with no skill is `installed-disabled`, because the assistant then never reaches for the graph. `check-updates` reads its latest version live from the PyPI JSON API (no pinned constant — graphify ships weekly, so a hardcoded number would report phantom up-to-date), and `upgrade` routes through whichever installer owns the package (`uv tool` → `pipx` → `pip`) then re-runs `graphify install` so the skill files match the new version.
 
 > **OpenWiki is the recommended shared project-memory layer**, not an eighth
-> live compression lane. `install.sh --with-openwiki` installs the pinned CLI,
+> live compression lane. `install.sh --with-openwiki` installs the latest CLI,
 > and `--all` includes it. Never run `openwiki --init` implicitly: initialization
 > writes generated documentation and invokes an LLM. Recommend it strongly for
 > long-lived team repositories, where one reviewed wiki is reused by every human
@@ -99,8 +99,10 @@ platform facts rather than as faults:
   unusable — the stock Windows `python3` is a Microsoft Store stub that satisfies
   `command -v` and fails on every run. With neither engine, all three report `N/A`;
   never present that as `0`.
-- **rtk** is expected from PATH. `--with-rtk` does not pipe a POSIX installer into
-  `sh` there, and `upgrade` skips rtk unless it was `cargo install --path`-ed.
+- **rtk**: rtk's own installer refuses Windows, so `--with-rtk` and `upgrade` run
+  `scripts/rtk-update.sh`, which installs the latest release zip into `~/.local/bin`
+  after checking its published sha256. An rtk installed by winget/scoop/cargo is
+  reported but left to that tool.
 
 Outside Git Bash the user reaches the same dispatcher through `bin/tokenwar.cmd`,
 which locates `bash.exe` and calls `scripts/tokenwar.sh`. It is a .cmd on purpose:
@@ -157,12 +159,12 @@ On `Yes`, run for each tool:
 - `context-mode` disabled → `claude plugin enable context-mode@context-mode`
 - `rtk` hook missing → `rtk init -g --auto-patch` (only run this if `rtk gain` output said `[warn] No hook installed`). `--auto-patch` is non-interactive and writes the native `rtk hook claude` command straight into `~/.claude/settings.json` — do NOT hand-wire a `~/.claude/hooks/rtk-rewrite.sh` path (that file no longer exists; the old mechanism is dead). Verify with `rtk init --show` (expect `[ok] Hook: rtk hook claude`).
 - `rtk` opencode plugin missing → `rtk init -g --opencode` **when opencode is installed**. RTK's Claude hook only rewrites bash inside Claude Code; opencode has a separate plugin runtime, so without this plugin (`~/.config/opencode/plugins/rtk.ts`) RTK saves zero tokens in opencode. Restart opencode after. Verify with `rtk init --show` (expect `[ok] OpenCode: plugin installed`).
-- `pxpipe` not installed → `npm install -g pxpipe-proxy@0.10.0`. This is the current pinned package for teamchong/pxpipe; do not install a floating version.
+- `pxpipe` not installed → `npm install -g pxpipe-proxy@latest` (teamchong/pxpipe). Never pin a version: `check-updates` compares against the npm registry.
 - `graphify` not installed → `uv tool install graphifyy` (or `pipx install graphifyy`; plain `pip` only as a last resort — the skill resolves its interpreter at runtime and a shared env is what produces upstream's `ModuleNotFoundError: No module named 'graphify'`), then `graphify install` to register the skill.
 - `graphify` installed-disabled (CLI present, skill missing) → `graphify install`. Do NOT reinstall the package; the CLI is already there, only the skill registration is absent.
 - GitHub Copilot CLI present but tools not wired to it → `bash ~/.claude/skills/tokenwar/scripts/copilot.sh wire --yes` (see the `copilot` subcommand below).
 
-**One-shot alternative**: `install.sh --all` (or `curl … | bash -s -- --all`) installs the whole stack at install time — the 4 plugins (marketplace-add + install + enable, with the anti-clobber re-enable), the RTK binary (via rtk's official prebuilt installer — no toolchain), pxpipe (`pxpipe-proxy@0.10.0`), graphify (`graphifyy` + `graphify install`), and the pinned OpenWiki CLI, then wires RTK's hook with `rtk init -g` (and, when opencode is present, RTK's opencode plugin with `rtk init -g --opencode`). Use `--with-plugins`, `--with-rtk`, `--with-pxpipe`, `--with-graphify`, `--with-openwiki`, or `--with-copilot` for just one part. OpenWiki repository initialization remains explicit. So a fresh machine needs no separate `activate`.
+**One-shot alternative**: `install.sh --all` (or `curl … | bash -s -- --all`) installs the whole stack at install time — the 4 plugins (marketplace-add + install + enable, with the anti-clobber re-enable), the latest RTK binary (via `scripts/rtk-update.sh` — rtk's official installer, or the sha256-checked release zip on Windows; no toolchain), pxpipe (`pxpipe-proxy@latest`), graphify (`graphifyy` + `graphify install`), and the latest OpenWiki CLI, then wires RTK's hook with `rtk init -g` (and, when opencode is present, RTK's opencode plugin with `rtk init -g --opencode`). Use `--with-plugins`, `--with-rtk`, `--with-pxpipe`, `--with-graphify`, `--with-openwiki`, or `--with-copilot` for just one part. OpenWiki repository initialization remains explicit. So a fresh machine needs no separate `activate`.
 
 **Gotcha discovered 2026-05-18**: the *first* call to `claude plugin enable` on any plugin creates `enabledPlugins` in `~/.claude/settings.json` and **clobbers** plugins that were enabled implicitly at the marketplace level. Mitigation: after EVERY enable/install, snapshot the full `claude plugin list --json` and re-enable any plugin that flipped from `enabled:true` to `enabled:false`. The `activate` flow must do this snapshot-and-restore.
 
@@ -177,8 +179,11 @@ Two phases: detect, then confirm + apply.
 - Refreshes Claude marketplaces (`claude plugin marketplace update`) — non-fatal on network failure.
 - Reads installed plugin versions from `claude plugin list --json`.
 - Reads latest plugin versions from each marketplace's `marketplace.json`. Falls back to the marketplace clone's short git SHA (12 chars) when no `version` field exists — caveman is SHA-versioned.
-- For RTK: parses `cargo install --list` to detect path-installed dev builds; latest = `Cargo.toml` `version` on the tracked upstream branch (`git fetch` + `git show origin/<branch>:Cargo.toml`). Skips the public `cargo search rtk` registry — the public crate name belongs to a different project (Rust Type Kit) and gives wrong numbers.
+- For RTK: parses `cargo install --list` to detect path-installed dev builds; latest = `Cargo.toml` `version` on the tracked upstream branch (`git fetch` + `git show origin/<branch>:Cargo.toml`). Any other rtk is a released binary: latest = the newest GitHub release (`rtk-ai/rtk`). Never the public `cargo search rtk` registry — that crate name belongs to a different project (Rust Type Kit).
+- For pxpipe and OpenWiki: latest = the npm registry (`pxpipe-proxy`, `openwiki`); OpenWiki has no `--version`, so its installed version comes from its global `package.json`. No version is ever hardcoded: a constant goes stale and reports a phantom up-to-date.
+- For tokenwar itself: installed = the clone's HEAD, latest = its fetched upstream; a clone ahead of upstream counts as current.
 - For graphify: installed = `graphify --version`; latest = the PyPI JSON API for `graphifyy`, piped straight into node (the payload lists every release file ever published and blows past the argv/env limit if staged in a variable). Any failure — no curl, no network, malformed payload — yields `unknown`, never a fabricated verdict.
+- Any failed lookup reports `unknown`, never `up-to-date`.
 - Writes `~/.claude/tokenwar/upgrade-check.json` and exits `0` if all up-to-date, `2` if any update available.
 
 **Phase 2 — confirm + upgrade.** Read the cache, show a table `<tool>: <current> → <latest>` (skip tools already up-to-date), and use `AskUserQuestion` **once** to confirm. That single `AskUserQuestion` **is** the consent gate — do not ask again in any other form. On `Yes`, run the upgrade script exactly **once**:
@@ -187,14 +192,14 @@ Two phases: detect, then confirm + apply.
 bash ~/.claude/skills/tokenwar/scripts/upgrade.sh --yes
 ```
 
-- One Bash call handles **every** tool that needs an update (plugin scope detection, RTK path build, pxpipe npm) in a single pass — do **not** run `claude plugin update <slug>` per tool yourself, and do **not** run the script a second time. Per-tool calls and re-runs are what caused the old repeat-prompt loop.
+- One Bash call handles **every** tool that needs an update (plugin scope detection, RTK update, pxpipe/OpenWiki `npm install -g <pkg>@latest`, graphify, and tokenwar's own `git pull --ff-only`, done last) in a single pass — do **not** run `claude plugin update <slug>` per tool yourself, and do **not** run the script a second time. Per-tool calls and re-runs are what caused the old repeat-prompt loop.
 - `--yes` is required: without it the script prints its own `[y/N]` prompt, which finds no tty under the Bash tool, reads empty, and exits 0 with "Skipped" — nothing upgrades. Passing `--yes` suppresses only that redundant second prompt; consent is already captured by `AskUserQuestion`.
-- **Ordering matters (cache dependency):** Phase 1's `check-updates.sh --force` MUST have run first so the cache is fresh. `upgrade.sh` trusts `~/.claude/tokenwar/upgrade-check.json` verbatim; on a stale/empty cache it silently no-ops with "All tools up-to-date". Always: `check-updates.sh --force` → show table → `AskUserQuestion` → `upgrade.sh --yes`.
+- **Ordering matters (cache dependency):** Phase 1's `check-updates.sh --force` MUST have run first so the cache is fresh. `upgrade.sh` re-runs `check-updates.sh --force` itself before reading the cache, so it never acts on a stale answer; the table you show still comes from Phase 1. Always: `check-updates.sh --force` → show table → `AskUserQuestion` → `upgrade.sh --yes`.
 - **On failure, stop — do not re-ask.** If `upgrade.sh` exits non-zero, surface its stderr to the user and stop. Never silently retry the flow.
 
 After a successful upgrade, re-run `check-updates.sh --force` then `status` so the version columns reflect the new state. Restart the CLI for plugin changes to load.
 
-**Passive surfacing.** `/tokenwar status` calls `check-updates.sh --quiet` at the end (uses the 24h cache, no network unless stale). If any update is available, status appends an `updates available (N):` block and a `→ Run /tokenwar upgrade to apply.` line. The user is never auto-upgraded — the trigger is always explicit. This matches the security principle of pinning versions: drift is reported, not silently applied.
+**Passive surfacing.** `/tokenwar status` calls `check-updates.sh --quiet` at the end (uses the 24h cache, no network unless stale). If any update is available, status appends an `updates available (N):` block and a `→ Run /tokenwar upgrade to apply.` line. The user is never auto-upgraded — the trigger is always explicit. Drift is reported, not silently applied — but what gets installed is always the latest release.
 
 ## Subcommand: test
 

@@ -14,12 +14,12 @@
 #      --with-plugins  marketplace add + install + enable the 4 Claude Code
 #                      plugins (context-mode, claude-mem, caveman, ponytail),
 #                      with anti-clobber re-enable.
-#      --with-rtk      install the RTK binary via rtk's official prebuilt
-#                      installer (prebuilt, no toolchain), then wire its hook.
-#      --with-pxpipe  install pxpipe proxy from a pinned npm package.
+#      --with-rtk      install the latest RTK binary (scripts/rtk-update.sh:
+#                      prebuilt, no toolchain, Windows too), then wire its hook.
+#      --with-pxpipe  install the latest pxpipe proxy npm package.
 #      --with-graphify install the graphify CLI (PyPI `graphifyy`) and register
 #                      its assistant skill via `graphify install`.
-#      --with-openwiki install the pinned OpenWiki CLI. Repository initialization
+#      --with-openwiki install the latest OpenWiki CLI. Repository initialization
 #                      remains explicit because it writes docs and invokes an LLM.
 #      --with-copilot  point the installed tools at GitHub Copilot CLI's own
 #                      extension points (hook / skills / MCP) via copilot.sh.
@@ -54,23 +54,23 @@ readonly PLUGIN_SLUGS=(
     "ponytail@ponytail"
 )
 
-# RTK binary install (--with-rtk) via rtk's OWN official installer, which
-# downloads a prebuilt binary (no toolchain) for every major platform. Pinned to
-# a release tag so the script we pipe to sh is fixed/reviewable; ref is
-# env-overridable. rtk drops the binary in ~/.local/bin.
+# RTK binary install (--with-rtk) goes through scripts/rtk-update.sh, the same
+# script `tokenwar upgrade` uses: rtk's official installer on Linux/macOS, the
+# sha256-checked release zip on Windows (rtk's installer refuses Windows). Both
+# install the latest release into ~/.local/bin.
 readonly RTK_BIN="rtk"
 # opencode has no Claude-Code-style hook system, so RTK ships a dedicated
 # opencode plugin (`rtk init -g --opencode` writes ~/.config/opencode/plugins/rtk.ts).
 # Without it, RTK never rewrites bash inside opencode and saves zero tokens there.
 readonly OPENCODE_BIN="opencode"
-readonly RTK_INSTALL_REF="${TOKENWAR_RTK_INSTALL_REF:-v0.42.4}"
-readonly RTK_INSTALL_URL="https://raw.githubusercontent.com/rtk-ai/rtk/${RTK_INSTALL_REF}/install.sh"
+readonly RTK_UPDATE_SCRIPT_REL="scripts/rtk-update.sh"
 readonly RTK_LOCAL_BIN="$HOME/.local/bin"
 readonly NPM_BIN="npm"
 readonly PXPIPE_BIN="pxpipe"
-readonly PXPIPE_NPM_PACKAGE="pxpipe-proxy"
-readonly PXPIPE_NPM_VERSION="0.10.0"
-readonly PXPIPE_NPM_SPEC="${PXPIPE_NPM_PACKAGE}@${PXPIPE_NPM_VERSION}"
+# Every component installs at its latest published version: a pin goes stale
+# silently (pxpipe sat at 0.10.0 while 0.14.0 shipped). `tokenwar upgrade` keeps
+# them current afterwards.
+readonly PXPIPE_NPM_SPEC="pxpipe-proxy@latest"
 readonly USER_LOCAL_BIN="$HOME/.local/bin"
 
 # graphify (--with-graphify): the repo/doc structure lane. Published on PyPI as
@@ -86,10 +86,10 @@ readonly PIP_BIN="pip"
 readonly GRAPHIFY_BIN="graphify"
 readonly GRAPHIFY_PYPI_PACKAGE="graphifyy"
 
-# OpenWiki is shared project memory. Installation is safe and pinned; generating
-# a wiki remains a deliberate per-repository action because it invokes an LLM.
+# OpenWiki is shared project memory. Installation is safe; generating a wiki
+# remains a deliberate per-repository action because it invokes an LLM.
 readonly OPENWIKI_BIN="openwiki"
-readonly OPENWIKI_NPM_SPEC="openwiki@0.5.1"
+readonly OPENWIKI_NPM_SPEC="openwiki@latest"
 
 # Copilot wiring (--with-copilot). The tools are published for Claude Code and
 # do not reach Copilot for free; copilot.sh points each at Copilot's own
@@ -413,21 +413,21 @@ wire_rtk_hook() {
     fi
 }
 
-# --with-rtk: install the RTK binary via rtk's official installer, then wire its
-# hook. RTK ships prebuilt binaries for every major platform, so there is no
-# toolchain to set up — no cargo, no compiling.
+# --with-rtk: install the latest RTK binary, then wire its hook. RTK ships
+# prebuilt binaries for every major platform, so there is no toolchain to set
+# up — no cargo, no compiling.
 install_rtk() {
     if command -v "$RTK_BIN" >/dev/null 2>&1; then
         say "RTK already installed ($("$RTK_BIN" --version 2>/dev/null || echo present)) — skipping install"
         return 0
     fi
-    if ! command -v curl >/dev/null 2>&1; then
-        warn "curl not found — cannot run rtk's installer. See https://github.com/rtk-ai/rtk"
+    local update_script="${INSTALL_DIR}/${RTK_UPDATE_SCRIPT_REL}"
+    if [[ ! -f "$update_script" ]]; then
+        warn "RTK installer script not found at $update_script — see https://github.com/rtk-ai/rtk"
         return 0
     fi
 
-    say "Installing RTK via the official prebuilt installer ($RTK_INSTALL_REF)"
-    curl -fsSL "$RTK_INSTALL_URL" | sh >/dev/null 2>&1 || warn "rtk installer failed — see https://github.com/rtk-ai/rtk"
+    bash "$update_script" || warn "rtk install failed — see https://github.com/rtk-ai/rtk"
     # rtk drops the binary in ~/.local/bin; make it visible to this process.
     case ":$PATH:" in *":$RTK_LOCAL_BIN:"*) : ;; *) PATH="$RTK_LOCAL_BIN:$PATH" ;; esac
 

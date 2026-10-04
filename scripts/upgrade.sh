@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 # tokenwar upgrade — bump the token-saving tools to their latest versions.
 #
-# Plugins (context-mode, claude-mem, caveman) → `claude plugin update <slug> --scope <scope>`.
+# Plugins (context-mode, claude-mem, caveman,
+#          ponytail)                           → `claude plugin update <slug> --scope <scope>`.
 # RTK (path-installed dev build)              → `cargo install --path <repo> --force`.
-# pxpipe                                      → `npm install -g pxpipe-proxy@<pinned>`.
+# RTK (released binary)                       → scripts/rtk-update.sh (latest release).
+# pxpipe                                      → `npm install -g pxpipe-proxy@latest`.
+# OpenWiki                                    → `npm install -g openwiki@latest`.
 # graphify                                    → its own installer (uv tool / pipx / pip),
 #                                               then `graphify install` to refresh the skill.
+# tokenwar itself                             → `git pull --ff-only` of its clone, last.
 #
-# Source of "what needs updating": the throttled upgrade-check cache written by
-# check-updates.sh. If the cache is absent, all tools are attempted. The cache is
-# never refreshed here (no network) — pass the cache as authoritative.
+# Source of "what needs updating": check-updates.sh, re-run with --force first
+# so the answer reflects the registries NOW, not a cache up to 24h old. If the
+# check cannot produce a cache, all tools are attempted.
 #
 # Usage:
 #   upgrade.sh            # interactive: confirm before applying
@@ -28,13 +32,20 @@ source "${SCRIPT_DIR}/lib/osdetect.sh"
 readonly SLUG_CTX="context-mode@context-mode"
 readonly SLUG_MEM="claude-mem@thedotmack"
 readonly SLUG_CAVE="caveman@caveman"
+readonly SLUG_PONY="ponytail@ponytail"
 
 readonly CLAUDE_BIN="claude"
 readonly CARGO_BIN="cargo"
 readonly NPM_BIN="npm"
-readonly PXPIPE_NPM_PACKAGE="pxpipe-proxy"
-readonly PXPIPE_NPM_VERSION="0.10.0"
-readonly PXPIPE_NPM_SPEC="${PXPIPE_NPM_PACKAGE}@${PXPIPE_NPM_VERSION}"
+# @latest, never a pinned number: a pin goes stale between tokenwar releases.
+readonly PXPIPE_NPM_SPEC="pxpipe-proxy@latest"
+readonly OPENWIKI_NPM_SPEC="openwiki@latest"
+readonly RTK_UPDATE_SCRIPT="${SCRIPT_DIR}/rtk-update.sh"
+# Overridable so tests can stub the network check out.
+readonly CHECK_UPDATES="${TW_CHECK_UPDATES:-${SCRIPT_DIR}/check-updates.sh}"
+TOKENWAR_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+readonly TOKENWAR_ROOT
+readonly ALL_TOOLS="ctx mem cave pony rtk pxpipe graphify openwiki tokenwar"
 
 readonly UV_BIN="uv"
 readonly PIPX_BIN="pipx"
@@ -83,20 +94,23 @@ tty_readable() { { : <"$TTY_DEVICE"; } 2>/dev/null; }
 # Reads the cache; with --all or no cache, returns every managed updater.
 tools_needing_update() {
     if $force_all || [[ ! -f "$UPGRADE_CACHE_FILE" ]]; then
-        echo "ctx mem cave rtk pxpipe graphify"; return
+        echo "$ALL_TOOLS"; return
     fi
-    CACHE="$(tw_node_path "$UPGRADE_CACHE_FILE")" TW_STATE="$STATE_UPDATE" node --input-type=module -e '
+    CACHE="$(tw_node_path "$UPGRADE_CACHE_FILE")" TW_STATE="$STATE_UPDATE" ALL="$ALL_TOOLS" node --input-type=module -e '
         import { readFileSync } from "node:fs";
-        let d; try { d = JSON.parse(readFileSync(process.env.CACHE, "utf8")); } catch { console.log("ctx mem cave rtk pxpipe graphify"); process.exit(0); }
+        let d; try { d = JSON.parse(readFileSync(process.env.CACHE, "utf8")); } catch { console.log(process.env.ALL); process.exit(0); }
         const t = d.tools || {};
         const want = process.env.TW_STATE;
-        const map = { "context-mode": "ctx", "claude-mem": "mem", "caveman": "cave", "rtk": "rtk", "pxpipe": "pxpipe", "graphify": "graphify" };
+        // tokenwar last: pulling it rewrites the scripts this run is executing.
+        const map = { "context-mode": "ctx", "claude-mem": "mem", "caveman": "cave", "ponytail": "pony",
+                      "rtk": "rtk", "pxpipe": "pxpipe", "graphify": "graphify", "openwiki": "openwiki",
+                      "tokenwar": "tokenwar" };
         const out = [];
         for (const [name, key] of Object.entries(map)) {
             if (t[name] && t[name].state === want) out.push(key);
         }
         console.log(out.join(" "));
-    ' 2>/dev/null || echo "ctx mem cave rtk pxpipe graphify"
+    ' 2>/dev/null || echo "$ALL_TOOLS"
 }
 
 # Look up a plugin's install scope (user|local|project|managed) from
@@ -158,30 +172,42 @@ upgrade_plugin() {
     fi
 }
 
-# Upgrade RTK. Only the path-installed dev build is supported (the public crate
-# name belongs to a different project). Discover the repo from cargo's install
-# list; if not path-installed, skip with a note rather than touching the wrong
-# crate.
+# Upgrade RTK. A path-installed dev build (`cargo install --path`) is rebuilt
+# from its clone; anything else is a released binary, updated to the latest
+# GitHub release by rtk-update.sh (never `cargo install rtk`: that crate name
+# belongs to a different project).
 upgrade_rtk() {
-    if ! command -v "$CARGO_BIN" >/dev/null 2>&1; then
-        warn "cargo not found — cannot update RTK"; return 1
+    local repo_path=""
+    if command -v "$CARGO_BIN" >/dev/null 2>&1; then
+        repo_path=$("$CARGO_BIN" install --list 2>/dev/null \
+            | awk '/^rtk v.* \(.*\):$/ { match($0, /\(([^)]+)\)/, m); print m[1]; exit }')
     fi
-    local repo_path
-    repo_path=$("$CARGO_BIN" install --list 2>/dev/null \
-        | awk '/^rtk v.* \(.*\):$/ { match($0, /\(([^)]+)\)/, m); print m[1]; exit }')
-    if [[ -z "$repo_path" || ! -d "$repo_path/.git" ]]; then
-        warn "RTK is not path-installed — skipping (registry crate is a different project)"
-        return 0
+    if [[ -n "$repo_path" && -d "$repo_path/.git" ]]; then
+        say "Updating RTK from $repo_path"
+        git -C "$repo_path" pull --ff-only && "$CARGO_BIN" install --path "$repo_path" --force
+        return
     fi
-    say "Updating RTK from $repo_path"
-    git -C "$repo_path" pull --ff-only && "$CARGO_BIN" install --path "$repo_path" --force
+    bash "$RTK_UPDATE_SCRIPT"
 }
 
-upgrade_pxpipe() {
+upgrade_npm_global() {
+    local label="$1" spec="$2"
     if ! command -v "$NPM_BIN" >/dev/null 2>&1; then
-        warn "npm not found — cannot update pxpipe"; return 1
+        warn "npm not found — cannot update $label"; return 1
     fi
-    "$NPM_BIN" install -g "$PXPIPE_NPM_SPEC"
+    say "Updating $label ($spec)"
+    "$NPM_BIN" install -g "$spec"
+}
+
+# Fast-forward tokenwar's own clone. Run last: it rewrites the scripts this
+# upgrade is executing.
+upgrade_tokenwar() {
+    local root
+    root="$(tw_node_path "$TOKENWAR_ROOT")"
+    [[ -d "${root}/.git" ]] || { warn "tokenwar is not a git clone — reinstall it to update"; return 1; }
+    say "Updating tokenwar ($TOKENWAR_ROOT)"
+    git -C "$root" pull --ff-only --quiet \
+        || { warn "tokenwar clone not fast-forwardable (local edits?) — left as is"; return 1; }
 }
 
 # Upgrade graphify with whichever Python installer actually owns it. Order
@@ -222,6 +248,8 @@ upgrade_graphify() {
 }
 
 # === collect work ===
+# Ask the registries now rather than trust a cache up to 24h old.
+$force_all || bash "$CHECK_UPDATES" --force --quiet >/dev/null 2>&1 || true
 read -r -a needing <<<"$(tools_needing_update)"
 if (( ${#needing[@]} == 0 )); then
     say "All tools up-to-date — nothing to upgrade."
@@ -235,9 +263,12 @@ for key in "${needing[@]}"; do
         ctx)  printf "  %s\n" "context-mode" ;;
         mem)  printf "  %s\n" "claude-mem" ;;
         cave) printf "  %s\n" "caveman" ;;
+        pony) printf "  %s\n" "ponytail" ;;
         rtk)  printf "  %s\n" "rtk" ;;
         pxpipe) printf "  %s\n" "pxpipe" ;;
         graphify) printf "  %s\n" "graphify" ;;
+        openwiki) printf "  %s\n" "OpenWiki" ;;
+        tokenwar) printf "  %s\n" "tokenwar" ;;
     esac
 done
 echo ""
@@ -269,16 +300,23 @@ for key in "${needing[@]}"; do
         ctx)  upgrade_plugin "$SLUG_CTX"  || rc=1 ;;
         mem)  upgrade_plugin "$SLUG_MEM"  || rc=1 ;;
         cave) upgrade_plugin "$SLUG_CAVE" || rc=1 ;;
+        pony) upgrade_plugin "$SLUG_PONY" || rc=1 ;;
         rtk)  upgrade_rtk                 || rc=1 ;;
-        pxpipe) upgrade_pxpipe            || rc=1 ;;
+        pxpipe) upgrade_npm_global pxpipe "$PXPIPE_NPM_SPEC" || rc=1 ;;
         graphify) upgrade_graphify        || rc=1 ;;
+        openwiki) upgrade_npm_global OpenWiki "$OPENWIKI_NPM_SPEC" || rc=1 ;;
     esac
 done
 
-echo ""
-if (( rc == 0 )); then
-    say "Upgrade complete. ${COL_DIM}Restart your CLI for plugin changes to load.${COL_RESET}"
-else
-    fail "One or more upgrades failed — see messages above."
-fi
-exit "$rc"
+# tokenwar last, in one compound command: bash has parsed it all before the
+# pull rewrites this file.
+{
+    if [[ " ${needing[*]} " == *" tokenwar "* ]]; then upgrade_tokenwar || rc=1; fi
+    echo ""
+    if (( rc == 0 )); then
+        say "Upgrade complete. ${COL_DIM}Restart your CLI for plugin changes to load.${COL_RESET}"
+    else
+        fail "One or more upgrades failed — see messages above."
+    fi
+    exit "$rc"
+}

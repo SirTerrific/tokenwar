@@ -152,10 +152,16 @@ tokenwar only ever calls it as a command (`rtk gain`, `rtk --version`,
 `rtk init -g`). RTK wires its own Claude Code hook, which tokenwar merely
 detects.
 
-`--with-rtk` will not pipe a POSIX installer into `sh` on Windows. Install rtk
-yourself — `winget`, `scoop`, `cargo`, or the release binary — and tokenwar picks
-it up from PATH. `tokenwar upgrade` likewise skips rtk unless it was installed
-with `cargo install --path`, so you manage that binary directly.
+rtk's own installer refuses Windows, so `--with-rtk` and `tokenwar upgrade` use
+`scripts/rtk-update.sh` instead: it downloads the latest release's
+`rtk-x86_64-pc-windows-msvc.zip` (or `aarch64`), checks it against the sha256
+digest GitHub publishes for that asset, and puts `rtk.exe` in `~/.local/bin`.
+It refuses an asset with no digest or a mismatched one. The old `rtk.exe` is
+renamed aside first, so an rtk hook firing during the update cannot block it.
+
+An rtk installed elsewhere — `winget`, `scoop`, `cargo install` — belongs to that
+tool: tokenwar reports its updates but leaves the binary alone. A dev build from
+`cargo install --path` is rebuilt from its clone.
 
 ## Known limitations
 

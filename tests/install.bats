@@ -197,26 +197,34 @@ EOF
     [ ! -f "$RTK_LOG" ]
 }
 
-@test "--with-rtk installs rtk via the official prebuilt installer when absent" {
+@test "--with-rtk installs rtk through the checkout's rtk-update.sh when absent" {
     rm -f "$MOCK_BIN/rtk"                          # rtk not yet installed
     printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
     PATH="$MOCK_BIN:/usr/bin:/bin"                 # excludes ~/.cargo/bin → real rtk hidden
     make_fake_rtk "$HOME/fake-rtk"
-    # Mock curl = rtk's official installer: drops the binary into ~/.local/bin.
-    cat > "$MOCK_BIN/curl" <<EOF
+    # Stub rtk-update.sh (tested on its own in rtk-update.bats): drops the
+    # binary into ~/.local/bin, as the real one does.
+    cat > "$TOKENWAR_DIR/scripts/rtk-update.sh" <<EOF
 #!/usr/bin/env bash
-echo "\$*" >> "$HOME/curl-calls.log"
+echo called >> "$HOME/rtk-update.log"
 mkdir -p "$HOME/.local/bin"
 cp "$HOME/fake-rtk" "$HOME/.local/bin/rtk"
-exit 0
 EOF
-    chmod +x "$MOCK_BIN/curl"
 
     run bash "$SCRIPT" --with-rtk
     [ "$status" -eq 0 ]
-    grep -q "rtk-ai/rtk" "$HOME/curl-calls.log"     # called the official installer
+    [ -f "$HOME/rtk-update.log" ]                    # went through the shared script
     [ -x "$HOME/.local/bin/rtk" ]                    # binary landed
     grep -q "init -g" "$RTK_LOG"                     # hook wired afterwards
+}
+
+@test "--with-rtk warns instead of failing when rtk-update.sh is missing" {
+    rm -f "$MOCK_BIN/rtk"
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
+    PATH="$MOCK_BIN:/usr/bin:/bin"
+    run bash "$SCRIPT" --with-rtk
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"RTK installer script not found"* ]]
 }
 
 @test "--with-rtk skips install when rtk already present, still wires the hook" {
@@ -227,7 +235,7 @@ EOF
     grep -q "init -g" "$RTK_LOG"
 }
 
-@test "--with-pxpipe installs pinned pxpipe-proxy package when absent" {
+@test "--with-pxpipe installs the latest pxpipe-proxy package when absent" {
     mock_claude_empty
     rm -f "$MOCK_BIN/pxpipe"
     printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
@@ -250,7 +258,7 @@ EOF
     PATH="$MOCK_BIN:/usr/bin:/bin"
     run bash "$SCRIPT" --with-pxpipe
     [ "$status" -eq 0 ]
-    grep -q "install -g pxpipe-proxy@0.10.0" "$NPM_LOG"
+    grep -q "install -g pxpipe-proxy@latest" "$NPM_LOG"
     [ -x "$HOME/.local/bin/pxpipe" ]
     # Regression: when npm prefix == USER_LOCAL_BIN, must NOT create a self-referential
     # symlink (pxpipe -> pxpipe) which breaks `command -v pxpipe` / `[ -x ]` checks.
@@ -294,7 +302,7 @@ EOF
     PATH="$MOCK_BIN:/usr/bin:/bin"
     run bash "$SCRIPT" --with-pxpipe
     [ "$status" -eq 0 ]
-    grep -q "install -g pxpipe-proxy@0.10.0" "$NPM_LOG"
+    grep -q "install -g pxpipe-proxy@latest" "$NPM_LOG"
     [ -x "$HOME/.local/bin/pxpipe" ]
     if is_windows; then
         # A real copy, not a link that MSYS would have faked.
@@ -324,7 +332,7 @@ EOF
     [ "$status" -eq 0 ]
     grep -q "plugin install ponytail@ponytail" "$CLAUDE_LOG"
     grep -q "init -g" "$RTK_LOG"
-    grep -q "install -g pxpipe-proxy@0.10.0" "$NPM_LOG"
+    grep -q "install -g pxpipe-proxy@latest" "$NPM_LOG"
 }
 
 @test "statusLine command is spawnable by the host Claude Code" {
@@ -410,7 +418,7 @@ EOF
     grep -qx "install" "$GRAPHIFY_LOG"
 }
 
-@test "--with-openwiki installs the pinned CLI without initializing a repository" {
+@test "--with-openwiki installs the latest CLI without initializing a repository" {
     mock_claude_empty
     rm -f "$MOCK_BIN/openwiki"
     printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
@@ -429,7 +437,7 @@ EOF
     PATH="$MOCK_BIN:/usr/bin:/bin"
     run bash "$SCRIPT" --with-openwiki
     [ "$status" -eq 0 ]
-    grep -qx "install -g openwiki@0.5.1" "$NPM_LOG"
+    grep -qx "install -g openwiki@latest" "$NPM_LOG"
     [ ! -s "$OPENWIKI_LOG" ]
     [[ "$output" == *"openwiki --init"* ]]
 }
@@ -447,7 +455,7 @@ EOF
     PATH="$MOCK_BIN:/usr/bin:/bin"
     run bash "$SCRIPT" --all
     [ "$status" -eq 0 ]
-    grep -q "install -g openwiki@0.5.1" "$NPM_LOG"
+    grep -q "install -g openwiki@latest" "$NPM_LOG"
 }
 
 @test "--with-copilot delegates to scripts/copilot.sh rather than re-implementing it" {

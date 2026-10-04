@@ -11,6 +11,11 @@ setup() {
     export PATH="$MOCK_BIN:$PATH"
     export CLAUDE_LOG="$HOME/claude-calls.log"
     export NPM_LOG="$HOME/npm-calls.log"
+    # Stub the live registry check: it would hit the network and overwrite the
+    # cache each test writes. Records its args so the refresh itself is tested.
+    export CHECK_LOG="$HOME/check-calls.log"
+    export TW_CHECK_UPDATES="$MOCK_BIN/check-updates.sh"
+    printf '#!/usr/bin/env bash\necho "$*" >> "%s"\n' "$CHECK_LOG" > "$TW_CHECK_UPDATES"
 }
 
 teardown() {
@@ -95,7 +100,77 @@ EOF
     grep -q "plugin update context-mode@context-mode --scope user" "$CLAUDE_LOG"
 }
 
-@test "pxpipe update uses pinned npm package" {
+@test "refreshes the update check live before reading the cache" {
+    write_cache <<'EOF'
+{"tools":{"context-mode":{"state":"up-to-date"}}}
+EOF
+    run bash "$SCRIPT" </dev/null
+    [ "$status" -eq 0 ]
+    grep -qx -- "--force --quiet" "$CHECK_LOG"
+}
+
+@test "--all skips the update check" {
+    run bash "$SCRIPT" --all </dev/null
+    [ ! -f "$CHECK_LOG" ]
+}
+
+@test "the refreshed cache decides what is upgraded" {
+    # The stub plays a live check that finds a new pxpipe: whatever the stale
+    # cache said, the fresh answer must win.
+    write_cache <<'EOF'
+{"tools":{"pxpipe":{"state":"up-to-date"}}}
+EOF
+    cat > "$TW_CHECK_UPDATES" <<EOF
+#!/usr/bin/env bash
+echo '{"tools":{"pxpipe":{"state":"update-available"},"openwiki":{"state":"update-available"}}}' > "$HOME/.claude/tokenwar/upgrade-check.json"
+EOF
+    run bash "$SCRIPT" </dev/null
+    [[ "$output" == *"pxpipe"* ]]
+    [[ "$output" == *"OpenWiki"* ]]
+}
+
+@test "OpenWiki and ponytail updates are applied" {
+    mock_claude_scoped
+    cat > "$MOCK_BIN/npm" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$NPM_LOG"
+exit 0
+EOF
+    chmod +x "$MOCK_BIN/npm"
+    write_cache <<'EOF'
+{"tools":{"openwiki":{"state":"update-available"},"ponytail":{"state":"update-available"}}}
+EOF
+    run bash "$SCRIPT" --yes </dev/null
+    [ "$status" -eq 0 ]
+    grep -q "install -g openwiki@latest" "$NPM_LOG"
+    grep -q "plugin update ponytail@ponytail" "$CLAUDE_LOG"
+}
+
+@test "tokenwar updates its own clone by fast-forward" {
+    # A copy of the scripts inside a clone that is one commit behind.
+    winpath() { cygpath -m "$1" 2>/dev/null || printf '%s' "$1"; }
+    UP="$(winpath "$HOME/tw-upstream.git")"
+    git init -q --bare -b main "$UP"
+    SEED="$(winpath "$HOME/seed")"
+    git init -q -b main "$SEED"
+    git -C "$SEED" config user.email t@t; git -C "$SEED" config user.name t
+    cp -r "$BATS_TEST_DIRNAME/../scripts" "$SEED/"
+    git -C "$SEED" add -A; git -C "$SEED" commit -qm v1
+    git -C "$SEED" remote add origin "$UP"; git -C "$SEED" push -q origin main
+    TW="$(winpath "$HOME/tw-clone")"
+    git clone -q "$UP" "$TW"
+    echo v2 > "$SEED/marker"; git -C "$SEED" add marker; git -C "$SEED" commit -qm v2
+    git -C "$SEED" push -q origin main
+
+    write_cache <<'EOF'
+{"tools":{"tokenwar":{"state":"update-available"}}}
+EOF
+    run bash "$TW/scripts/upgrade.sh" --yes </dev/null
+    [ "$status" -eq 0 ]
+    [ -f "$TW/marker" ]
+}
+
+@test "pxpipe update installs the latest npm package" {
     cat > "$MOCK_BIN/npm" <<EOF
 #!/usr/bin/env bash
 echo "\$*" >> "$NPM_LOG"
@@ -107,7 +182,7 @@ EOF
 EOF
     run bash "$SCRIPT" --yes </dev/null
     [ "$status" -eq 0 ]
-    grep -q "install -g pxpipe-proxy@0.10.0" "$NPM_LOG"
+    grep -q "install -g pxpipe-proxy@latest" "$NPM_LOG"
 }
 
 # Regression: the permanent-update loop. check-updates.sh reads "latest" from

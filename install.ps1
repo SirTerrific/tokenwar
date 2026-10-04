@@ -19,17 +19,17 @@
     Install and enable the four Claude Code plugins.
 
 .PARAMETER WithRtk
-    Install the RTK binary. On Windows, prefer installing rtk yourself
-    (winget/scoop/cargo) and letting tokenwar find it on PATH.
+    Install the latest RTK release (sha256-checked zip on Windows) into
+    ~/.local/bin. An rtk installed by winget/scoop/cargo is left alone.
 
 .PARAMETER WithPxpipe
-    Install the pinned pxpipe-proxy npm package.
+    Install the latest pxpipe-proxy npm package.
 
 .PARAMETER WithGraphify
     Install graphify (via uv tool, pipx or pip) and register its skill.
 
 .PARAMETER WithOpenwiki
-    Install the pinned OpenWiki npm package. Never initializes a repository.
+    Install the latest OpenWiki npm package. Never initializes a repository.
 
 .PARAMETER WithCopilot
     Wire the stack into GitHub Copilot CLI, when that CLI is installed.

@@ -20,28 +20,35 @@ readonly CACHE_TTL_SECONDS=86400  # 24h
 readonly SLUG_CTX="context-mode@context-mode"
 readonly SLUG_MEM="claude-mem@thedotmack"
 readonly SLUG_CAVE="caveman@caveman"
+readonly SLUG_PONY="ponytail@ponytail"
 
 readonly MARKETPLACE_CTX="context-mode"
 readonly MARKETPLACE_MEM="thedotmack"
 readonly MARKETPLACE_CAVE="caveman"
+readonly MARKETPLACE_PONY="ponytail"
 
 readonly MARKETPLACE_ROOT="${HOME}/.claude/plugins/marketplaces"
 readonly MARKETPLACE_MANIFEST_REL=".claude-plugin/marketplace.json"
 readonly PLUGIN_MANIFEST_REL=".claude-plugin/plugin.json"
 readonly RTK_BIN="rtk"
 readonly PXPIPE_BIN="pxpipe"
-readonly PXPIPE_NPM_VERSION="0.10.0"
+readonly PXPIPE_NPM_PACKAGE="pxpipe-proxy"
+readonly OPENWIKI_NPM_PACKAGE="openwiki"
 
-# graphify publishes to PyPI as `graphifyy` (the plain `graphify` name on PyPI is
-# an unaffiliated package — see the upstream README). Unlike pxpipe we do NOT
-# pin a "latest" constant here: graphify ships weekly, so a hardcoded number
-# would go stale between tokenwar releases and report phantom up-to-date. The
-# registry is queried instead, with a hard timeout, and any failure degrades to
-# an honest `unknown` rather than a wrong verdict.
+# "Latest" always comes from the component's own registry, never from a
+# constant: a hardcoded number goes stale between tokenwar releases and reports
+# a phantom up-to-date (pxpipe sat at a pinned 0.10.0 while 0.14.0 shipped). Each
+# lookup has a hard timeout, and any failure degrades to an honest `unknown`
+# rather than a wrong verdict. Every URL is overridable so tests stay offline.
+readonly REGISTRY_TIMEOUT_SECS=10
+# graphify publishes to PyPI as `graphifyy`; the plain `graphify` name on PyPI
+# is an unaffiliated package (see the upstream README).
 readonly GRAPHIFY_BIN="graphify"
 readonly GRAPHIFY_PYPI_PACKAGE="graphifyy"
 readonly GRAPHIFY_PYPI_URL="https://pypi.org/pypi/${GRAPHIFY_PYPI_PACKAGE}/json"
-readonly GRAPHIFY_PYPI_TIMEOUT_SECS=10
+readonly PXPIPE_NPM_URL="https://registry.npmjs.org/${PXPIPE_NPM_PACKAGE}/latest"
+readonly OPENWIKI_NPM_URL="https://registry.npmjs.org/${OPENWIKI_NPM_PACKAGE}/latest"
+readonly RTK_RELEASE_URL="https://api.github.com/repos/rtk-ai/rtk/releases/latest"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
@@ -91,6 +98,7 @@ readonly REFRESHABLE_MARKETPLACES=(
     "$MARKETPLACE_CTX"
     "$MARKETPLACE_MEM"
     "$MARKETPLACE_CAVE"
+    "$MARKETPLACE_PONY"
 )
 refresh_marketplaces() {
     local mp dir rc=0
@@ -203,53 +211,89 @@ graphify_installed_version() {
     "$GRAPHIFY_BIN" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}'
 }
 
-# Latest graphify from the PyPI JSON API. Empty on any failure (no curl, no
-# network, malformed payload) so classify() returns `unknown` instead of
-# inventing drift. Overridable via TW_GRAPHIFY_PYPI_URL for tests.
+# registry_version <url> <field> — the version a registry's JSON reports at
+# <field>: "info.version" (PyPI), "version" (npm), "tag_name" (GitHub release).
+# A leading "v" is dropped so it compares with `--version` output. Empty on any
+# failure (no curl, no network, malformed payload) so classify() returns
+# `unknown` instead of inventing drift.
 #
 # The payload is piped straight into node rather than staged in an environment
 # variable: PyPI's project JSON lists every release file ever published and
 # already exceeds the kernel's argv/env limit, which fails with
 # "Argument list too long" and silently degrades the check to `unknown`.
-graphify_latest_version() {
+registry_version() {
     command -v curl >/dev/null 2>&1 || { echo ""; return; }
-    local url="${TW_GRAPHIFY_PYPI_URL:-$GRAPHIFY_PYPI_URL}"
-    curl -fsSL --max-time "$GRAPHIFY_PYPI_TIMEOUT_SECS" "$url" 2>/dev/null \
-        | node --input-type=module -e '
+    curl -fsSL --max-time "$REGISTRY_TIMEOUT_SECS" "$1" 2>/dev/null \
+        | FIELD="$2" node --input-type=module -e '
             let s = "";
             process.stdin.on("data", d => s += d).on("end", () => {
                 let d; try { d = JSON.parse(s); } catch { return; }
-                process.stdout.write(String(d?.info?.version || ""));
+                const v = process.env.FIELD.split(".").reduce((o, k) => o?.[k], d);
+                process.stdout.write(String(v || "").replace(/^v/, ""));
             });
         ' 2>/dev/null || echo ""
 }
 
+graphify_latest_version() { registry_version "${TW_GRAPHIFY_PYPI_URL:-$GRAPHIFY_PYPI_URL}" info.version; }
+pxpipe_latest_version()   { registry_version "${TW_PXPIPE_NPM_URL:-$PXPIPE_NPM_URL}" version; }
+openwiki_latest_version() { registry_version "${TW_OPENWIKI_NPM_URL:-$OPENWIKI_NPM_URL}" version; }
+
+# OpenWiki has no --version flag ("Unknown option"), so read the version from
+# the globally installed package's own package.json.
+openwiki_installed_version() {
+    command -v npm >/dev/null 2>&1 || { echo ""; return; }
+    local root
+    root="$(npm root -g 2>/dev/null | tw_strip_cr)"
+    [[ -n "$root" ]] || { echo ""; return; }
+    PKG="${root}/${OPENWIKI_NPM_PACKAGE}/package.json" node -e '
+        try { process.stdout.write(String(require(process.env.PKG).version || "")); } catch {}
+    ' 2>/dev/null || echo ""
+}
+
+# tokenwar's own install is a git clone (install.sh makes it). "installed" is
+# the local HEAD, "latest" the fetched upstream tip — unless the clone already
+# contains that tip: a checkout ahead of origin is current, not behind.
+# Prints "<installed> <latest>", or nothing for a non-git install.
+tokenwar_versions() {
+    local root
+    root="$(tw_node_path "$(cd "${SCRIPT_DIR}/.." && pwd)")"
+    [[ -d "${root}/.git" ]] || return 0
+    git -C "$root" fetch --quiet 2>/dev/null || true
+    local head upstream
+    head="$(git -C "$root" rev-parse --short=12 HEAD 2>/dev/null)" || return 0
+    upstream="$(git -C "$root" rev-parse --short=12 '@{u}' 2>/dev/null || echo "")"
+    if [[ -z "$upstream" ]] || git -C "$root" merge-base --is-ancestor "$upstream" HEAD 2>/dev/null; then
+        upstream="$head"
+    fi
+    printf '%s %s' "$head" "$upstream"
+}
+
 # Determine rtk's authoritative latest version.
 #
-# Two install paths exist:
 #   1. Path-installed (`cargo install --path /path/to/rtk` — dev build). The
 #      installed `rtk` binary was built from a local clone; latest = the
 #      `version` field in that clone's Cargo.toml on the tracked upstream
 #      branch. We `git fetch` first, then read `origin/<branch>:Cargo.toml`
 #      so a stale local checkout doesn't shadow upstream.
-#   2. Registry-installed. Fall back to `cargo search`, but the public
-#      registry name `rtk` belongs to a different crate (Rust Type Kit);
-#      results are unreliable. Return empty in that case.
+#   2. Otherwise a released binary (rtk's installer, or the Windows zip):
+#      latest = the newest GitHub release. Not `cargo search` — the public
+#      crate named `rtk` is a different project (Rust Type Kit).
 rtk_latest_version() {
-    command -v cargo >/dev/null 2>&1 || { echo ""; return; }
-    local repo_path
-    repo_path=$(cargo install --list 2>/dev/null \
-        | awk '/^rtk v.* \(.*\):$/ { match($0, /\(([^)]+)\)/, m); print m[1]; exit }')
-    if [[ -n "$repo_path" && -d "$repo_path/.git" ]]; then
-        git -C "$repo_path" fetch --quiet 2>/dev/null || true
-        local branch ref
-        branch=$(git -C "$repo_path" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo "")
-        ref="${branch:-HEAD}"
-        git -C "$repo_path" show "${ref}:Cargo.toml" 2>/dev/null \
-            | awk -F'"' '/^version[[:space:]]*=/ {print $2; exit}'
-        return
+    if command -v cargo >/dev/null 2>&1; then
+        local repo_path
+        repo_path=$(cargo install --list 2>/dev/null \
+            | awk '/^rtk v.* \(.*\):$/ { match($0, /\(([^)]+)\)/, m); print m[1]; exit }')
+        if [[ -n "$repo_path" && -d "$repo_path/.git" ]]; then
+            git -C "$repo_path" fetch --quiet 2>/dev/null || true
+            local branch ref
+            branch=$(git -C "$repo_path" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo "")
+            ref="${branch:-HEAD}"
+            git -C "$repo_path" show "${ref}:Cargo.toml" 2>/dev/null \
+                | awk -F'"' '/^version[[:space:]]*=/ {print $2; exit}'
+            return
+        fi
     fi
-    echo ""
+    registry_version "${TW_RTK_RELEASE_URL:-$RTK_RELEASE_URL}" tag_name
 }
 
 # Compare two version strings. Returns one of: up-to-date | update-available | ahead | unknown.
@@ -287,6 +331,10 @@ if $force_refresh || ! cache_is_fresh; then
     ctx_installed=$(installed_plugin_version "$SLUG_CTX")
     mem_installed=$(installed_plugin_version "$SLUG_MEM")
     cave_installed=$(installed_plugin_version "$SLUG_CAVE")
+    pony_installed=$(installed_plugin_version "$SLUG_PONY")
+    openwiki_installed=$(openwiki_installed_version)
+    tokenwar_installed="" tokenwar_latest=""
+    read -r tokenwar_installed tokenwar_latest <<<"$(tokenwar_versions)" || true
     rtk_installed=$(rtk_installed_version)
     pxpipe_installed=$(pxpipe_installed_version)
     graphify_installed=$(graphify_installed_version)
@@ -316,13 +364,18 @@ if $force_refresh || ! cache_is_fresh; then
     ctx_latest=$(marketplace_version "$MARKETPLACE_CTX" "context-mode")
     mem_latest=$(marketplace_version "$MARKETPLACE_MEM" "claude-mem")
     cave_latest=$(marketplace_version "$MARKETPLACE_CAVE" "caveman")
+    pony_latest=$(marketplace_version "$MARKETPLACE_PONY" "ponytail")
     rtk_latest=$(rtk_latest_version)
-    pxpipe_latest="$PXPIPE_NPM_VERSION"
+    pxpipe_latest=$(pxpipe_latest_version)
     graphify_latest=$(graphify_latest_version)
+    openwiki_latest=$(openwiki_latest_version)
 
     ctx_state=$(classify "$ctx_installed" "$ctx_latest")
     mem_state=$(classify "$mem_installed" "$mem_latest")
     cave_state=$(classify "$cave_installed" "$cave_latest")
+    pony_state=$(classify "$pony_installed" "$pony_latest")
+    openwiki_state=$(classify "$openwiki_installed" "$openwiki_latest")
+    tokenwar_state=$(classify "$tokenwar_installed" "$tokenwar_latest")
     rtk_state=$(classify "$rtk_installed" "$rtk_latest")
     pxpipe_state=$(classify "$pxpipe_installed" "$pxpipe_latest")
     graphify_state=$(classify "$graphify_installed" "$graphify_latest")
@@ -339,6 +392,9 @@ if $force_refresh || ! cache_is_fresh; then
     CTX_I="$ctx_installed" CTX_L="$ctx_latest" CTX_S="$ctx_state" \
     MEM_I="$mem_installed" MEM_L="$mem_latest" MEM_S="$mem_state" \
     CAVE_I="$cave_installed" CAVE_L="$cave_latest" CAVE_S="$cave_state" \
+    PONY_I="$pony_installed" PONY_L="$pony_latest" PONY_S="$pony_state" \
+    OPENWIKI_I="$openwiki_installed" OPENWIKI_L="$openwiki_latest" OPENWIKI_S="$openwiki_state" \
+    TOKENWAR_I="$tokenwar_installed" TOKENWAR_L="$tokenwar_latest" TOKENWAR_S="$tokenwar_state" \
     RTK_I="$rtk_installed" RTK_L="$rtk_latest" RTK_S="$rtk_state" \
     PXPIPE_I="$pxpipe_installed" PXPIPE_L="$pxpipe_latest" PXPIPE_S="$pxpipe_state" \
     GRAPHIFY_I="$graphify_installed" GRAPHIFY_L="$graphify_latest" GRAPHIFY_S="$graphify_state" \
@@ -357,9 +413,12 @@ if $force_refresh || ! cache_is_fresh; then
                 'context-mode': { installed: e.CTX_I, latest: e.CTX_L, state: e.CTX_S, slug: '$SLUG_CTX' },
                 'claude-mem':   { installed: e.MEM_I, latest: e.MEM_L, state: e.MEM_S, slug: '$SLUG_MEM' },
                 'caveman':      { installed: e.CAVE_I, latest: e.CAVE_L, state: e.CAVE_S, slug: '$SLUG_CAVE' },
-                'rtk':          { installed: e.RTK_I, latest: e.RTK_L, state: e.RTK_S, slug: 'cargo:rtk' },
-                'pxpipe':       { installed: e.PXPIPE_I, latest: e.PXPIPE_L, state: e.PXPIPE_S, slug: 'npm:pxpipe-proxy' },
-                'graphify':     { installed: e.GRAPHIFY_I, latest: e.GRAPHIFY_L, state: e.GRAPHIFY_S, slug: 'pypi:$GRAPHIFY_PYPI_PACKAGE' }
+                'ponytail':     { installed: e.PONY_I, latest: e.PONY_L, state: e.PONY_S, slug: '$SLUG_PONY' },
+                'rtk':          { installed: e.RTK_I, latest: e.RTK_L, state: e.RTK_S, slug: 'github:rtk-ai/rtk' },
+                'pxpipe':       { installed: e.PXPIPE_I, latest: e.PXPIPE_L, state: e.PXPIPE_S, slug: 'npm:$PXPIPE_NPM_PACKAGE' },
+                'graphify':     { installed: e.GRAPHIFY_I, latest: e.GRAPHIFY_L, state: e.GRAPHIFY_S, slug: 'pypi:$GRAPHIFY_PYPI_PACKAGE' },
+                'openwiki':     { installed: e.OPENWIKI_I, latest: e.OPENWIKI_L, state: e.OPENWIKI_S, slug: 'npm:$OPENWIKI_NPM_PACKAGE' },
+                'tokenwar':     { installed: e.TOKENWAR_I, latest: e.TOKENWAR_L, state: e.TOKENWAR_S, slug: 'git:tokenwar' }
             },
             providers: {
                 'codex':  { installed: e.CODEX_I, latest: e.CODEX_L, state: e.CODEX_S },

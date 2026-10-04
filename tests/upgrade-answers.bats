@@ -19,6 +19,10 @@ setup() {
     MOCK_BIN="$(mktemp -d)"
     export ORIG_PATH="$PATH"
     export PATH="$MOCK_BIN:$PATH"
+    # upgrade.sh refreshes the update check live first; stub it so the network
+    # never overwrites the cache these tests write.
+    export TW_CHECK_UPDATES="$MOCK_BIN/check-updates-stub.sh"
+    printf '#!/usr/bin/env bash\nexit 0\n' > "$TW_CHECK_UPDATES"
     export CLAUDE_LOG="$HOME/claude-calls.log"
     export ANSWER_FILE="$HOME/answer.txt"
 }
