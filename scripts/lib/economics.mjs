@@ -1,23 +1,34 @@
 // Cache-aware cost model.
 //
 // The rule this module exists to enforce: a static block sitting in the prompt
-// prefix is cached, so its recurring cost is a cache READ (0.1x), not a fresh
-// input token (1.0x). Multiplying a prefix block by the turn count overstates
-// the bill by roughly 9x. What that multiplication does describe is how often
-// the block was presented, which is a context-window fact, not a billing one.
+// prefix is cached, so its recurring cost is a cache READ (0.1x or less), not a
+// fresh input token (1.0x). Multiplying a prefix block by the turn count
+// overstates the bill by roughly 9x. What that multiplication does describe is
+// how often the block was presented, which is a context-window fact, not a
+// billing one.
 
-// Multipliers are the provider's, relative to base input price.
+// Multipliers are the provider's, relative to base input price. The cache-read
+// one is the default; a model that discounts reads further carries its own.
 export const CACHE_READ_MULTIPLIER = 0.1;
 export const CACHE_WRITE_5M_MULTIPLIER = 1.25;
 export const CACHE_WRITE_1H_MULTIPLIER = 2.0;
 
-// Per million tokens, base input/output. Used only when the caller does not
+// Per million tokens, base input/output, for the current model of each family:
+// Fable 5.1, Opus 5.5, Sonnet 5.5, Haiku 4.5 — platform.claude.com pricing and
+// models overview, checked 2026-10-04. Prices change with each generation;
+// re-check before trusting a $ figure. Used only when the caller does not
 // supply its own; every figure derived from these is labelled with the model.
 export const PRICING = {
-  "claude-opus": { input: 15, output: 75, contextWindow: 200000 },
-  "claude-sonnet": { input: 3, output: 15, contextWindow: 200000 },
+  "claude-fable": { input: 10, output: 50, cacheRead: 0.025, contextWindow: 1000000 },
+  "claude-opus": { input: 4, output: 20, cacheRead: 0.05, contextWindow: 1000000 },
+  "claude-sonnet": { input: 2, output: 10, contextWindow: 1000000 },
   "claude-haiku": { input: 1, output: 5, contextWindow: 200000 },
 };
+
+// $/M for a cache read on this model.
+export function cacheReadRate(price) {
+  return price.input * (price.cacheRead ?? CACHE_READ_MULTIPLIER);
+}
 
 export const DEFAULT_MODEL = "claude-sonnet";
 
@@ -40,7 +51,7 @@ export function dollars(tokens, perMillion) {
 export function observedCost(usage, price) {
   const input = dollars(usage.freshInput || 0, price.input);
   const write = dollars(usage.cacheCreate || 0, price.input * CACHE_WRITE_5M_MULTIPLIER);
-  const read = dollars(usage.cacheRead || 0, price.input * CACHE_READ_MULTIPLIER);
+  const read = dollars(usage.cacheRead || 0, cacheReadRate(price));
   const output = dollars(usage.output || 0, price.output);
   return { input, write, read, output, total: input + write + read + output };
 }
@@ -68,10 +79,10 @@ export function prefixBlockCost({ blockTokens, turns, price, cacheWriteTurns = 1
   const writes = Math.max(1, Math.min(cacheWriteTurns, turns));
   const reads = Math.max(0, turns - writes);
   const equivalentTokens =
-    blockTokens * (writes * CACHE_WRITE_5M_MULTIPLIER + reads * CACHE_READ_MULTIPLIER);
+    blockTokens * (writes * CACHE_WRITE_5M_MULTIPLIER + reads * (price.cacheRead ?? CACHE_READ_MULTIPLIER));
   const cachedDollars =
     dollars(blockTokens * writes, price.input * CACHE_WRITE_5M_MULTIPLIER) +
-    dollars(blockTokens * reads, price.input * CACHE_READ_MULTIPLIER);
+    dollars(blockTokens * reads, cacheReadRate(price));
 
   return {
     blockTokens,
@@ -99,10 +110,11 @@ export function windowOccupancy({ blockTokens, contextWindow, firstRequestTokens
 }
 
 // Cost of one prefix invalidation: the prefix is rewritten at 1.25x instead of
-// read at 0.1x, a 12.5x step on every token before the change point.
+// read at the cache-read rate — a 12.5x step at 0.1x, 25x on Opus 5.5 — on
+// every token before the change point.
 export function invalidationCost({ prefixTokens, price }) {
   const rewrite = dollars(prefixTokens, price.input * CACHE_WRITE_5M_MULTIPLIER);
-  const read = dollars(prefixTokens, price.input * CACHE_READ_MULTIPLIER);
+  const read = dollars(prefixTokens, cacheReadRate(price));
   return { prefixTokens, rewrite, read, penalty: rewrite - read };
 }
 

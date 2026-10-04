@@ -46,15 +46,26 @@ readonly MEM_SYNC_STATE="${HOME}/.claude-mem/chroma-sync-state.json"
 # memory back — read cost being (title + subtitle + narrative + facts JSON)
 # characters / 4. This is the same formula, summed over every observation.
 readonly MEM_DB="${HOME}/.claude-mem/claude-mem.db"
+readonly MEM_SQL_READ_COST="(COALESCE(length(title),0) + COALESCE(length(subtitle),0)
+                + COALESCE(length(narrative),0) + COALESCE(length(facts) + 2, 2) + 3) / 4"
 readonly MEM_SQL_SAVINGS="SELECT COUNT(*), COALESCE(SUM(discovery_tokens), 0),
-           COALESCE(SUM((COALESCE(length(title),0) + COALESCE(length(subtitle),0)
-                + COALESCE(length(narrative),0) + COALESCE(length(facts) + 2, 2) + 3) / 4), 0),
+           COALESCE(SUM(${MEM_SQL_READ_COST}), 0),
            COUNT(DISTINCT project)
     FROM observations"
+readonly MEM_SQL_MONTHLY="SELECT substr(created_at, 1, 7),
+           COALESCE(SUM(discovery_tokens), 0) - COALESCE(SUM(${MEM_SQL_READ_COST}), 0)
+    FROM observations GROUP BY 1"
 readonly MEM_EST_TOKENS_PER_ITEM=40
 readonly CTX_DATA_DIR="${CLAUDE_CONFIG_DIR:-${HOME}/.claude}/context-mode"
 readonly CTX_SQL_AVOIDED="SELECT COALESCE(SUM(bytes_avoided), 0), COUNT(*) FROM session_events"
 readonly CTX_SQL_CONTENT="SELECT COALESCE(SUM(LENGTH(content) + LENGTH(title)), 0) FROM chunks"
+# The same two counters per month, for the monthly $ table: events carry their
+# own created_at, indexed chunks their source's indexed_at.
+readonly CTX_SQL_AVOIDED_MONTHLY="SELECT substr(created_at, 1, 7), COALESCE(SUM(bytes_avoided), 0)
+    FROM session_events GROUP BY 1"
+readonly CTX_SQL_CONTENT_MONTHLY="SELECT substr(s.indexed_at, 1, 7),
+           COALESCE(SUM(LENGTH(c.content) + LENGTH(c.title)), 0)
+    FROM chunks c JOIN sources s ON s.id = c.source_id GROUP BY 1"
 readonly PXPIPE_EVENTS_LOG="${HOME}/.pxpipe/events.jsonl"
 
 # graphify keeps per-repo graphs under <repo>/graphify-out/ and an optional
@@ -65,10 +76,11 @@ readonly GRAPHIFY_GLOBAL_GRAPH="${HOME}/.graphify/global-graph.json"
 readonly GRAPHIFY_BENCHMARK_TIMEOUT_SECS=30
 
 # Financial valuation constants — provider-specific rates live in providers.sh.
-# These are kept here for the tool-level (RTK) monthly section which is
-# Claude-specific.
-readonly CLAUDE_INPUT_USD_PER_MTOK="5.00"
-readonly CLAUDE_LABEL="Claude Opus 4.8"
+# These value the tool-level monthly section, which is Claude-specific: input
+# list price from anthropic.com/pricing, checked 2026-10-04. Prices move with
+# each model generation — re-check before trusting the $ column.
+readonly CLAUDE_INPUT_USD_PER_MTOK="4.00"
+readonly CLAUDE_LABEL="Claude Opus 5.5"
 readonly MONTH_ROW_RE='^[0-9]{4}-[0-9]{2}[[:space:]]'
 
 readonly COL_BOLD=$'\033[1m'
@@ -207,6 +219,48 @@ mem_summary() {
         const human = tokens>=1e6 ? (tokens/1e6).toFixed(1)+'M' : tokens>=1e3 ? (tokens/1e3).toFixed(1)+'K' : String(tokens);
         console.log(human + '|~est: ' + obs + ' obs + ' + sum + ' summaries across ' + projects + ' projects|' + tokens);
     " 2>/dev/null || echo "N/A|claude-mem state read failed|0"
+}
+
+# === per-month savings, for the monthly $ table ===
+# One "YYYY-MM <tool> <tokens>" line per tool and month, from the same stores
+# and formulas as the table above — so the months add up to its figures.
+# $1: `rtk gain --monthly` output (RTK keeps its own monthly history).
+tools_monthly() {
+    local rtk_monthly="$1"
+    if [[ -n "$rtk_monthly" ]]; then
+        RTK_MONTHLY="$rtk_monthly" node -e '
+            const strip = s => s.replace(/\x1b\[[0-9;]*m/g, "");
+            // Columns: Month Cmds Input Output Saved Save% Time — Month + Saved (5th).
+            const RE = /^(\d{4}-\d{2})\s+\S+\s+\S+\s+\S+\s+(\S+)/;
+            const toNum = h => { const m = String(h).trim().match(/^([\d.]+)\s*([KMGB]?)/i); if (!m) return 0; const u = (m[2]||"").toUpperCase(); return Math.round(parseFloat(m[1]) * ({K:1e3,M:1e6,G:1e9,B:1e9}[u]||1)); };
+            for (const ln of strip(process.env.RTK_MONTHLY).split("\n")) {
+                const m = ln.match(RE); if (!m) continue;
+                const tok = toNum(m[2]); if (tok) console.log(m[1] + " RTK " + tok);
+            }
+        ' 2>/dev/null
+    fi
+    [[ "$(tw_sqlite_engine)" != "none" ]] || return 0
+    # A month column in a row: anything else is an unreadable or undated row.
+    # shellcheck disable=SC2016  # an awk program: $1 is awk's, not the shell's
+    local month_awk='$1 ~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]$/'
+    if [[ -z "${CTX_STATS_JSON:-}" ]]; then
+        local sessions=() contents=()
+        shopt -s nullglob
+        sessions=("${CTX_DATA_DIR}"/sessions/*.db)
+        contents=("${CTX_DATA_DIR}"/content/*.db)
+        shopt -u nullglob
+        {
+            (( ${#sessions[@]} )) && tw_sqlite_rows_each "$CTX_SQL_AVOIDED_MONTHLY" "${sessions[@]}"
+            (( ${#contents[@]} )) && tw_sqlite_rows_each "$CTX_SQL_CONTENT_MONTHLY" "${contents[@]}"
+        } | awk -v cpt="$CHARS_PER_TOKEN" "$month_awk"' { b[$1] += $2 }
+            END { for (m in b) if (b[m] >= cpt) printf "%s context-mode %d\n", m, b[m] / cpt }'
+    fi
+    # Only when mem_summary reads claude-mem.db too: total work above read cost.
+    if [[ -f "$MEM_DB" ]]; then
+        tw_sqlite_rows "$MEM_DB" "$MEM_SQL_MONTHLY" \
+            | awk "$month_awk"' { t[$1] = $2; s += $2 }
+                END { if (s > 0) for (m in t) printf "%s claude-mem %d\n", m, t[m] }'
+    fi
 }
 
 # === caveman ===
@@ -381,6 +435,26 @@ if $json_mode; then
             console.log(JSON.stringify({ rtk }));
         ' "$rtk_monthly_json" 2>/dev/null || echo '{"rtk":[]}')
     fi
+    # Every tool with dated telemetry, month by month, valued at the Claude price.
+    tools_monthly_raw="$(tools_monthly "$rtk_monthly_raw")"
+    if [[ -n "$tools_monthly_raw" ]]; then
+        monthly_json=$(MONTHLY_JSON="$monthly_json" TOOLS_MONTHLY="$tools_monthly_raw" \
+            CLAUDE_IN="$CLAUDE_INPUT_USD_PER_MTOK" PRICE_LABEL="$CLAUDE_LABEL" node -e '
+            const base = JSON.parse(process.env.MONTHLY_JSON || "{}");
+            const price = parseFloat(process.env.CLAUDE_IN);
+            const byMonth = {};
+            for (const ln of process.env.TOOLS_MONTHLY.split("\n")) {
+                const [month, tool, tok] = ln.trim().split(/\s+/);
+                if (!tok) continue;
+                const r = byMonth[month] ||= { month, tools: {}, saved_tokens: 0 };
+                r.tools[tool] = Number(tok); r.saved_tokens += Number(tok);
+            }
+            base.tools = Object.keys(byMonth).sort().map(m =>
+                ({ ...byMonth[m], dollars: byMonth[m].saved_tokens / 1e6 * price }));
+            base.price = { model: process.env.PRICE_LABEL, input_usd_per_mtok: price };
+            console.log(JSON.stringify(base));
+        ' 2>/dev/null || echo "$monthly_json")
+    fi
     # Provider monthly: collect each provider’s monthly lines
     provider_monthly_entries=""
     for i in $(seq 0 $((PROVIDER_COUNT - 1))); do
@@ -511,10 +585,7 @@ if command -v "$RTK_BIN" >/dev/null 2>&1; then
     rtk_monthly_raw="$("$RTK_BIN" gain --monthly 2>/dev/null || true)"
     rtk_monthly_raw="${rtk_monthly_raw//$'\r'/}"
 fi
-rtk_has_monthly=false
-if [[ -n "$rtk_monthly_raw" ]] && grep -qE "$MONTH_ROW_RE" <<<"$rtk_monthly_raw"; then
-    rtk_has_monthly=true
-fi
+tools_monthly_raw="$(tools_monthly "$rtk_monthly_raw")"
 
 # Part 2: Provider-native monthly (Codex SQLite, etc.)
 # Collect which providers have monthly data
@@ -528,7 +599,7 @@ for i in $(seq 0 $((PROVIDER_COUNT - 1))); do
 done
 
 has_any_monthly=false
-$rtk_has_monthly && has_any_monthly=true
+[[ -n "$tools_monthly_raw" ]] && has_any_monthly=true
 (( ${#monthly_providers[@]} > 0 )) && has_any_monthly=true
 
 if $has_any_monthly; then
@@ -536,33 +607,37 @@ if $has_any_monthly; then
     echo "${COL_BOLD}Monthly value — API-equivalent \$ saved${COL_RESET}"
     echo ""
 
-    # ── RTK (Claude Code) monthly ──
-    if $rtk_has_monthly; then
+    # ── Claude Code tools, month by month ──
+    if [[ -n "$tools_monthly_raw" ]]; then
         printf "  ${COL_DIM}%s · input \$%s/M${COL_RESET}\n" \
             "$CLAUDE_LABEL" "$CLAUDE_INPUT_USD_PER_MTOK"
-        printf "  %-9s  %-10s  %s\n" "month" "saved" "claude \$"
-        echo   "  ─────────────────────────────────────────────────────────────"
-        RTK_MONTHLY="$rtk_monthly_raw" \
+        TOOLS_MONTHLY="$tools_monthly_raw" \
         CLAUDE_IN="$CLAUDE_INPUT_USD_PER_MTOK" \
-        MONTH_RE="$MONTH_ROW_RE" \
-        node --input-type=module -e '
-            const strip = s => s.replace(/\x1b\[[0-9;]*m/g, "");
-            // Columns: Month Cmds Input Output Saved Save% Time — capture Month + Saved (5th).
-            const RE = /^(\d{4}-\d{2})\s+\S+\s+\S+\s+\S+\s+(\S+)/;
-            const toNum = h => { const m = String(h).trim().match(/^([\d.]+)\s*([KMGB]?)/i); if (!m) return 0; const u = (m[2]||"").toUpperCase(); return Math.round(parseFloat(m[1]) * ({K:1e3,M:1e6,G:1e9,B:1e9}[u]||1)); };
+        node -e '
             const human = t => t>=1e6 ? (t/1e6).toFixed(1)+"M" : t>=1e3 ? (t/1e3).toFixed(1)+"K" : String(t);
             const CL = parseFloat(process.env.CLAUDE_IN);
-            let tT=0, tCl=0;
-            for (const ln of strip(process.env.RTK_MONTHLY||"").split("\n")) {
-                const m = ln.match(RE); if (!m) continue;
-                const tok = toNum(m[2]); if (!tok) continue;
-                const cl = tok/1e6*CL;
-                tT+=tok; tCl+=cl;
-                console.log("  " + m[1].padEnd(9) + "  " + human(tok).padEnd(10) + "  $" + cl.toFixed(2));
+            const TOOLS = ["RTK", "context-mode", "claude-mem"];
+            const W = [9, 9, 12, 10, 9];
+            const row = cells => console.log("  " + cells.map((c, i) => i < W.length ? String(c).padEnd(W[i]) : c).join("  "));
+            const byMonth = {};
+            for (const ln of process.env.TOOLS_MONTHLY.split("\n")) {
+                const [month, tool, tok] = ln.trim().split(/\s+/);
+                if (tok) (byMonth[month] ||= {})[tool] = Number(tok);
+            }
+            const cell = n => n ? human(n) : "-";
+            const total = Object.fromEntries(TOOLS.map(t => [t, 0]));
+            let tT = 0;
+            row(["month", ...TOOLS, "saved", "claude $"]);
+            console.log("  ─────────────────────────────────────────────────────────────");
+            for (const m of Object.keys(byMonth).sort()) {
+                const sum = TOOLS.reduce((s, t) => s + (byMonth[m][t] || 0), 0);
+                TOOLS.forEach(t => total[t] += byMonth[m][t] || 0);
+                tT += sum;
+                row([m, ...TOOLS.map(t => cell(byMonth[m][t])), human(sum), "$" + (sum/1e6*CL).toFixed(2)]);
             }
             console.log("  ─────────────────────────────────────────────────────────────");
-            console.log("  " + "TOTAL".padEnd(9) + "  " + human(tT).padEnd(10) + "  $" + tCl.toFixed(2));
-        ' || echo "  (RTK monthly parse failed)"
+            row(["TOTAL", ...TOOLS.map(t => cell(total[t])), human(tT), "$" + (tT/1e6*CL).toFixed(2)]);
+        ' || echo "  (monthly breakdown failed)"
         echo ""
     fi
 

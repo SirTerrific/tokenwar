@@ -9,7 +9,7 @@
 // output volume, and adding their individual claims produces a total larger
 // than the spend it claims to reduce.
 
-import { CACHE_READ_MULTIPLIER, dollars } from "./economics.mjs";
+import { cacheReadRate, dollars } from "./economics.mjs";
 import { CHARS_PER_TOKEN } from "./inventory.mjs";
 
 export const VERDICT = {
@@ -40,7 +40,7 @@ function tokensFromBytes(bytes) {
 // price, which would overstate it by roughly an order of magnitude.
 function laneValue(tokens, price, turnsRemaining) {
   const write = dollars(tokens, price.input * 1.25);
-  const reads = dollars(tokens * Math.max(0, turnsRemaining), price.input * CACHE_READ_MULTIPLIER);
+  const reads = dollars(tokens * Math.max(0, turnsRemaining), cacheReadRate(price));
   return write + reads;
 }
 
@@ -211,7 +211,7 @@ export function buildRecommendations({ aggregate, price, profile, toolStates = {
   // openwiki — maintained docs. Maintenance is output-priced while the reading
   // it saves is cache-read-priced, a 50:1 adverse ratio.
   {
-    const ratio = price.output / (price.input * CACHE_READ_MULTIPLIER);
+    const ratio = price.output / cacheReadRate(price);
     const meets = aggregate.sessions >= 20 && discoveryCalls >= 300;
     items.push({
       id: "openwiki",
@@ -221,7 +221,7 @@ export function buildRecommendations({ aggregate, price, profile, toolStates = {
       verdict: meets ? VERDICT.NOT_YET : VERDICT.NOT_YET,
       signal: `${discoveryCalls} discovery calls across ${aggregate.cwds.size} projects`,
       counterSignal: "Solo work, or docs maintained more often than read.",
-      cost: `Maintenance is output-priced (${price.output}/M) while the reads it avoids are cache-read-priced (${(price.input * CACHE_READ_MULTIPLIER).toFixed(2)}/M) - a ${ratio.toFixed(0)}:1 adverse ratio.`,
+      cost: `Maintenance is output-priced (${price.output}/M) while the reads it avoids are cache-read-priced (${cacheReadRate(price).toFixed(2)}/M) - a ${ratio.toFixed(0)}:1 adverse ratio.`,
       breakEven: `Needs roughly ${ratio.toFixed(0)} avoided read-tokens per maintenance token. Rarely met on solo work.`,
       valueDollars: 0,
       valueUnknown: true,

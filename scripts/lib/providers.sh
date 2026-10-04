@@ -194,7 +194,7 @@ provider_cli() {
 
 provider_input_usd_per_mtok() {
     case "$1" in
-        0) echo "5.00"  ;;  # Claude Opus 4.8 input (claude-api skill, 2026-05-26)
+        0) echo "4.00"  ;;  # Claude Opus 5.5 input (anthropic.com/pricing, checked 2026-10-04)
         1) echo "1.25"  ;;  # Codex (gpt-5-codex) input — VERIFY at openai.com/pricing
         2) echo "1.25"  ;;  # Gemini 2.5 Pro input — VERIFY at ai.google.dev/pricing
         3) echo "0.30"  ;;  # Kimi K2/Kimi Code input — VERIFY at platform.kimi.ai/pricing
@@ -211,7 +211,7 @@ provider_input_usd_per_mtok() {
 
 provider_label() {
     case "$1" in
-        0) echo "Claude Opus 4.8"      ;;
+        0) echo "Claude Opus 5.5"      ;;
         1) echo "Codex (gpt-5-codex)"  ;;
         2) echo "Gemini 2.5 Pro"        ;;
         3) echo "Kimi Code"             ;;

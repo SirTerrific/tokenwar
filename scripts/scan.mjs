@@ -12,7 +12,7 @@ import { hostname } from "node:os";
 import { buildSnapshot, compareSnapshots, recordSnapshot } from "./lib/history.mjs";
 
 import { listSessionFiles, parseSessionFile, aggregateSessions, median, expandHome } from "./lib/parse.mjs";
-import { pricingFor, observedCost, uncachedCost, prefixBlockCost, windowOccupancy, invalidationCost, dollars, CACHE_WRITE_5M_MULTIPLIER } from "./lib/economics.mjs";
+import { pricingFor, observedCost, uncachedCost, prefixBlockCost, windowOccupancy, invalidationCost, dollars, CACHE_WRITE_5M_MULTIPLIER, CACHE_READ_MULTIPLIER } from "./lib/economics.mjs";
 import { collectSkills, collectMcpServers, crossReference } from "./lib/inventory.mjs";
 import { inferProfile } from "./lib/profile.mjs";
 import { adapterFor } from "./lib/adapters.mjs";
@@ -81,7 +81,7 @@ Usage:
   tokenwar scan --html [PATH]       write an HTML report (default: ./tokenwar-scan.html)
   tokenwar scan --open              write the HTML report and open it
   tokenwar scan --client ID         restrict to one client (${CLIENTS.map((c) => c.id).join(", ")})
-  tokenwar scan --model NAME        price against a model (claude-opus, claude-sonnet, claude-haiku)
+  tokenwar scan --model NAME        price against a model (claude-fable, claude-opus, claude-sonnet, claude-haiku)
 
 Environment:
   TOKENWAR_<CLIENT>_LOG_ROOT=/path  override a client's log location`);
@@ -318,7 +318,8 @@ function main() {
 
   const presented = aggregate.freshInput + aggregate.cacheCreate + aggregate.cacheRead;
   // Cost of one inventory change: the whole prefix up to that point is rewritten
-  // at 1.25x instead of read at 0.1x. Priced at a typical mid-session size.
+  // at 1.25x instead of read at the cache-read rate. Priced at a typical
+  // mid-session size.
   const typicalPrefix = median(aggregate.peakInputTokens) / 2;
   const invalidation = invalidationCost({ prefixTokens: typicalPrefix, price });
 
@@ -332,6 +333,7 @@ function main() {
     rewriteDollars: dollars(aggregate.cacheWriteTokensAfterFirst, price.input * CACHE_WRITE_5M_MULTIPLIER),
     invalidationPenalty: invalidation.penalty,
     typicalPrefixTokens: Math.round(typicalPrefix),
+    readMultiplier: price.cacheRead ?? CACHE_READ_MULTIPLIER,
   };
 
   const profile = inferProfile(aggregate);

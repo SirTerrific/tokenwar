@@ -356,7 +356,7 @@ a{color:var(--accent)}
   </div>
 </div>
 <div class="note">
-  The naive figure overstates cost by <strong>${prefixCost.overstatementFactor.toFixed(1)}x</strong>. A static block sits in the prompt prefix, so it is billed as a cache read at 0.1x, not as fresh input.
+  The naive figure overstates cost by <strong>${prefixCost.overstatementFactor.toFixed(1)}x</strong>. A static block sits in the prompt prefix, so it is billed as a cache read at ${cacheStats.readMultiplier}x, not as fresh input.
   Caching already absorbs ${formatPercent(1 - prefixCost.cachedDollars / Math.max(prefixCost.naiveDollars, 1e-9))} of that theoretical waste.
 </div>
 <div class="note">
@@ -364,7 +364,7 @@ a{color:var(--accent)}
   <strong>${formatPercent(occupancy.windowShare)}</strong> of the ${formatTokens(occupancy.contextWindow)} context window on every request
   — ${formatPercent(occupancy.firstRequestShare)} of a median first request — bringing compaction forward.
   And ${formatPercent(cacheStats.cacheWriteTurns / Math.max(1, cacheStats.turns))} of turns already rebuild the prefix
-  (mean ${formatTokens(cacheStats.meanRewrite)} tokens, ${formatDollars(cacheStats.rewriteDollars)} total): every capability added or removed forces that rebuild at 1.25x instead of a 0.1x read.
+  (mean ${formatTokens(cacheStats.meanRewrite)} tokens, ${formatDollars(cacheStats.rewriteDollars)} total): every capability added or removed forces that rebuild at 1.25x instead of a ${cacheStats.readMultiplier}x read.
 </div>
 
 <h2>Workload profile</h2>

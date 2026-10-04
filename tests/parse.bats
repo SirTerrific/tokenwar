@@ -96,7 +96,7 @@ run_node() {
 @test "a cached prefix block costs far less than the uncached multiplication" {
     run run_node "
       import {prefixBlockCost, pricingFor} from '${LIB}/economics.mjs';
-      const price = pricingFor('claude-opus');
+      const price = pricingFor('claude-sonnet');
       const r = prefixBlockCost({blockTokens: 5796, turns: 158, price, cacheWriteTurns: 1});
       if (r.naiveTokens !== 5796 * 158) throw new Error('naive token count is wrong');
       if (!(r.overstatementFactor > 5)) {
@@ -124,10 +124,36 @@ run_node() {
 @test "invalidating the prefix costs 12.5x a cache read" {
     run run_node "
       import {invalidationCost, pricingFor} from '${LIB}/economics.mjs';
-      const price = pricingFor('claude-opus');
+      const price = pricingFor('claude-sonnet');
       const r = invalidationCost({prefixTokens: 30000, price});
       const ratio = r.rewrite / r.read;
       if (Math.abs(ratio - 12.5) > 0.01) throw new Error('expected a 12.5x step, got ' + ratio);
+    "
+    [ "$status" -eq 0 ]
+}
+
+@test "Opus 5.5's cheaper cache read is priced per model: 25x invalidation step" {
+    run run_node "
+      import {invalidationCost, observedCost, pricingFor} from '${LIB}/economics.mjs';
+      const price = pricingFor('claude-opus-5-5');
+      if (price.id !== 'claude-opus' || price.input !== 4) throw new Error('wrong Opus price: ' + JSON.stringify(price));
+      const r = invalidationCost({prefixTokens: 30000, price});
+      if (Math.abs(r.rewrite / r.read - 25) > 0.01) throw new Error('expected a 25x step, got ' + r.rewrite / r.read);
+      // 1M cache-read tokens at 0.05x of \$4 = \$0.20.
+      const c = observedCost({cacheRead: 1000000}, price);
+      if (Math.abs(c.read - 0.2) > 1e-9) throw new Error('cache read cost ' + c.read);
+    "
+    [ "$status" -eq 0 ]
+}
+
+@test "current model ids map to their family's price" {
+    run run_node "
+      import {pricingFor} from '${LIB}/economics.mjs';
+      const ids = {'claude-fable-5-1': 'claude-fable', 'claude-opus-5-5': 'claude-opus',
+                   'claude-sonnet-5-5': 'claude-sonnet', 'claude-haiku-4-5-20251001': 'claude-haiku'};
+      for (const [id, family] of Object.entries(ids)) {
+        if (pricingFor(id).id !== family) throw new Error(id + ' -> ' + pricingFor(id).id);
+      }
     "
     [ "$status" -eq 0 ]
 }

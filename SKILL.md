@@ -233,12 +233,9 @@ Run `bash ~/.claude/skills/tokenwar/scripts/gain.sh`. It aggregates from:
 
 For `context-mode`: `gain.sh` reads the stores itself — no MCP call needed. `ctx_stats` now answers in prose rather than JSON. Hook-captured event data is excluded (context-mode's ADR-0004: it never entered the context window). Sandbox bytes are shown in the note but NOT counted: they measure data handled, not tokens avoided (a file processed in the sandbox would rarely have been read into the context in full). Report the note as printed, never fold the sandbox figure into the total. A caller may still set `CTX_STATS_JSON` to override.
 
-**Monthly $ value.** After the per-tool table, `gain.sh` renders a per-month financial breakdown driven by `rtk gain --monthly` (RTK's `history.db` is the only timestamped source — claude-mem/caveman `gain.jsonl` has no history, context-mode reports a single total). Each month's saved tokens are valued at two providers' **input** list prices (savings are input-side context offload, so output price is not applied):
+**Monthly $ value.** After the per-tool table, `gain.sh` renders a per-month financial breakdown of every tool with dated telemetry: RTK (`rtk gain --monthly`), context-mode (`session_events.created_at` and the indexed sources' `indexed_at`) and claude-mem (`observations.created_at`), with the same formulas as the table — so the months add up to its figures. Each month's saved tokens are valued at the Claude **input** list price (savings are input-side context offload, so output price is not applied): `CLAUDE_INPUT_USD_PER_MTOK` in `gain.sh` — Claude Opus 5.5, `$4.00`/M (anthropic.com/pricing, checked 2026-10-04 — re-check, prices move with each model generation). Provider tables (Codex, opencode, Copilot…) use each provider's own rate from `provider_input_usd_per_mtok` in `scripts/lib/providers.sh`; those are marked VERIFY.
 
-- `CLAUDE_INPUT_USD_PER_MTOK` — Claude Opus 4.8, `$5.00`/M (per the `claude-api` skill).
-- `CODEX_INPUT_USD_PER_MTOK` — OpenAI Codex placeholder, `$1.25`/M — **verify and edit in `gain.sh`** against openai.com/pricing.
-
-The `$` figure is the API-equivalent value of the savings (what those tokens would have cost at list price), not a subscription invoice. If `rtk` is absent or has no monthly rows, the section is omitted.
+The `$` figure is the API-equivalent value of the savings (what those tokens would have cost at list price), not a subscription invoice. With no dated telemetry from any tool, the section is omitted.
 
 **Output format** (render in the response, do not write to a file):
 
@@ -254,14 +251,15 @@ The `$` figure is the API-equivalent value of the savings (what those tokens wou
   ─────────────────────────────────────────────────────────────
   TOTAL           42.8M       summed across tools with telemetry
 
-Monthly value — API-equivalent $ saved (RTK)
-  saved tokens × input list price · Claude Opus 4.8 $5.00/M · Codex (gpt-5-codex) $1.25/M
-  month      saved       claude $      codex $
+Monthly value — API-equivalent $ saved
+
+  Claude Opus 5.5 · input $4.00/M
+  month      RTK        context-mode  claude-mem  saved      claude $
   ─────────────────────────────────────────────────────────────
-  2026-03    18.4M       $92.00        $23.00
-  2026-04    23.9M       $119.50       $29.88
+  2026-09    22.0K      42.6K         1.0M        1.1M       $4.33
+  2026-10    39.1K      304.6K        636.0K      979.7K     $3.92
   ─────────────────────────────────────────────────────────────
-  TOTAL      42.8M       $214.36       $53.59
+  TOTAL      61.1K      347.2K        1.7M        2.1M       $8.25
 ```
 
 If the complementary check is `FAIL`, prefix the TOTAL line with `⚠️` and add `effective gain may be lower than reported — see /tokenwar check`. The user MUST not be told they're winning when two tools are double-processing the same buffer.

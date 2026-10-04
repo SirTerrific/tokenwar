@@ -217,10 +217,10 @@ EOF
     mock_rtk_monthly
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    # 18.4M saved → Claude $5/M = $92.00
-    [[ "$output" == *"2026-03"*'$92.00'* ]]
-    # 23.9M saved → Claude = $119.50
-    [[ "$output" == *"2026-04"*'$119.50'* ]]
+    # 18.4M saved → Claude Opus 5.5 $4/M = $73.60
+    [[ "$output" == *"2026-03"*'$73.60'* ]]
+    # 23.9M saved → Claude = $95.60
+    [[ "$output" == *"2026-04"*'$95.60'* ]]
     # Codex monthly is now separate (native SQLite telemetry, not RTK-based)
     # — not tested here since Codex DB is not mocked
 }
@@ -228,8 +228,56 @@ EOF
 @test "monthly total sums saved-token \$ value, not the rtk TOTAL row" {
     mock_rtk_monthly
     run bash "$SCRIPT"
-    # 18.4M + 23.9M = 42.3M → Claude $5/M = $211.50 (computed from rows; TOTAL row ignored)
-    [[ "$output" == *'$211.50'* ]]
+    # 18.4M + 23.9M = 42.3M → Claude $4/M = $169.20 (computed from rows; TOTAL row ignored)
+    [[ "$output" == *'$169.20'* ]]
+}
+
+@test "monthly table also values claude-mem and context-mode, month by month" {
+    mock_rtk   # no monthly rows: every figure below comes from the stores
+    unset CTX_STATS_JSON
+    mkdir -p "$HOME/.claude-mem"
+    # Read cost = (8-char title + "[]" + 3) / 4 = 3 tokens per row.
+    make_sqlite_db "$HOME/.claude-mem/claude-mem.db" "$MEM_DB_SCHEMA
+ALTER TABLE observations ADD COLUMN created_at TEXT;
+INSERT INTO observations (project, title, discovery_tokens, created_at)
+  VALUES ('p', 'abcdefgh', 10000, '2026-08-30T20:34:20.559Z');
+INSERT INTO observations (project, title, discovery_tokens, created_at)
+  VALUES ('p', 'abcdefgh', 20000, '2026-09-02T08:00:00.000Z');
+" || skip "no SQLite engine available to build the fixture"
+    local ctx="$HOME/.claude/context-mode"
+    mkdir -p "$ctx/sessions" "$ctx/content"
+    # 4096 diverted bytes in September, 4096 indexed bytes in October.
+    make_sqlite_db "$ctx/sessions/a.db" "
+CREATE TABLE session_events (data TEXT, bytes_avoided INTEGER DEFAULT 0, created_at TEXT);
+INSERT INTO session_events VALUES ('x', 4096, '2026-09-10 12:00:00');
+"
+    make_sqlite_db "$ctx/content/c.db" "
+CREATE TABLE sources (id INTEGER PRIMARY KEY, indexed_at TEXT);
+CREATE TABLE chunks (title TEXT, content TEXT, source_id INTEGER);
+INSERT INTO sources VALUES (1, '2026-10-01 09:00:00');
+INSERT INTO chunks VALUES ('ab', hex(zeroblob(2047)), 1);
+"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Monthly value"* ]]
+    [[ "$output" == *"Claude Opus 5.5 · input \$4.00/M"* ]]
+    [[ "$output" == *"2026-09"*"1.0K"*"20.0K"*"21.0K"* ]]
+    run bash "$SCRIPT" --json
+    [ "$status" -eq 0 ]
+    echo "$output" | node -e '
+        let s = "";
+        process.stdin.on("data", d => s += d).on("end", () => {
+            const m = JSON.parse(s).monthly;
+            const by = Object.fromEntries(m.tools.map(r => [r.month, r]));
+            const ok = by["2026-08"].tools["claude-mem"] === 9997
+                && by["2026-09"].tools["claude-mem"] === 19997
+                && by["2026-09"].tools["context-mode"] === 1024
+                && by["2026-10"].tools["context-mode"] === 1024
+                && by["2026-09"].saved_tokens === 21021
+                && m.price.input_usd_per_mtok === 4;
+            process.exit(ok ? 0 : 1);
+        });
+    '
 }
 
 @test "no monthly section when rtk has no monthly rows" {

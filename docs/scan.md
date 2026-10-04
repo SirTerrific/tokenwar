@@ -43,8 +43,9 @@ That is wrong, and it is wrong in the direction that flatters the tool.
 
 A static skill listing sits in the **prompt prefix**, ahead of the conversation.
 After the first turn it is served from the prompt cache. Cache reads bill at
-**0.1x** base input; cache writes at **1.25x**. So the recurring cost of a
-prefix block is:
+**0.1x** base input (0.05x on Opus 5.5, 0.025x on Fable 5.1 — Anthropic pricing,
+checked 2026-10-04); cache writes at **1.25x**. So the recurring cost of a
+prefix block, at the default 0.1x, is:
 
 ```
 equivalent tokens = N × (1.25 × writes + 0.1 × reads)
@@ -70,7 +71,8 @@ context.
 
 **Prefix invalidation.** Adding or removing a skill or MCP server changes the
 prefix, so it must be rewritten at 1.25x instead of read at 0.1x — a **12.5x**
-unit-cost step on every token before the change point.
+unit-cost step on every token before the change point (**25x** on Opus 5.5,
+whose reads cost 0.05x).
 
 That second point is why `tokenwar bundle` applies at session start and refuses
 to be a mid-session switch: mutating the tool inventory halfway through a large

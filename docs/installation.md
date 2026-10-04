@@ -110,5 +110,5 @@ style-only nudge with no measurable buffer, so it is always `N/A`; graphify's
 benchmark is a per-query ratio rather than a cumulative counter, so its ratio is
 printed in the note while its token column stays `N/A` and it never inflates the
 TOTAL. It also
-prints a per-month breakdown from `rtk gain --monthly`, valuing each month's
-saved tokens at Claude and Codex input list prices (the API-equivalent $ saved).
+prints a per-month breakdown of RTK, context-mode and claude-mem, valuing each month's
+saved tokens at the Claude Opus 5.5 input list price (the API-equivalent $ saved).
