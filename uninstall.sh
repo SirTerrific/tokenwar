@@ -24,6 +24,10 @@ STATUSLINE_CMD='bash ~/.claude/skills/tokenwar/scripts/tokenwar-statusline.sh'
 
 readonly TW_RC_BEGIN="# >>> tokenwar shell integration >>>"
 readonly TW_RC_END="# <<< tokenwar shell integration <<<"
+# context-mode routing block install.sh --with-plugins writes into CLAUDE.md.
+readonly CLAUDE_MD="$HOME/.claude/CLAUDE.md"
+readonly TW_MD_BEGIN="<!-- >>> tokenwar context-mode routing >>> -->"
+readonly TW_MD_END="<!-- <<< tokenwar context-mode routing <<< -->"
 
 # Duplicated from scripts/lib/osdetect.sh — this script is piped from curl, so
 # it cannot source anything out of the install it is about to remove.
@@ -81,20 +85,22 @@ else
     warn "$SETTINGS_JSON does not exist — skipping settings patch"
 fi
 
-# Strip the shell-integration block (tokenwar/provider functions) from rc.
-unwire_shell_rc() {
-    local rc_file="$1"
+# Strip a tokenwar block (between <begin> and <end> marker lines) from a file:
+# the shell-integration block from an rc file, or the routing block from CLAUDE.md.
+# Usage: unwire_block <file> [<begin> <end> <label>]
+unwire_block() {
+    local rc_file="$1" begin="${2:-$TW_RC_BEGIN}" end="${3:-$TW_RC_END}" label="${4:-shell integration}"
     [[ -f "$rc_file" ]] || return 0
-    grep -qF "$TW_RC_BEGIN" "$rc_file" 2>/dev/null || return 0
+    grep -qF "$begin" "$rc_file" 2>/dev/null || return 0
     local tmp
     tmp="$(mktemp "${rc_file}.tokenwar.XXXXXX")" || { warn "mktemp failed for $rc_file"; return 1; }
-    TW_BEGIN="$TW_RC_BEGIN" TW_END="$TW_RC_END" awk '
+    TW_BEGIN="$begin" TW_END="$end" awk '
         $0 == ENVIRON["TW_BEGIN"] { skip = 1 }
         skip != 1 { print }
         $0 == ENVIRON["TW_END"]   { skip = 0 }
     ' "$rc_file" > "$tmp" || { warn "could not rewrite $rc_file"; rm -f "$tmp"; return 1; }
     if mv -f "$tmp" "$rc_file"; then
-        say "Removed tokenwar shell integration from $rc_file"
+        say "Removed tokenwar ${label} from $rc_file"
     else
         warn "could not write $rc_file"; rm -f "$tmp"; return 1
     fi
@@ -102,8 +108,9 @@ unwire_shell_rc() {
 
 say "Removing shell integration"
 for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
-    unwire_shell_rc "$rc"
+    unwire_block "$rc"
 done
+unwire_block "$CLAUDE_MD" "$TW_MD_BEGIN" "$TW_MD_END" "context-mode routing"
 
 if [[ -d "$INSTALL_DIR" ]]; then
     say "Removing $INSTALL_DIR"

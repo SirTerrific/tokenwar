@@ -60,6 +60,13 @@ Restart Claude Code to load the plugins. `--all` includes `--with-plugins`,
 22 or newer. Installation does not run `openwiki --init`, because that command
 writes project documentation and invokes an LLM.
 
+`--with-plugins` (and so `--all`) also adds a short, marked block to your global
+`~/.claude/CLAUDE.md` telling Claude to route large outputs (logs, test output,
+JSON, big diffs) through context-mode's `ctx_execute`. Without it Claude rarely
+uses the sandbox, and the plugin saves little. Re-running the installer replaces
+the block instead of duplicating it; `uninstall.sh` removes it and leaves the
+rest of the file untouched.
+
 Prefer no surprise mutations? Drop the flags — `… | bash` just wires the statusline + shell functions, then `/tokenwar activate` installs the plugins on confirmation:
 
 ```bash
@@ -95,7 +102,7 @@ bash ~/.claude/skills/tokenwar/scripts/gain.sh
 ```
 
 `gain.sh` reads each tool from its **own native telemetry** — never fabricated:
-RTK (`rtk gain`), context-mode (its SQLite stores: bytes kept out of context), claude-mem
+RTK (`rtk gain`), context-mode (its own stores: diverted, indexed and sandbox-processed bytes), claude-mem
 (`~/.claude-mem/claude-mem.db` discovery tokens minus read cost; older releases: `chroma-sync-state.json` counts), pxpipe
 (`~/.pxpipe/events.jsonl` proxy events), and graphify (`graphify benchmark` on
 `~/.graphify/global-graph.json`). caveman is a

@@ -480,6 +480,45 @@ EOF
     [[ "$output" == *"Copilot CLI not found"* ]]
 }
 
+@test "--with-plugins writes the context-mode routing block into CLAUDE.md once" {
+    mock_claude_empty
+    mkdir -p "$HOME/.claude"
+    printf '%s\n' '# my own rules' 'keep me' > "$HOME/.claude/CLAUDE.md"
+    run bash "$SCRIPT" --with-plugins
+    [ "$status" -eq 0 ]
+    run bash "$SCRIPT" --with-plugins
+    [ "$status" -eq 0 ]
+    local md="$HOME/.claude/CLAUDE.md"
+    # Re-running replaces the block, never duplicates it — and never touches
+    # the user's own lines.
+    [ "$(grep -c 'tokenwar context-mode routing >>>' "$md")" -eq 1 ]
+    grep -q 'ctx_execute' "$md"
+    grep -qx 'keep me' "$md"
+}
+
+@test "bare install leaves CLAUDE.md alone" {
+    mock_claude_empty
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ ! -f "$HOME/.claude/CLAUDE.md" ] || ! grep -q 'tokenwar context-mode routing' "$HOME/.claude/CLAUDE.md"
+}
+
+@test "uninstall.sh removes the routing block and keeps the user's CLAUDE.md lines" {
+    mock_claude_empty
+    mkdir -p "$HOME/.claude"
+    printf '%s\n' '# my own rules' 'keep me' > "$HOME/.claude/CLAUDE.md"
+    run bash "$SCRIPT" --with-plugins
+    [ "$status" -eq 0 ]
+    grep -q 'tokenwar context-mode routing' "$HOME/.claude/CLAUDE.md"
+    run bash "$BATS_TEST_DIRNAME/../uninstall.sh"
+    [ "$status" -eq 0 ]
+    # `run` + status, not a bare `! grep`: bats does not fail a test on a
+    # negated command unless it is the last line.
+    run grep -cE 'ctx_execute|tokenwar context-mode routing' "$HOME/.claude/CLAUDE.md"
+    [ "$output" = "0" ]
+    grep -qx 'keep me' "$HOME/.claude/CLAUDE.md"
+}
+
 @test "unknown argument exits non-zero" {
     mock_claude_empty
     run bash "$SCRIPT" --bogus

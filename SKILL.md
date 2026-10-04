@@ -220,13 +220,13 @@ Run `bash ~/.claude/skills/tokenwar/scripts/gain.sh`. It aggregates from:
 | Tool         | Source of truth                                                |
 | ------------ | -------------------------------------------------------------- |
 | RTK          | `rtk gain` (parse `Tokens saved:` line + per-command table)    |
-| context-mode | its own SQLite stores under `~/.claude/context-mode/` — bytes kept out of context (`session_events.bytes_avoided` + indexed `chunks`), context-mode's strict formula (its ADR-0004), ÷ 4 = tokens |
+| context-mode | its own stores under `~/.claude/context-mode/` — bytes diverted by its hooks (`session_events.bytes_avoided`) + indexed `chunks` + bytes its sandbox processed (`bytes_sandboxed` in `sessions/stats-*.json`), ÷ 4 = tokens |
 | claude-mem   | `~/.claude-mem/claude-mem.db` — sum of real `discovery_tokens` minus the read cost of each observation (claude-mem's own savings formula). Older releases: `chroma-sync-state.json` counts × `MEM_EST_TOKENS_PER_ITEM` (est.) |
 | pxpipe       | `~/.pxpipe/events.jsonl` — real proxy events; parse explicit saved-token fields or baseline-minus-actual token fields |
 | caveman      | none — a SessionStart style nudge with no buffer transform, so no measurable byte delta → honest `N/A` |
 | graphify     | `graphify benchmark ~/.graphify/global-graph.json` — deterministic, offline, and REAL, but it reports a per-QUERY reduction ratio, not a cumulative saved-token counter. Print the ratio in the note, keep the token column `N/A`, and never add it to TOTAL |
 
-For `context-mode`: `gain.sh` reads the stores itself — no MCP call needed. `ctx_stats` now answers in prose rather than JSON, and its lifetime headline also counts hook-captured event data, which context-mode's own ADR-0004 says never entered the context window; `gain.sh` excludes it, so its number is lower than that headline. A caller may still set `CTX_STATS_JSON` to override.
+For `context-mode`: `gain.sh` reads the stores itself — no MCP call needed. `ctx_stats` now answers in prose rather than JSON. Hook-captured event data is excluded (context-mode's ADR-0004: it never entered the context window). Sandbox bytes ARE counted, and are the generous part: a file processed in the sandbox would rarely have been read into the context in full. The note shows them separately (`X KB diverted + indexed, Y MB processed in its sandbox`) — report both halves, never only the total. A caller may still set `CTX_STATS_JSON` to override.
 
 **Monthly $ value.** After the per-tool table, `gain.sh` renders a per-month financial breakdown driven by `rtk gain --monthly` (RTK's `history.db` is the only timestamped source — claude-mem/caveman `gain.jsonl` has no history, context-mode reports a single total). Each month's saved tokens are valued at two providers' **input** list prices (savings are input-side context offload, so output price is not applied):
 
@@ -376,7 +376,7 @@ Only the four Claude Code plugins are toggleable — `context-mode`, `claude-mem
 Each tool is read from its own native telemetry — `gain.sh` never fabricates:
 
 - **RTK** — `rtk gain` / `rtk gain --monthly` (from its `history.db`).
-- **context-mode** — its SQLite stores under `~/.claude/context-mode/` (bytes kept out of context, strict formula).
+- **context-mode** — its SQLite stores under `~/.claude/context-mode/` (diverted + indexed + sandbox-processed bytes).
 - **claude-mem** — `~/.claude-mem/claude-mem.db` (real discovery tokens minus read cost); older releases `chroma-sync-state.json` (counts, estimated).
 - **pxpipe** — `~/.pxpipe/events.jsonl` (real proxy-side savings from teamchong/pxpipe).
 - **caveman** — none. It's a SessionStart prompt-style nudge with no buffer transform, so there is no before/after byte delta to measure. It is always `N/A` — do not wire a byte-logging hook for it; that would only fabricate numbers.

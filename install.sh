@@ -101,6 +101,13 @@ readonly COPILOT_WIRE_SCRIPT_REL="scripts/copilot.sh"
 # user's shell rc.
 readonly TW_RC_BEGIN="# >>> tokenwar shell integration >>>"
 readonly TW_RC_END="# <<< tokenwar shell integration <<<"
+
+# context-mode routing block in the user's global CLAUDE.md (--with-plugins).
+# HTML comments, so the markers do not render; same strip-and-append contract as
+# the shell-integration block above.
+readonly CLAUDE_MD="$HOME/.claude/CLAUDE.md"
+readonly TW_MD_BEGIN="<!-- >>> tokenwar context-mode routing >>> -->"
+readonly TW_MD_END="<!-- <<< tokenwar context-mode routing <<< -->"
 readonly WRAPPED_PROVIDER_CLIS=(
     "codex"
     "gemini"
@@ -295,6 +302,39 @@ wire_shell_rc() {
         warn "could not write $rc_file"; rm -f "$tmp"; return 1
     fi
     say "Wired tokenwar/codex/gemini/kimi/opencode/copilot shell functions in $rc_file"
+}
+
+# --with-plugins: tell Claude when to use context-mode's sandbox.
+#
+# context-mode only saves tokens when Claude routes a large output through
+# ctx_execute — and left alone it rarely does: on the reference machine its
+# sandbox ran in 17 of 177 sessions. RTK owns the single Bash hook (check.sh R1),
+# so Bash output never reaches context-mode on its own. These lines name the
+# cases worth the sandbox and keep Bash for short or state-changing commands,
+# which RTK still compresses. Written only when the plugins are installed: a
+# global instruction for a tool the user does not have would be noise.
+# Idempotent: an existing tokenwar block is replaced, never duplicated.
+wire_claude_md() {
+    mkdir -p "$(dirname "$CLAUDE_MD")" && touch "$CLAUDE_MD" \
+        || { warn "could not create $CLAUDE_MD"; return 1; }
+    local tmp
+    tmp="$(mktemp "${CLAUDE_MD}.tokenwar.XXXXXX")" || { warn "mktemp failed for $CLAUDE_MD"; return 1; }
+    TW_BEGIN="$TW_MD_BEGIN" TW_END="$TW_MD_END" awk '
+        $0 == ENVIRON["TW_BEGIN"] { skip = 1 }
+        skip != 1 { print }
+        $0 == ENVIRON["TW_END"]   { skip = 0 }
+    ' "$CLAUDE_MD" > "$tmp" || { warn "could not rewrite $CLAUDE_MD"; rm -f "$tmp"; return 1; }
+    {
+        printf '%s\n' "$TW_MD_BEGIN"
+        printf '%s\n' '# context-mode — large output goes to the sandbox'
+        printf '%s\n' 'Use `ctx_execute`, `ctx_execute_file` or `ctx_batch_execute` instead of Bash or Read whenever the output will be large or must be filtered, counted or summarized: logs, test or build output, `git log` or diffs across many files, JSON and API responses, large files, recursive searches. Print only the derived answer.'
+        printf '%s\n' 'Keep Bash for short output and for commands that change state (git commit/push, mkdir, mv). RTK still compresses every Bash call; the two do not conflict.'
+        printf '%s\n' "$TW_MD_END"
+    } >> "$tmp"
+    if ! mv -f "$tmp" "$CLAUDE_MD"; then
+        warn "could not write $CLAUDE_MD"; rm -f "$tmp"; return 1
+    fi
+    say "Wired context-mode routing into $CLAUDE_MD"
 }
 
 # Print the ids of every currently-enabled plugin, one per line (from
@@ -556,7 +596,7 @@ if ! $wired_any; then
 fi
 
 # 5. plugins + rtk + pxpipe + graphify + OpenWiki (opt-in)
-if $WITH_PLUGINS; then install_plugins; fi
+if $WITH_PLUGINS; then install_plugins; wire_claude_md || true; fi
 if $WITH_RTK; then install_rtk; fi
 if $WITH_PXPIPE; then install_pxpipe; fi
 if $WITH_GRAPHIFY; then install_graphify; fi

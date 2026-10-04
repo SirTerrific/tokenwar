@@ -136,6 +136,15 @@ tw_no_sqlite_note() {
     printf 'no SQLite reader (need a working python3 or node >= 22)'
 }
 
+# tw_human_bytes <n> — 5242880 -> 5.0 MB, 2048 -> 2.0 KB, 42 -> 42 B.
+tw_human_bytes() {
+    awk -v b="$1" 'BEGIN {
+        if (b >= 1048576)   printf "%.1f MB", b / 1048576;
+        else if (b >= 1024) printf "%.1f KB", b / 1024;
+        else                printf "%d B", b;
+    }'
+}
+
 # tw_human_tokens <n> — 1234567 -> 1.2M, 30000 -> 30.0K, 42 -> 42.
 tw_human_tokens() {
     awk -v t="$1" 'BEGIN {

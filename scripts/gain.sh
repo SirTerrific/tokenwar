@@ -119,34 +119,50 @@ rtk_summary() {
 # Read from context-mode's own SQLite stores, so `tokenwar gain` measures it from
 # any shell. ctx_stats (the MCP tool) now answers in prose, not JSON, so the old
 # caller-injected CTX_STATS_JSON can no longer be produced; it is still honoured
-# when set. The measure is context-mode's strict "kept out" formula (its
-# ADR-0004): bytes its hooks diverted (session_events.bytes_avoided) plus the
-# bytes it indexed instead of returning (content chunks). Hook-captured event
-# data is excluded, as that ADR rules: it never entered the context window.
+# when set. The measure adds three counters context-mode keeps itself:
+#   - bytes its hooks diverted (session_events.bytes_avoided),
+#   - bytes it indexed instead of returning (content chunks),
+#   - bytes its sandbox read or fetched for ctx_execute & co. (bytes_sandboxed,
+#     in the per-session sessions/stats-*.json).
+# Hook-captured event data is excluded: context-mode's ADR-0004 rules it never
+# entered the context window. bytes_sandboxed is the generous counter — a large
+# file processed in the sandbox would rarely have been read into the context in
+# full — so the note reports it separately for the reader to weigh.
 ctx_summary() {
     if [[ -z "${CTX_STATS_JSON:-}" ]]; then
-        local sessions=() contents=()
+        local sessions=() contents=() stats=()
         shopt -s nullglob
         sessions=("${CTX_DATA_DIR}"/sessions/*.db)
         contents=("${CTX_DATA_DIR}"/content/*.db)
+        stats=("${CTX_DATA_DIR}"/sessions/stats-*.json)
         shopt -u nullglob
-        if (( ${#sessions[@]} + ${#contents[@]} == 0 )); then
+        if (( ${#sessions[@]} + ${#contents[@]} + ${#stats[@]} == 0 )); then
             echo "N/A|context-mode store not found (${CTX_DATA_DIR})|0"; return
         fi
-        if [[ "$(tw_sqlite_engine)" == "none" ]]; then
-            echo "N/A|$(tw_no_sqlite_note) to read context-mode|0"; return
+        local avoided=0 events=0 content=0 sandboxed=0 bytes tokens
+        if [[ "$(tw_sqlite_engine)" != "none" ]]; then
+            read -r avoided events <<<"$(tw_sqlite_rows_each "$CTX_SQL_AVOIDED" ${sessions[@]+"${sessions[@]}"} \
+                | awk '{ a += $1; n += $2 } END { printf "%d %d", a, n }')"
+            content="$(tw_sqlite_rows_each "$CTX_SQL_CONTENT" ${contents[@]+"${contents[@]}"} \
+                | awk '{ c += $1 } END { printf "%d", c }')"
         fi
-        local avoided events content bytes tokens
-        read -r avoided events <<<"$(tw_sqlite_rows_each "$CTX_SQL_AVOIDED" ${sessions[@]+"${sessions[@]}"} \
-            | awk '{ a += $1; n += $2 } END { printf "%d %d", a, n }')"
-        content="$(tw_sqlite_rows_each "$CTX_SQL_CONTENT" ${contents[@]+"${contents[@]}"} \
-            | awk '{ c += $1 } END { printf "%d", c }')"
-        bytes=$((avoided + content))
+        if (( ${#stats[@]} > 0 )); then
+            sandboxed="$(CTX_SESSIONS="$(tw_node_path "${CTX_DATA_DIR}/sessions")" node -e '
+                const fs = require("fs"), path = require("path"), dir = process.env.CTX_SESSIONS;
+                let total = 0;
+                for (const f of fs.readdirSync(dir)) {
+                    if (!f.startsWith("stats-") || !f.endsWith(".json")) continue;
+                    try { total += Number(JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")).bytes_sandboxed) || 0; } catch {}
+                }
+                process.stdout.write(String(Math.round(total)));
+            ' 2>/dev/null || echo 0)"
+        fi
+        bytes=$((avoided + content + sandboxed))
         if (( bytes == 0 )); then
-            echo "N/A|no measured context-mode redirects yet|0"; return
+            echo "N/A|no measured context-mode savings yet|0"; return
         fi
         tokens=$((bytes / CHARS_PER_TOKEN))
-        echo "$(tw_human_tokens "$tokens")|$((bytes / 1024)) KB kept out of context (diverted + indexed) over ${events} captures|${tokens}"
+        echo "$(tw_human_tokens "$tokens")|$(( (avoided + content) / 1024 )) KB diverted + indexed, $(tw_human_bytes "$sandboxed") processed in its sandbox, over ${events} captures|${tokens}"
         return
     fi
     node --input-type=module -e "

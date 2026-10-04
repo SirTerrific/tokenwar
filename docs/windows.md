@@ -64,7 +64,8 @@ Restart Claude Code to load the plugins and the status bar.
 ```
 
 Removes the `$PROFILE` block and the PATH entry, then delegates to
-`uninstall.sh` for the statusLine, the `~/.bashrc` block and the install
+`uninstall.sh` for the statusLine, the `~/.bashrc` block, the context-mode
+routing block in `~/.claude/CLAUDE.md` and the install
 directory. As upstream, it leaves the managed tools themselves installed.
 
 ## Running tokenwar outside Git Bash
