@@ -102,7 +102,7 @@ bash ~/.claude/skills/tokenwar/scripts/gain.sh
 ```
 
 `gain.sh` reads each tool from its **own native telemetry** — never fabricated:
-RTK (`rtk gain`), context-mode (its own stores: diverted, indexed and sandbox-processed bytes), claude-mem
+RTK (`rtk gain`), context-mode (its own stores: diverted and indexed bytes; sandbox volume is noted, not counted), claude-mem
 (`~/.claude-mem/claude-mem.db` discovery tokens minus read cost; older releases: `chroma-sync-state.json` counts), pxpipe
 (`~/.pxpipe/events.jsonl` proxy events), and graphify (`graphify benchmark` on
 `~/.graphify/global-graph.json`). caveman is a

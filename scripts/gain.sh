@@ -119,15 +119,15 @@ rtk_summary() {
 # Read from context-mode's own SQLite stores, so `tokenwar gain` measures it from
 # any shell. ctx_stats (the MCP tool) now answers in prose, not JSON, so the old
 # caller-injected CTX_STATS_JSON can no longer be produced; it is still honoured
-# when set. The measure adds three counters context-mode keeps itself:
+# when set. The SAVED figure counts two things context-mode keeps itself:
 #   - bytes its hooks diverted (session_events.bytes_avoided),
-#   - bytes it indexed instead of returning (content chunks),
-#   - bytes its sandbox read or fetched for ctx_execute & co. (bytes_sandboxed,
-#     in the per-session sessions/stats-*.json).
+#   - bytes it indexed instead of returning (content chunks).
 # Hook-captured event data is excluded: context-mode's ADR-0004 rules it never
-# entered the context window. bytes_sandboxed is the generous counter — a large
-# file processed in the sandbox would rarely have been read into the context in
-# full — so the note reports it separately for the reader to weigh.
+# entered the context window. The bytes its sandbox read or fetched for
+# ctx_execute & co. (bytes_sandboxed, in the per-session sessions/stats-*.json)
+# are shown in the note but NOT counted: they measure data handled, not tokens
+# avoided — one session's 472 MB could never have been loaded into a context
+# window, so counting it reported 155M "saved" against ~2.4M realistic.
 ctx_summary() {
     if [[ -z "${CTX_STATS_JSON:-}" ]]; then
         local sessions=() contents=() stats=()
@@ -157,12 +157,12 @@ ctx_summary() {
                 process.stdout.write(String(Math.round(total)));
             ' 2>/dev/null || echo 0)"
         fi
-        bytes=$((avoided + content + sandboxed))
-        if (( bytes == 0 )); then
+        bytes=$((avoided + content))
+        if (( bytes == 0 && sandboxed == 0 )); then
             echo "N/A|no measured context-mode savings yet|0"; return
         fi
         tokens=$((bytes / CHARS_PER_TOKEN))
-        echo "$(tw_human_tokens "$tokens")|$(( (avoided + content) / 1024 )) KB diverted + indexed, $(tw_human_bytes "$sandboxed") processed in its sandbox, over ${events} captures|${tokens}"
+        echo "$(tw_human_tokens "$tokens")|$((bytes / 1024)) KB diverted + indexed over ${events} captures; sandbox handled $(tw_human_bytes "$sandboxed") (not counted)|${tokens}"
         return
     fi
     node --input-type=module -e "

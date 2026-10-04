@@ -122,7 +122,7 @@ INSERT INTO observations (project, title) VALUES ('projA', 'abcdefgh');
     [[ "$output" == *"context-mode"*"N/A"* ]]
 }
 
-@test "context-mode is read from its own stores: diverted + indexed + sandboxed" {
+@test "context-mode counts diverted + indexed bytes and only reports the sandbox" {
     mock_rtk
     unset CTX_STATS_JSON
     local ctx="$HOME/.claude/context-mode"
@@ -146,16 +146,17 @@ INSERT INTO session_events VALUES ('x');"
 CREATE TABLE chunks (title TEXT, content TEXT);
 INSERT INTO chunks VALUES ('ab', hex(zeroblob(2047)));
 "
-    # Per-session runtime stats: bytes the sandbox processed. Only
-    # bytes_sandboxed counts; bytes_indexed would double-count the chunks above.
+    # Per-session runtime stats: bytes the sandbox handled. Reported, never added
+    # to the saved figure.
     echo '{"bytes_sandboxed":4096,"bytes_indexed":4096}' > "$ctx/sessions/stats-s1.json"
     echo '{"bytes_sandboxed":4096}' > "$ctx/sessions/stats-s2.json"
     echo '{broken' > "$ctx/sessions/stats-s3.json"
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
     # diverted 2048 + 2048 + indexed 4096 = 8 KB; sandboxed 4096 + 4096 = 8.0 KB;
-    # 16384 bytes / 4 chars per token = 4096 tokens.
-    [[ "$output" == *"context-mode"*"4.1K"*"8 KB diverted + indexed, 8.0 KB processed in its sandbox, over 2 captures"* ]]
+    # Only the 8 KB counts: 8192 bytes / 4 chars per token = 2048 tokens. The
+    # 8.0 KB the sandbox handled is reported in the note and left out of the total.
+    [[ "$output" == *"context-mode"*"2.0K"*"8 KB diverted + indexed over 2 captures; sandbox handled 8.0 KB (not counted)"* ]]
 }
 
 @test "CTX_STATS_JSON, when a caller sets it, still overrides the stores" {
