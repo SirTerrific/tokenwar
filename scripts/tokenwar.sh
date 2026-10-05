@@ -38,6 +38,8 @@ Commands:
   prune      list skills and MCP servers that load but were never invoked
   bundle X   apply a session-start tool bundle (dev|devops|architect|testing)
   copilot    report which tools reach GitHub Copilot CLI ('copilot wire' to fix)
+  pxpipe desktop on|off|status
+             route the Claude desktop app through pxpipe (proxy + logon task + settings.json)
   check      complementarity / conflict detector
   test       end-to-end ping: is each tool actually working?
   upgrade    bump managed tools to latest (asks confirmation)
@@ -60,6 +62,11 @@ case "$cmd" in
     bundle)  exec bash "${SCRIPT_DIR}/bundle.sh" "$@" ;;
     check)   exec bash "${SCRIPT_DIR}/check.sh" "$@" ;;
     copilot) exec bash "${SCRIPT_DIR}/copilot.sh" "$@" ;;
+    pxpipe)
+        [[ "${1:-}" == "desktop" ]] || { echo "usage: tokenwar pxpipe desktop on|off|status" >&2; exit 2; }
+        shift
+        exec bash "${SCRIPT_DIR}/pxpipe-desktop.sh" "$@"
+        ;;
     test)
         bash "${SCRIPT_DIR}/status.sh" --test "$@"
         rc=$?

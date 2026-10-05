@@ -178,8 +178,27 @@ INSERT INTO chunks VALUES ('ab', hex(zeroblob(2047)));
     [[ "$output" == *"pxpipe"*"N/A"*"events log not found"* ]]
 }
 
+@test "pxpipe 0.14+ savings come from pxpipe's own stats" {
+    mock_rtk
+    mkdir -p "$HOME/.pxpipe"
+    echo '{"model":"claude-opus-5-5","compressed":true}' > "$HOME/.pxpipe/events.jsonl"
+    cat > "$MOCK_BIN/pxpipe" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$HOME/pxpipe-calls.log"
+[[ "\$1 \$2" == "stats --json" ]] && echo '{"total":11,"compressed":2,"savedTokensTotal":65868}'
+exit 0
+EOF
+    chmod +x "$MOCK_BIN/pxpipe"
+    run bash "$SCRIPT"
+    [[ "$output" == *"pxpipe"*"65.9K"*"2 compressed of 11 requests (pxpipe stats)"* ]]
+    grep -q -- "--file .*events.jsonl" "$HOME/pxpipe-calls.log"
+}
+
 @test "pxpipe reads saved tokens from native events log" {
     mock_rtk
+    # An older pxpipe without `stats`: fall back to reading the log ourselves.
+    printf '#!/usr/bin/env bash\nexit 1\n' > "$MOCK_BIN/pxpipe"
+    chmod +x "$MOCK_BIN/pxpipe"
     mkdir -p "$HOME/.pxpipe"
     cat > "$HOME/.pxpipe/events.jsonl" <<'EOF'
 {"saved_tokens":1200,"applied":true}

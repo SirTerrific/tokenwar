@@ -117,6 +117,13 @@ EOF
     grep -q "opencode()" "$HOME/.bashrc"
 }
 
+@test "shell-integration block routes claude through pxpipe-claude.sh" {
+    mock_claude_empty
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    grep -q 'claude() { command bash "$HOME/.claude/skills/tokenwar/scripts/pxpipe-claude.sh" "$@"; }' "$HOME/.bashrc"
+}
+
 @test "shell-integration block exports ~/.local/bin on PATH" {
     mock_claude_empty
     run bash "$SCRIPT"

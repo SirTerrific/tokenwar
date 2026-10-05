@@ -280,6 +280,22 @@ pxpipe_summary() {
     if [[ ! -f "$PXPIPE_EVENTS_LOG" ]]; then
         echo "N/A|pxpipe events log not found ($PXPIPE_EVENTS_LOG)|0"; return
     fi
+    # pxpipe 0.14+ measures its own savings (baseline minus the usage the API
+    # reported): take its figure rather than re-deriving it from event fields
+    # that change between releases.
+    if command -v pxpipe >/dev/null 2>&1; then
+        local stats
+        stats="$(pxpipe stats --json --file "$(tw_node_path "$PXPIPE_EVENTS_LOG")" 2>/dev/null)"
+        if [[ -n "$stats" ]] && STATS="$stats" node -e '
+            const s = JSON.parse(process.env.STATS);
+            const saved = Math.round(Number(s.savedTokensTotal) || 0);
+            if (saved <= 0) process.exit(1);
+            const human = saved >= 1e6 ? (saved/1e6).toFixed(1)+"M" : saved >= 1e3 ? (saved/1e3).toFixed(1)+"K" : String(saved);
+            console.log(human + "|" + (s.compressed || 0) + " compressed of " + (s.total || 0) + " requests (pxpipe stats)|" + saved);
+        ' 2>/dev/null; then
+            return
+        fi
+    fi
     PXPIPE_EVENTS="$(tw_node_path "$PXPIPE_EVENTS_LOG")" node --input-type=module -e '
         import { readFileSync } from "node:fs";
         const pick = (o, keys) => {

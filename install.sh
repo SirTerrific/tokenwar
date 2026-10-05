@@ -291,6 +291,9 @@ wire_shell_rc() {
         printf '%s\n' "$TW_RC_BEGIN"
         printf '%s\n' 'case ":$PATH:" in *":'"$USER_LOCAL_BIN"':"*) : ;; *) export PATH="'"$USER_LOCAL_BIN"':$PATH" ;; esac'
         printf '%s\n' "tokenwar() { command bash \"\$HOME/.claude/skills/tokenwar/scripts/tokenwar.sh\" \"\$@\"; }"
+        # Claude Code behind pxpipe (pxpipe-claude.sh starts the proxy, or falls
+        # back to plain claude). Shell-only: the desktop app never reads this.
+        printf '%s\n' "claude() { command bash \"\$HOME/.claude/skills/tokenwar/scripts/pxpipe-claude.sh\" \"\$@\"; }"
         local provider_cli
         for provider_cli in "${WRAPPED_PROVIDER_CLIS[@]}"; do
             printf '%s\n' "${provider_cli}() { command bash \"\$HOME/.claude/skills/tokenwar/scripts/tokenwar-launch.sh\" ${provider_cli} \"\$@\"; command ${provider_cli} \"\$@\"; }"
@@ -301,7 +304,7 @@ wire_shell_rc() {
     if ! mv -f "$tmp" "$rc_file"; then
         warn "could not write $rc_file"; rm -f "$tmp"; return 1
     fi
-    say "Wired tokenwar/codex/gemini/kimi/opencode/copilot shell functions in $rc_file"
+    say "Wired tokenwar/claude/codex/gemini/kimi/opencode/copilot shell functions in $rc_file"
 }
 
 # --with-plugins: tell Claude when to use context-mode's sandbox.

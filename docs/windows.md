@@ -163,6 +163,50 @@ An rtk installed elsewhere — `winget`, `scoop`, `cargo install` — belongs to
 tool: tokenwar reports its updates but leaves the binary alone. A dev build from
 `cargo install --path` is rebuilt from its clone.
 
+## pxpipe
+
+pxpipe compresses a request only when it passes through the proxy. Two things
+keep that from happening by default:
+
+- **The Claude desktop app sets `ANTHROPIC_BASE_URL=https://api.anthropic.com`**
+  for the sessions it runs, so a base-URL proxy never sees its traffic. It does
+  honour `HTTPS_PROXY` and `NODE_EXTRA_CA_CERTS` from the `env` block of
+  `~/.claude/settings.json` — the approach of
+  [DivyeshPatro/pxpipe-windows](https://github.com/DivyeshPatro/pxpipe-windows).
+  `tokenwar pxpipe desktop on` sets that up:
+  1. starts `scripts/pxpipe-desktop.mjs`, a long-lived HTTPS proxy on
+     `127.0.0.1:47822` built from pxpipe's own `warp` modules: it decrypts
+     `api.anthropic.com` only, sends `/v1/messages` to pxpipe, tunnels every
+     other host untouched, and keeps the pxpipe proxy itself running;
+  2. registers a Task Scheduler logon task (`tokenwar-pxpipe-desktop`, hidden
+     window) so it is back after a reboot;
+  3. adds `HTTPS_PROXY`, `NO_PROXY` and `NODE_EXTRA_CA_CERTS` to
+     `settings.json` (backup: `settings.json.tokenwar-pxpipe.bak`).
+
+  Then quit the desktop app from the tray and reopen it. pxpipe's CA is trusted
+  through `NODE_EXTRA_CA_CERTS` only — by Claude Code processes, not by Windows.
+  The proxy sees your OAuth token in plaintext, on loopback only.
+
+  **While wired, Claude Code needs that proxy.** If Claude stops answering, run
+  `tokenwar pxpipe desktop status`, then `on` to restart it or `off` to unwire
+  (both work from Git Bash or `tokenwar.cmd`). The desktop app may also rewrite
+  `settings.json` and drop the wiring; `status` shows it, `on` restores it.
+- **In a terminal, tokenwar's `claude` shell function does it for you.** It
+  runs `scripts/pxpipe-claude.sh`, which starts the proxy if it is not running
+  (detached, logging to `~/.pxpipe/proxy.log`, so later sessions reuse it) and
+  launches `pxpipe warp -- claude`. `warp` needs no base URL and trusts its
+  certificate for the wrapped process only (`NODE_EXTRA_CA_CERTS`); nothing is
+  installed in the Windows certificate store. Without pxpipe, or if the proxy
+  will not start, it runs plain `claude`. `TOKENWAR_PXPIPE=off claude` skips
+  it for one launch.
+
+pxpipe images only the models in `PXPIPE_MODELS` (by default Fable 5 and Opus
+5.5). To add Sonnet 5.5, export it before the proxy starts, e.g. in `~/.bashrc`:
+`export PXPIPE_MODELS="claude-fable-5,claude-opus-5-5,claude-sonnet-5-5,gemini"`
+(the dashboard's model chips are in-memory only). Opus 5.5 also needs Claude Code 2.1.280 or newer:
+an older CLI gets `API Error: 400 … does not support this model` — run
+`claude update`. `tokenwar gain` reports pxpipe's own `pxpipe stats` figure.
+
 ## Known limitations
 
 **Codex, opencode and Copilot telemetry needs a real Python or Node 22+.** All
