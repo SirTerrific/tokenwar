@@ -39,7 +39,7 @@ Commands:
   bundle X   apply a session-start tool bundle (dev|devops|architect|testing)
   copilot    report which tools reach GitHub Copilot CLI ('copilot wire' to fix)
   pxpipe desktop on|off|status
-             route the Claude desktop app through pxpipe (proxy + logon task + settings.json)
+             route the Claude desktop app through pxpipe (proxy + Startup shortcut + settings.json)
   check      complementarity / conflict detector
   test       end-to-end ping: is each tool actually working?
   upgrade    bump managed tools to latest (asks confirmation)

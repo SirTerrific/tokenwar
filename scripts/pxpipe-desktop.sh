@@ -2,12 +2,13 @@
 # pxpipe-desktop.sh — route the Claude desktop app through pxpipe.
 #
 #   on      start the desktop proxy (pxpipe-desktop.mjs), register it to start
-#           at logon (Windows Task Scheduler), and point Claude Code at it:
+#           at logon (a shortcut in the user's Startup folder — schtasks
+#           /SC ONLOGON needs admin rights), and point Claude Code at it:
 #           HTTPS_PROXY + NO_PROXY + NODE_EXTRA_CA_CERTS in the env block of
 #           ~/.claude/settings.json. Quit and reopen the desktop app afterwards.
 #   off     undo all three. Use it first if Claude stops answering.
 #   status  what is wired and what is running.
-#   run     the supervised loop the logon task runs (restarts the proxy).
+#   run     the supervised loop the Startup shortcut runs (restarts the proxy).
 #
 # The CA is trusted only through NODE_EXTRA_CA_CERTS, i.e. by Claude Code
 # processes; nothing is added to the Windows certificate store.
@@ -87,7 +88,31 @@ settings_wired() {
         catch { process.exit(1); }' 2>/dev/null
 }
 
-task_registered() { tw_is_windows && MSYS2_ARG_CONV_EXCL='*' schtasks /Query /TN "$TASK_NAME" >/dev/null 2>&1; }
+# Per-user Startup folder (TW_STARTUP_DIR overrides it for tests).
+startup_shortcut() {
+    local dir="${TW_STARTUP_DIR:-}"
+    if [[ -z "$dir" ]]; then
+        dir="$(powershell -NoProfile -Command "[Environment]::GetFolderPath('Startup')" 2>/dev/null | tw_strip_cr)"
+        [[ -n "$dir" ]] || return 1
+        dir="$(cygpath -u "$dir")"
+    fi
+    printf '%s/%s.lnk' "$dir" "$TASK_NAME"
+}
+
+task_registered() { local l; tw_is_windows && l="$(startup_shortcut)" && [[ -f "$l" ]]; }
+
+# A .lnk to mintty with a hidden window: no admin rights, no console flash.
+# Paths travel through the environment so nothing needs quoting for PowerShell.
+install_startup_shortcut() {
+    local lnk
+    lnk="$(startup_shortcut)" || return 1
+    mkdir -p "$(dirname "$lnk")"
+    # shellcheck disable=SC2016  # $s and $env: are PowerShell's, not the shell's
+    LNK="$(cygpath -w "$lnk")" TGT="$(mintty_path)" \
+    ARGS="-w hide -e /usr/bin/bash -l \"$(tw_node_path "${SCRIPT_DIR}/pxpipe-desktop.sh")\" run" \
+        powershell -NoProfile -Command '$s = (New-Object -ComObject WScript.Shell).CreateShortcut($env:LNK); $s.TargetPath = $env:TGT; $s.Arguments = $env:ARGS; $s.WindowStyle = 7; $s.Save()' >/dev/null 2>&1
+    [[ -f "$lnk" ]]
+}
 
 cmd_run() {
     mkdir -p "$(dirname "$LOG")"
@@ -113,12 +138,10 @@ cmd_on() {
     fi
 
     if tw_is_windows; then
-        local tr
-        tr="\"$(mintty_path)\" -w hide -e /usr/bin/bash -l \"$(tw_node_path "${SCRIPT_DIR}/pxpipe-desktop.sh")\" run"
-        if MSYS2_ARG_CONV_EXCL='*' schtasks /Create /TN "$TASK_NAME" /TR "$tr" /SC ONLOGON /RL LIMITED /F >/dev/null 2>&1; then
-            say "Registered logon task $TASK_NAME"
+        if install_startup_shortcut; then
+            say "Autostart at logon: $(startup_shortcut)"
         else
-            warn "could not register the logon task — after a reboot, run: tokenwar pxpipe desktop on"
+            warn "could not create the Startup shortcut — after a reboot, run: tokenwar pxpipe desktop on"
         fi
     else
         warn "no autostart off Windows — run \`tokenwar pxpipe desktop run\` under your own supervisor"
@@ -133,7 +156,7 @@ cmd_off() {
     settings_env off
     say "Removed the proxy settings from $SETTINGS"
     if task_registered; then
-        MSYS2_ARG_CONV_EXCL='*' schtasks /Delete /TN "$TASK_NAME" /F >/dev/null 2>&1 && say "Removed logon task $TASK_NAME"
+        rm -f "$(startup_shortcut)" && say "Removed the Startup shortcut"
     fi
     say "Restart the Claude desktop app. The proxy process, if running, is now unused; it stops at logoff."
 }
@@ -144,7 +167,7 @@ cmd_status() {
     if daemon_up; then say "desktop proxy: up on $PROXY_URL"; else warn "desktop proxy: down"; ok=false; fi
     if pxpipe_up; then say "pxpipe proxy: up on :47821"; else warn "pxpipe proxy: down"; ok=false; fi
     if tw_is_windows; then
-        if task_registered; then say "logon task: $TASK_NAME"; else warn "logon task: not registered"; ok=false; fi
+        if task_registered; then say "autostart: $(startup_shortcut)"; else warn "autostart: no Startup shortcut"; ok=false; fi
     fi
     if settings_wired && ! daemon_up; then
         warn "Claude Code is wired to a proxy that is down — run \`tokenwar pxpipe desktop on\` (or \`off\`)"

@@ -178,7 +178,7 @@ keep that from happening by default:
      `127.0.0.1:47822` built from pxpipe's own `warp` modules: it decrypts
      `api.anthropic.com` only, sends `/v1/messages` to pxpipe, tunnels every
      other host untouched, and keeps the pxpipe proxy itself running;
-  2. registers a Task Scheduler logon task (`tokenwar-pxpipe-desktop`, hidden
+  2. adds a shortcut to your Startup folder (`tokenwar-pxpipe-desktop.lnk`, hidden
      window) so it is back after a reboot;
   3. adds `HTTPS_PROXY`, `NO_PROXY` and `NODE_EXTRA_CA_CERTS` to
      `settings.json` (backup: `settings.json.tokenwar-pxpipe.bak`).

@@ -23,7 +23,9 @@ setup() {
     export TW_PXPIPE_ROOT="$(cygpath -m "$root" 2>/dev/null || printf '%s' "$root")"
 
     printf '#!/usr/bin/env bash\nexit 0\n' > "$MOCK_BIN/pxpipe"
-    printf '#!/usr/bin/env bash\necho "schtasks $*" >> "%s"\n' "$CALLS" > "$MOCK_BIN/schtasks"
+    # PowerShell's shortcut writer, mocked: logs the env it got, writes the .lnk.
+    export TW_STARTUP_DIR="$HOME/Startup"
+    printf '#!/usr/bin/env bash\necho "powershell LNK=$LNK TGT=$TGT ARGS=$ARGS" >> "%s"\n[[ -n "$LNK" ]] && touch "$(cygpath -u "$LNK")"\nexit 0\n' "$CALLS" > "$MOCK_BIN/powershell"
     # The launcher "starts" both proxies; curl answers once they are up.
     printf '#!/usr/bin/env bash\necho launched >> "%s"; touch "%s/up"\n' "$CALLS" "$HOME" > "$MOCK_BIN/launcher"
     cat > "$MOCK_BIN/curl" <<EOF
@@ -65,11 +67,16 @@ env_of() {
     [ "$(env_of)" = '{"FOO":"1"}' ]
 }
 
-@test "on: registers the logon task on Windows" {
-    case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) ;; *) skip "Windows Task Scheduler" ;; esac
+@test "on: autostarts via a Startup shortcut on Windows; off removes it" {
+    case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) ;; *) skip "Windows Startup folder" ;; esac
     run bash "$SCRIPT" on
     [ "$status" -eq 0 ]
-    grep -q "schtasks /Create /TN tokenwar-pxpipe-desktop /TR .*pxpipe-desktop.sh.* run /SC ONLOGON /RL LIMITED /F" "$CALLS"
+    [ -f "$HOME/Startup/tokenwar-pxpipe-desktop.lnk" ]
+    grep -q 'powershell LNK=.*tokenwar-pxpipe-desktop.lnk TGT=.*mintty.exe ARGS=-w hide -e /usr/bin/bash -l ".*pxpipe-desktop.sh" run' "$CALLS"
+    run bash "$SCRIPT" status
+    [ "$status" -eq 0 ]
+    run bash "$SCRIPT" off
+    [ ! -e "$HOME/Startup/tokenwar-pxpipe-desktop.lnk" ]
 }
 
 @test "off: removes only our keys, and leaves a foreign proxy alone" {
