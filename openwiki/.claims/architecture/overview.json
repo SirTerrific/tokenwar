@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:04143988e45ba75cabd26c2b1f239aa401e0b619f739dff75e5474d3df619975",
+  "claims": [
+    {
+      "id": "claim_4d3001b1e15844b3851b69c4ae0216dd",
+      "statement": "scripts/tokenwar.sh defaults to the status subcommand and execs the matching per-subcommand script.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/tokenwar.sh#L54-L87",
+          "version": "repo-lines-v1:sha256:8e2d1581efb0db956967a8c3ede004752f85954673d69407240ca894091c4490:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjMGIxNzFhY2Q5MWFhOWVlN2YxZDg5ZTYzNzUwMzRmMWYxZGRiNTQyNDA2YmI3ODUyMTQ0ZTg1ZDM1ODY5ZWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0YTJiZWNmZjhhZmIzNGRiMjYwZGFiYzk2OTE1ZmZlY2ZkZTg0ODkyOTU0MWM2MTkzZGU2ZDE2NGMyMWU4ZGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYjlhOTkxNDk3ODc0MzE3MTQzNDBmZmU0MDQ4MTYyMzk4ZWVhOWRmZjVkNjU5MjYxYmY4MmNkODNmMjFjZDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1a5dfc8e43e744dfb1c2168b9bd0b7fe",
+      "statement": "The doctor subcommand runs status.sh --test, check.sh and gain.sh in sequence, each non-fatal.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/tokenwar.sh#L80-L84",
+          "version": "repo-lines-v1:sha256:061659ab5c5edf9e0b83f15d18be5b7a1074fd9fc774c0baddff6159ddb9170f:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTI4ODUxZTdmMDk2NTgyZTc4YTcwOTQ0MWEwYzUzZTJlYWIwMDhiNDE1ZTBmZDJjOGRjNmNiNDcyN2Q3ODIxMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmRjNDMzYmM3ODNmMmUzYWJjYmI0NzI3NWUwZGFmN2U0ZTcyY2ZhNzk4ZjgwZDAyMjJhMzlkMzc1NTg1NTlkNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGU0YTczYWEyZTU3YzUxOWQyMjBhN2UwZmI3ODc4YjJhZDExNDA5OTIwNDU2MDE3ZWQyYTgwOGJjNzFkZWNkYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDUxM2RhNTRjYmZmNjc2NTZkMmE2ZWVhMTAzYTg2MTEyYWYyN2FlYzZlYWM0NmYzMmVjNTRmNjIwYjJmNTAzNSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_e7a4a5537632463184c5de1fc8c1fda7",
+      "statement": "tokenwar pxpipe only accepts the desktop sub-argument and forwards to pxpipe-desktop.sh; other arguments exit 2.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/tokenwar.sh#L65-L69",
+          "version": "repo-lines-v1:sha256:96162c09d4c9ebd054e30af90aa5afab95031af618b3139df0df41aad055a1c1:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTM3NzUyZTQ0NzIwZTBlN2M1NjUzNzE5NjQyNjdjN2I2YWE3YzYwZDhjMGZlZWM3YTk0YjE0MDM4OWZiOTYzOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmRjNDMzYmM3ODNmMmUzYWJjYmI0NzI3NWUwZGFmN2U0ZTcyY2ZhNzk4ZjgwZDAyMjJhMzlkMzc1NTg1NTlkNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGE4ODM0ODE2YTBmZTM3YTRhOTVjYTk3NGZkYWUxYjU1NTVlYmE3MTE1NDgwOWZiOTdjZjRjMWJhZTNiNmY5MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWM4MWU4MTg5MjMzYTc4Zjg2Yzc2MjFjYjI1YTUzNmUyYzNlNDY3NjE0ZDJkNDg5Mzg3OGJkYWRlOGRkOWIxYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_42752ff0cd5b4fd3a5b463e9acbb0989",
+      "statement": "tw_load_plugin_list prefers claude plugin list --json and falls back to installed_plugins.json plus enabledPlugins OR-merged from settings.json and settings.local.json, treating installed-but-absent plugins as enabled.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/lib/plugins.sh#L1-L17",
+          "version": "repo-lines-v1:sha256:b43c0d114e880c4cd9a60a8e8c121a0f61fb56f6dbc15991f8d42bf508f8ee10:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZjY2EzOTNiMmQ3YmU4MzdhZDY1OWU3NGE5MjYzMWJmMTc5YzkwMjE4YTFhODExMzQ4NzQ5OGM4Y2MwOGNhOGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIyZDBjNzdlZTQzNGY1Y2ZlNDk2ZWU1YzliZGE0MjY3Njc4ZDExZjExZjM5MDA3YmM4NTE4MmM2MWNkMWNlNDMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_adf2792b0d17400caebef14f43e60c2f",
+      "statement": "caveman has no native telemetry and is always reported N/A; gain.sh never fabricates numbers.",
+      "evidence": [
+        {
+          "resource": "repo://SKILL.md#L377-L388",
+          "version": "repo-lines-v1:sha256:a744c65137a02619dfb4311e7a9b505edbe9bec8be4ccc18b6c7e4fd6fd24d61:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNkMjFkMWUzOTdjZDljOWM4NmRjNTM5MzBkYzgxMWE5MzRmYzQ3M2NkZTcwZDcxNTRlNGU4MmRjZmVhMTBkMDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1MmQ3MTExMDNkNTBhNDM3ODMwYzZmYmNkMDRmYjRiYWI0OWEwZjgyZjZkMjZkMWM3OTFjNmU4NDg4ZGQwOTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwMWYyZWMxNzU5M2MxMDU0ZWI0NjM2N2Q4NDUzZWYyNGExNzNjZTk2YjcxMTdkOTFmOWE2OGQ0NGZlZjhiMDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRlNmU5ZTgyOGZjNTE3ZGQ2YjQzYzg1MGRlNWM4MzAzNWJjN2ZjZDE5NDVmMzEzYjkwNGNiYThmMGM0YjE5YzQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_175724fc7f1040deb5f3ec4da6a032a8",
+      "statement": "graphify savings are reported as a per-query ratio from graphify benchmark, never summed.",
+      "evidence": [
+        {
+          "resource": "repo://SKILL.md#L377-L388",
+          "version": "repo-lines-v1:sha256:a744c65137a02619dfb4311e7a9b505edbe9bec8be4ccc18b6c7e4fd6fd24d61:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNkMjFkMWUzOTdjZDljOWM4NmRjNTM5MzBkYzgxMWE5MzRmYzQ3M2NkZTcwZDcxNTRlNGU4MmRjZmVhMTBkMDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1MmQ3MTExMDNkNTBhNDM3ODMwYzZmYmNkMDRmYjRiYWI0OWEwZjgyZjZkMjZkMWM3OTFjNmU4NDg4ZGQwOTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwMWYyZWMxNzU5M2MxMDU0ZWI0NjM2N2Q4NDUzZWYyNGExNzNjZTk2YjcxMTdkOTFmOWE2OGQ0NGZlZjhiMDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRlNmU5ZTgyOGZjNTE3ZGQ2YjQzYzg1MGRlNWM4MzAzNWJjN2ZjZDE5NDVmMzEzYjkwNGNiYThmMGM0YjE5YzQifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.0",
+    "at": "2026-10-05T04:01:37.525Z"
+  }
+}

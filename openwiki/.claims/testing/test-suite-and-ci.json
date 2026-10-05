@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:3a6bad578d2f41e6d1ff3c14c283cfaecd73c83952054d97c3f5bc553c304e2f",
+  "claims": [
+    {
+      "id": "claim_3de95f66a13446eaaec6c3795e1bbb57",
+      "statement": "history.bats runs the Node test history.test.mjs with node --test.",
+      "evidence": [
+        {
+          "resource": "repo://tests/history.bats#L1-L8",
+          "version": "repo-lines-v1:sha256:6b5bac08c7cb5383e28e3b492a05f49326b47332346cd597efacbbb25e4820b3:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiN2MwMjNjYmM5MTFjZjc3NDExYjc5YjM5NDQ0MzhmMmUxMTE0NWIyNjYxYjk0NzI0ODFkOWI3YWE4YmRkZGRkNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_01a1b9608ae649158be0f6b208b45914",
+      "statement": "Tests isolate HOME in a mktemp dir and prepend a MOCK_BIN of stub executables to PATH, restoring both in teardown.",
+      "evidence": [
+        {
+          "resource": "repo://tests/gain.bats#L1-L22",
+          "version": "repo-lines-v1:sha256:0393c02557008ed713b063c3dd81a1f9d695248a61b03303248c93997cbf4eae:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdjMDIzY2JjOTExY2Y3NzQxMWI3OWIzOTQ0NDM4ZjJlMTExNDViMjY2MWI5NDcyNDgxZDliN2FhOGJkZGRkZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJkOTYxYmRmNDE1YTkwNTExY2FkOGQ2OTQ2NWQ0MTExZjk4M2Y3Yjc0ODkwNzQ1ZTEyY2MxYmFmYTc3MWRmYzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIyNDY3Y2JhZjQ4YmMyMDdjYjBjZWZiYTQ2MTY2MTc3YzQ0MTMzOTUzMmVmMTFhYzBmNTBjY2UyM2ZjMGMyZTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_146c78cc795f445c8a776a316bbbbd60",
+      "statement": "make_sqlite_db builds SQLite fixtures with python3 (probing sqlite3 import) or node:sqlite, mirroring the scripts' reader order.",
+      "evidence": [
+        {
+          "resource": "repo://tests/sqlite_helper.bash",
+          "version": "repo-file-v1:sha256:e6038e7cf6d6d4a6533136bd3af676df9717f808cf719d58266e175b27339c10"
+        }
+      ]
+    },
+    {
+      "id": "claim_1e11a18b96204422b3b71870be3dc8b6",
+      "statement": "CI has a test job on ubuntu-latest and a test-windows job on windows-latest with Git Bash, UTF-8 locale and MSYS winsymlinks:nativestrict; the Windows job runs bats a second time with MSYS_NO_PATHCONV=1 and checks for CRLF.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L84-L160",
+          "version": "repo-lines-v1:sha256:b1d114c73352fcc11af04544ce56704b3e5f647ff9f67273de25acb1e068b33b:eyJzZWxlY3RlZExpbmVDb3VudCI6NzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEzYTI3OGFkNmVhMDAzNmM1ZjlmYTNlZDgxM2RjYjkxYWJkMGZjY2M2OWJjNzkyNDdkYjM4MjFmYzExODJkOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFjZWVjM2U4MTZjMjVkYjdmYmRiOTMyODA3NmY3NjI1OTk4YmNmYjZiYjRjYzIzYTYzNTFjZDI5OTBhYzQyZTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5NDM3ZjI5NjhlZWE3NjU4Mzg4Y2Y2OWE5YTIxNTI2N2MyZmJmYWNjYzA0MThjYmIzNWIyMTE2YTg0NDI3ZTMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f9fc6e85499042afafe19c2640a2a3b8",
+      "statement": "CI runs on push to any branch, pull requests to main, and workflow_dispatch, and includes a JSON contract smoke asserting every managed tool and provider appears in status --json and gain --json.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L1-L83",
+          "version": "repo-lines-v1:sha256:acdcda9c9918b8d2fefa6bace9212be6fd43eaddea1c162ec26478766cf896e0:eyJzZWxlY3RlZExpbmVDb3VudCI6ODMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2ZTFiMzJmYTA5MDc5YWUyZjAwMDFmZmYwZWNhMjdiNDk4NTk1N2Q0ZWI0ODU3OTI5YjNjZjA1OGZhYWU1NDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA5MWExNmE0OGZlNmY1NDdjMzQzN2Q1N2M5NTc4ODM1NjRhZmU2OTU2MzU5NjE1MzIxZjA0YjEyNjgzYWI5MjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM1Y2ViMWZjMzQ1NGQ3ZGQyMGYxNTNhYTA1YmRiMmMxMzg2YmEyMWZmMmRkMWRlNWY5MGVmNmM0YzExODgxYjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0ec4a3b315aa4e6c837b4e24ac8d256b",
+      "statement": "openwiki-update.yml runs daily at 08:00 UTC or on dispatch, installs openwiki@0.7.0, runs openwiki code --update --print, opens a PR via create-pull-request, and propagates OpenWiki failure after the PR step.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/openwiki-update.yml",
+          "version": "repo-file-v1:sha256:e61d74c7f49c6496d566cfebe10152127269cdad6f56e9f31f5db7b0f2b1c631"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.0",
+    "at": "2026-10-05T04:01:37.525Z"
+  }
+}

@@ -92,14 +92,17 @@ tool's own telemetry, nothing invented:
   opencode        105.3K      10 opencode sessions (real token cols)
   Copilot CLI     13.3K       1 Copilot sessions (real assistant_usage_events) - 0.24 AI credits billed
 
-Monthly value — API-equivalent $ saved (Claude Opus 4.8 · input $5.00/M)
-  2026-07    8.2M        $41.00
-  TOTAL      8.4M        $42.16
+Monthly value — API-equivalent $ saved
+
+  Claude Opus 5.5 · input $4.00/M
+  month      saved      claude $
+  2026-07    8.2M       $32.80
+  TOTAL      8.4M       $33.60
 ```
 
 That's **13.4M tokens saved** on Claude-side context alone (RTK compressing tool
-stdout at 68.6%, claude-mem offloading cross-session memory), worth ~**$42/month**
-in Opus 4.8 input-equivalent — and the provider rows show each wrapped CLI's real
+stdout at 68.6%, claude-mem offloading cross-session memory), worth ~**$34/month**
+in Opus 5.5 input-equivalent — and the provider rows show each wrapped CLI's real
 usage read from its native store (**opencode from `opencode.db`, Codex from its
 SQLite**), so you see per-agent token flow next to the savings. Run it yourself
 with `tokenwar gain` after a few days of use.

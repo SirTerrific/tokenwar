@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:7483979b38b0c881d17a4c6f007e83a582a01273c3c9e4ea0c8903fe031409a0",
+  "claims": [
+    {
+      "id": "claim_2c4dbae0f4b34eb2bbf98cc58e98055b",
+      "statement": "providers.sh is the single registry of six AI coding providers indexed 0..PROVIDER_COUNT-1, consumed by gain.sh, status.sh, check.sh, check-updates.sh and the statusline.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/lib/providers.sh#L1-L39",
+          "version": "repo-lines-v1:sha256:24e9eb9efed9c1a5c959e7ed3417b5d8ecb9a5904f4aa3f71e2602f7bb50bbe8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZGRiNjg3NWY1MWViZTY2ZjA1NmZmMjI2OTQ1MjdjZjM3MGI0OGQ0M2U5ZDlmMDI2MTI0Y2ZmODk0ZDE0OGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1MDc4N2RiYWU0OTViYTkwZDQ0ZmJmM2VjMjNmN2YxYmQ0NTgxOWQ3NDIxMGVhZDIyNDk0ZDJlMDI1NDU5MzEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c9aa8b08fa4d4c77ba1b655ca349bcf6",
+      "statement": "Codex, opencode and Copilot token telemetry is read from their native SQLite stores; Gemini and Kimi report N/A because they have no documented local token store.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/lib/providers.sh#L7-L14",
+          "version": "repo-lines-v1:sha256:a033d6e183f7b91418c7da55d06b23af5c5bc38078feca90674a37e11332a570:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzcwNTY0NTBmNzEwNzI4NjRlMzVhOWE1ODMwMmI4ODYyYWVkMzMyMjdmZDNkNDE4MGRmZGI3NDlhYWE0Zjg4ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2IzNDUyODI0MGIwZGMzYjgxZGE5YzM2YmU3ZjAwNmM4MzY3YzI4OTc2OWFlY2M4YmZmY2I2MGNjNGEzZWZmYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjg0ZWMxMWJkMTllZWQ5ZTBhZjI5NGMxZjkyMTAwYTQzN2NhYjJkYjBjMjY5YjMzZjZmODk3MzZjOTY3YWMxNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjQzOTFkNmRlZjc1NGVjOTg5NDU1NDVmM2M5ZTVmYTljNzBlNGU5YTdkNzI1Y2JiYjQ1ZDk2YWI2ZGFjNDdiMyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_f213777857f042e9ab0d284924d55bed",
+      "statement": "SQLite stores are read through tw_sqlite_rows, which runs the same SQL under python3 or node:sqlite.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/lib/providers.sh#L16-L17",
+          "version": "repo-lines-v1:sha256:26d6c8c5620cb548776f93e46d3b34ae71506155850a86ee6a92bd4359904c73:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWRkYzQ3MDkwNTE5YTIwYTc0ZGEyNDE0ODMyYzAyMjNiYjRmYzRlNDNhYmNkZGY4MDRmMjVjMzViNGJlMTdmOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjZmNTNmZGY0M2ZhMzUyMjQ3ODM5OGJlMDdkMjZiODAyZDRmNDdlMmQzNDIzNWJhYzI4MDZkNjc0N2I5ZTZmZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGYyMTVjMjE0YjdjMjFhODNiYzk0ZTcyNDgyM2M4ZTk4NTM1Y2YxZTQyOTIyMzJjMTRjNTEyYzllNjBhZmUzYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTE5ODRmMjg1ODg3OGMzNDAyMmNjNTQ0NDQ2NWM0ZjU2NzNhMTRkZWE0YTU3YTU2ZGJlN2Y5MDYzYTY4NDBjOCJ9"
+        },
+        {
+          "resource": "repo://scripts/lib/providers.sh#L83-L85",
+          "version": "repo-lines-v1:sha256:7f6a570d042a9d0be6333b554230018c0b9a1b7a313f71b9ade0f786e34b3221:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTVmZTVmMzYwMDI5YjMzMjk4YmY5MTgwYzMyNGNlN2IyODViN2Y1NWVkY2FjZWExNmNmMjI2NGQxMTY1M2VmZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODgyMTVmZTM4MjFlYmQzYzNhMGYxMmExZTliMGZjNDhhODYyMDcxZWRkNDJlY2Q2M2FmOTUwMGQ4YjFhNDE4OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzI5NTFlODJkZDNkNGZmZGFiZmQ4YjVjZjRkYTdiMWQwNmJjYmIzMjRhYmQ0ZjM1MzdjNzJiN2M5MDc3NDk0YSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ff76a206b5224312ba809f767dad0940",
+      "statement": "Copilot AI credits are read from total_nano_aiu at 1e9 nano-AIU per credit, and Copilot's dollar column is an API-equivalent valuation, not an invoice.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/lib/providers.sh#L195-L210",
+          "version": "repo-lines-v1:sha256:9e9c52098a5c09d01c58b2f614d23c208b599c3e045d7498bdd94caf4dc2a8c5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyMDVlZWI1YjdiNzEyZjg4YjczNDc4ZDZmZjNhYjM0YWMxYzY3ZGNmNGI3NzQzZjFkNmZkY2Y2ZDU2MDhkMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzYjg1NDBmZmQwMTkyOTMzZjA1ZTkxMjFiNmM2NjI5ZDI4NDZmOGQ2ZWRlZDg2ZTJhNGQ4MmMwOTg2ZDNlNjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4Yzk3OTk4MzZhYjRlNTIzMjFjZGQzMzkyZjViY2ZiOTk4MTAyNjhjYTRjY2EzMTk2NmM4ZWUxZTEyYWE4MzcifQ"
+        },
+        {
+          "resource": "repo://scripts/lib/providers.sh#L52-L54",
+          "version": "repo-lines-v1:sha256:53bbac85ceacd22558fce034c5291742a5a732e3f8363122699726e7e996a5d6:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTI2MGI0MzhhOTM2ZGI5ZDI0NGFjZmRkYjFlMmY5YTAyZTkxOWNlYmU2NTUxMjE4YWVhNzQwMTM0MGVjNWNiNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTU0NzAyYzY2ZDQ2NDJiNTM1NmI0ZTZjNzRlYzA2NmViMGE0NjYwMDVhZjhkNjk1MzkwNGNiY2ZiN2Y0NWVkOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzk3OTM4NGM5YzFiZjVmY2I1NGM0YTY0YzUyYWYzZTQ1YjM2ZGNlZTM1ZjU1MTc2NGIyZGQzMWYwYjljZjVmZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjc0YWY2NjY0MGRmMGE0YTIzZjJhNDZjMGJlNjFiOTEwZmIwOTcxMTg4ZmQ5NzNkYWJiM2MyMDM1YWM4NjZiMSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_436bf811393f41bd9253f53dfdcca8ca",
+      "statement": "install.sh wraps codex, gemini, kimi, opencode and copilot in shell functions that run tokenwar-launch.sh before the real CLI, and routes claude through pxpipe-claude.sh.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L111-L118",
+          "version": "repo-lines-v1:sha256:be0f5c4fd5aa3ee6d5ba1f00dd3313e527b92d956ca5461dc8bc3733f2c3a591:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTk2OTMwY2FkMzQ2NTJkYWQ2MjllODVjNjFhMzI0ZGI1OGRjYjRlOGZjOTg3MWM5ZDNlZmU2NzI5ZGEzMjNlMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDI1MjRjNzcyYWU2ODMxOTA1M2FjNGJkMjMzMjJlYzRiOGQzOWRiZmFlMTY2Nzk2ODEyMzkwOTMwMjI3YWY5MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGUyZmNkZmJhOTYzYjc0NmEwOGRhOWFmMWZjOWM1MWUxNjNlMDg3MmJiMWUxMzliYjRjMDM5MmU3YTJkYzAyYSJ9"
+        },
+        {
+          "resource": "repo://install.sh#L285-L307",
+          "version": "repo-lines-v1:sha256:47dd72251e750d85b30951a5847947271e2d06886d17274393b0fd9ae81b7986:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2OWZlOTk4NTI3MjBlZmFhM2IzMWI1ZTNlNTE1ZjRmNjExMmNiY2MxMjhhNWJhZmU2NTg2M2QyZjVmZDU0ZDUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmNTNiOTMyZDUzNzgwYmMyMzg5OWY3YTIxYTM3OTA1MDQyNjA3N2VmMmNjMTYyNTFjMDhkYjYwNDZjZDk3ZDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1MmZlZjdlNTJhNzZlYzc5YTcyYzRjMzcyZDU4NDUzNjVjNjc1YTdlMDljOGJhNDk2YTM1MDljMWQ2YmE5MzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cde541f40a0d48bb9c20a7addf69463e",
+      "statement": "tokenwar-launch.sh prints the stack banner once at launch, stays silent for non-interactive subcommands, headless flags or a non-terminal stdout, and always exits 0.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/tokenwar-launch.sh#L1-L76",
+          "version": "repo-lines-v1:sha256:93245df4dc694f0fbfbfe107b76455b4d3424399a3a7f0bcd30dc4b6f2b54ee7:eyJzZWxlY3RlZExpbmVDb3VudCI6NzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4ZDNiOWU4ODBhNzc5NzU0OTNkYzdlMzU5MTQ0YzAyOTVhNGY2OTRjZmUwYWY0ZjkyOGMyMjMwN2JjNWMzMjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ee37c904bde244b498ce3e6aeca9b586",
+      "statement": "copilot.sh wires rtk as a hook, graphify, caveman and ponytail as skills, and claude-mem as an MCP server; context-mode and pxpipe are deliberately not wired.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/copilot.sh#L1-L27",
+          "version": "repo-lines-v1:sha256:035c4bcd6fb90ce2ffdbc08d7a934ef0ae1c79715c95573c57fad20270d7ce0d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1NTI1MTcxNTA5NzIzOTVlNmM2ZGM2ZmU2YTM1YzdlOTc0ZDgyNWJhODllOGNkZDY0OTMyYjE1NmNkZWY4YjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZkMGVhNmMxMWI0YWRiY2E0YTdmM2UwNzMwZWU0ZjRiNDgwYzJhYjRkOGQ1N2U0OGY5ZmU4Y2U4ZTkxMzE0ZDgifQ"
+        },
+        {
+          "resource": "repo://scripts/copilot.sh#L75-L76",
+          "version": "repo-lines-v1:sha256:043cb9fb18928b949ca41b1562614c264048b5b5e3b5981c8bcb6dd6959c8046:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWJlZjQ0ZThjZjM0M2U3NjNjOTBiZTI2Yjg4ODljMGIyODA2MDI2NGM1ZTU4YTU5MDQ5ZjM5Y2Q2YjJlZTBmMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWM2NjgyN2M0Mzk2MjcxNWE4N2JhOTgyZjMxMGJjYjVhMTA5YzZmMjM3ZGQ1NTg4YmI1NGI4ZDRiOTljZTY0MiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWZkZWI0MDA5MzYyOTI3NWEyYTA4M2I0ZWE2Y2JmZmVkMjA4YzIxMjYzYzM3NjBjNGQ4ODk4MDZjOTZkOTcxOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTUwY2VlNTYxYmRjMjZjMzZjZGRjNzA5ZWZkYjQ3ZWVmMmI1ZjUyN2JhOTQzMmM1MmM1YWY1MTUyNThhNGJiMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1aee66b22aaf4d6f988e696841b9f2ae",
+      "statement": "copilot.sh check is read-only, wire applies missing wiring after confirmation, wire --yes skips the prompt, and install.sh --with-copilot delegates to it.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L572-L580",
+          "version": "repo-lines-v1:sha256:3a74744c6ba33a8260712e51091e70f66b542139a873c94a87001913349b7eab:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDY5MDRjZjMyYWI5NGRlMDVjNzU0MjVhNjE1MzU2YjUxMTMwN2NmM2E0ZWNkYjk5ZTk2OGUwNzZkOTE4MDg3NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTgzNjBhYjJjNGU5NTYyOWUxNTdiMTI2MjViNmJjNmI1YmEwMTc4NWQ3YzA5OTViMmNiY2M1ZTYyZWJjMDY2OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzVmYzQ4ZGU2Yzk3ZTk2M2VkZTVkYzU3ZDZlNmVkMzI0MzMzMzU1YmM2NTk3YzY2ZTQwZjk5MzMyZWUwOGUzYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2VjMDRjZmVjYTgwZmMxMmNjZTI2N2E0YTM5Y2Y0NGNiZDQyMGZiNGU2ODE2MDg2MTU3ODg2NGE3NjNjOGEwOSJ9"
+        },
+        {
+          "resource": "repo://scripts/copilot.sh#L23-L27",
+          "version": "repo-lines-v1:sha256:05fde2292994045384232954046a30f10f0b814a741f7862f0f6568f19e79f6c:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDIzY2U2MzliZDI2NzEwNTljOWNiZTU0MjExMmE2MmU2ZTFmM2E3ZGI3YTVjYTAyYTkzODI3MzEyNjg0NjllZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjU1MjUxNzE1MDk3MjM5NWU2YzZkYzZmZTZhMzVjN2U5NzRkODI1YmE4OWU4Y2RkNjQ5MzJiMTU2Y2RlZjhiNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjY3MTI3MWM3MGE1Yzc0ZTY4MTlmOWE5Njk3YTUyNWI1MDlhOWQ0MzQ1MjJkMzdlODg0MDljNTk5YTIxMzcwZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmQwZWE2YzExYjRhZGJjYTRhN2YzZTA3MzBlZTRmNGI0ODBjMmFiNGQ4ZDU3ZTQ4ZjlmZThjZThlOTEzMTRkOCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_000811bc89614114a8665d0bc673961d",
+      "statement": "opencode-functional-test.sh runs rtk init -g --opencode in a temporary HOME and checks that the rtk.ts plugin exists, delegates to rtk rewrite, and is referenced by opencode debug config.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/opencode-functional-test.sh#L1-L76",
+          "version": "repo-lines-v1:sha256:d0c4be03ed48a3eab4c3aab59c8a769fb476cbc9991fc2c4df357637b6a923cb:eyJzZWxlY3RlZExpbmVDb3VudCI6NzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAwNzIyZTA4YTBkYjExZmRhMzcwOGY1NDM5Nzg2MTVmZTUwYzhjMjMzNmJjYmNiMDhlZWNlN2JiMzEzNGM3MjEifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.0",
+    "at": "2026-10-05T04:01:37.525Z"
+  }
+}

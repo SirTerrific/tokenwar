@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:2e6fd5b42b10b7f98a5e1e93501463d42040232a1aec10c6310177f1431d33ee",
+  "claims": [
+    {
+      "id": "claim_391c8012600846ac9e9243a9357d3077",
+      "statement": "tw_is_windows detects Windows from uname -s (MINGW/MSYS/CYGWIN) and $OS rather than $OSTYPE, and TW_FORCE_OS pins the answer for tests.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/lib/osdetect.sh#L1-L53",
+          "version": "repo-lines-v1:sha256:5e009f66d74d6bafde4f6f1b89b58137ccee343403b85f698321a39422e54031:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMyMjA0ZWJkYmI2N2YwMDQxMjA1NWMyMmZkODFiOWI1YTg0ZWY5ZWEwYTcxZWZmMWIzZTFmMThhOWUwZThiMzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ3NzQ5NzQ2ZGJhYmYwMDA3ZmI2OTdlZmVmMjU2ZTQ5ZDQxNWQ3MjUzMzZiMGYyODZjNDg2ODQxMDhiNWYwMzYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1cbabcc6ffc840c78930e9091d75354c",
+      "statement": "osdetect.sh isolates the Windows differences: empty $USER, CRLF from native binaries, Windows paths for native processes, bash.exe path for Claude Code, and APPDATA/LOCALAPPDATA provider config dirs.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/lib/osdetect.sh#L54-L229",
+          "version": "repo-lines-v1:sha256:2cf0e67f6b0ade9e6edfc3257a9afe150155ccd9139cff82244b958c2aac8d50:eyJzZWxlY3RlZExpbmVDb3VudCI6MTc2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI1MjdhOWE4MmE2NTllOGZhODNiNzU4ODk4OWIyZmMwMWNjYjBhMzkxMjRiNzFiNTFkMzg1NmM5Y2MxMTFlMGExIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJjYzYyYWE4ODQ1MjNmMDY5YmUwM2RkOWIyN2ViYTQwOTgxZTlhNzkxNzk5YmQyZmVkOTgzYjRhYTUxN2UwNzQ0IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_8ef16974ce75439f8b514e663e987c8c",
+      "statement": "tw_bash_path prefers $EXEPATH\\bash.exe, then TW_WIN_BASH_FALLBACKS, then the running bash translated to a Windows path.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/lib/osdetect.sh#L108-L141",
+          "version": "repo-lines-v1:sha256:2f87370a97d268052b61cbe74c8337498ea9344137bca6d94a96480ff086f71d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg4OWFjNGQ5YTBlOGUxOTQyZWY4OTNjOTYyY2RkYThmZjdkZmZjMTU4MDFhMTVjYTc4ODM2N2FhNjk3YjJlNmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNiODliYzg3NjY4MWY5MzllMjQ1NTZmN2FjZGI0MmRiOTA0YmRiNWYyNjE3NzMzNWY0NDA5MjQ2ZWU1NjgxOTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUwNWYxM2I1NmVlYTY5MGE1OWQ4YTc5NjI4NDRjNmI5ODdiMTRlYmVmMmMwMzE5YTMzN2NlZjIyNWRiOTQ5OWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8e3dcb08c663439983e27b131cbd7622",
+      "statement": "install.ps1 locates Git Bash (TOKENWAR_BASH first, never System32\\bash.exe), delegates to install.sh, adds bin to the user PATH and best-effort writes a $PROFILE function; -SkipProfile skips both.",
+      "evidence": [
+        {
+          "resource": "repo://install.ps1#L40-L188",
+          "version": "repo-lines-v1:sha256:162c62a2044d6ee80a52a034d992416a20edc4de9b70c5a0cd5dee8f488ad084:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQ5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlZmYxMTY5OWY2MDFhODY5YjE4NWFmZjVlNTRhMjI1ZDVhMjA0ZTRlYTMwZjU3Y2VmOGVlNWVjNTFmZjc3NDA1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI4ODY4YjgyZDA0ZTgzZGI2ZWRiZmExN2RlMjVjM2RmZThlYWMxMzIwMGI4MWJkOGYyYmUxNWFkZjI2NmRhYTZjIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlYTg4MWFmZjI3YWVmYjkxMTQwMWRkNGI2YTJmZDljYzM3NzRlYmY2ZmZmMDM1MmJhZjUzZGExYjJhZWUwZmQxIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI1ODg1OGI5MDkwNzkyZDZkOGViMzM0NzdkYmM1YzI5NGI4NGMzODI4YTliMmEyZTI4NDViODg2ZWI4MGM0ZDNjIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_1d4516214bab44629fae057493326c20",
+      "statement": "Scripts never rely on MSYS implicit path rewriting because MSYS_NO_PATHCONV=1 disables it silently; paths for native tools are converted explicitly.",
+      "evidence": [
+        {
+          "resource": "repo://docs/windows.md#L125-L140",
+          "version": "repo-lines-v1:sha256:3ccecb5659a5570a19667ce65d9b084d7638320438fb4dcfb78d28b4fb6a663f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc1Y2ZiOWQ4YTkzNWEwOWNmMzYzMmEwYjk3YjEzYmE4OGFjN2NhYTgzNzJkN2JiNjBhN2NjODU0ODU0ZmI1MzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyNDRmNzc0ZmU1MGNlYWE5MjUyZTNlZjI1MDJjMTg4MDQ5NzE1ZmZjOGE3NWZkM2I3YjJmZTQ5MmM3ODYyNWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU3NDc5ZmY0M2NlODlhNmRlOWRmZTczZTU0YzUyMzAzZDdjNGIyMzI0MDk3NjZkYmM4OTliNWQzOGRiNjgxZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzYmY0NjI1NWIyYzUwZmE1ZDk0ZGVjMzMzY2U2NGY5OGFkZTIwNDkxYTE5OWNkMWE1NzQxOGE0ZjM3ZDAxZGYifQ"
+        },
+        {
+          "resource": "repo://scripts/lib/osdetect.sh#L76-L106",
+          "version": "repo-lines-v1:sha256:8007c2ae1070882a87ada08236d4925e18ee1b7b37b9264d1377e519fd1f2d17:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkYTNlMzlmM2UyMDYzM2Y5YmZmNTg5NTY5YzdkY2VlOTAzYWU1YzA1ZGE0MDVkMjI0YWExODFhYWUwM2IzMzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ0ZTYyNDk1ODAxY2YyZjg5ODI2MThlOWMyODkwZjRhOTMyYzRhNmQxM2Q3MjgwNWU5ZmU0ODcwMDA3M2IxOTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFiNjMxNTU2NGVhYThiOWFhZDQ2ODg2Mzk3YWJmNGJjNTQ2YjVkMWQzYzBkMWM5YzQ4YTc1MDQyZjg5MWJmYjYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0b661bacde2a4bbcb69de9bc918c9a97",
+      "statement": "On Windows install.sh copies the pxpipe shim instead of symlinking because MSYS turns ln -s into a silent copy without Developer Mode or winsymlinks:nativestrict.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L490-L500",
+          "version": "repo-lines-v1:sha256:6d7b5f68e74226ffe1ed22d92075f5b2007be90082e6a6ebfcba6bf4ce1a1e83:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1YmU5MmM1ZGZlN2NlZDVlYzRmMmY0ODhjMDA3ZGE3NjQyODJkNTBiMzY3ZTNmZDc0ZDc4MTJmMTZlZDg2MGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzMGRhYjE3NWE3N2JkOTQ4MmIyYWZjYzkwM2U0YWI2OWIzNGFhOWZhZmVhMjNlMGYxMTFjYThkNDYyOWQ4MDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUzZWFiNGY5NjMyNTVlZjk1M2I5MTcxZjk0NDBjODZmMDdlOGE0ZjZlYjYyYzliYzRkYWZmMjE4YjZiYjRkZGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1YWVhYjU3OTcyMWQ3ZDlkOGZiNjkyMmMyNjY0MmMzYjc5ZDg1NThiMDQ3ZTNiOGUwNmQxYzQyZTM4MTRjZGUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7cfe3b26d9ee48c787d98a9b55c7ff76",
+      "statement": "tests/windows.bats holds 35 tests for the Windows helpers.",
+      "evidence": [
+        {
+          "resource": "repo://tests/windows.bats",
+          "version": "repo-file-v1:sha256:26047bcb5d94e005fc72f1bf5395bc244cf5040a7d32049f1d1c0c59582092c9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.0",
+    "at": "2026-10-05T04:01:37.525Z"
+  }
+}

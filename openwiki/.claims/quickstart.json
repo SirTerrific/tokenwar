@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:7c0a76375b40e11b3022b469d4ea69b1a62f03640f619293fff3cf5d1355db5d",
+  "claims": [
+    {
+      "id": "claim_712cb592e3ad44d3b71a10b6e38e8e11",
+      "statement": "TokenWar manages seven complementary token-saving tools plus a shared project-memory layer, and this fork adds Windows support while tracking upstream oratelecom/tokenwar.",
+      "evidence": [
+        {
+          "resource": "repo://README.md#L8-L15",
+          "version": "repo-lines-v1:sha256:8ca8de86b3a981d30c84b3274da3a65129a73928c5950ab41c7e9c63d2918be4:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTBmYTExMGMwNGFmYTE4ZGFhZWY0ZmYxZTkyZjFmM2QyMzJiNTIwNGRhOTA1MjFmMjdlNWRiOGZlYjVlOTE2MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTA5NTMyMjI1OGEzYzlkNTY4MzNlN2YyMjhmOGYyY2FiZTg2YmQ4MGMyZTkwNTdmNWUyNTdjYmY0YWQyZDcwOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjU1NDM0MzliYTM2ZTdlZjBlMTU0OTAzOGM0ZjIyNGUyYmQ3ZmE4MDNlM2RiYzYyOTFiMTM0YWYyOGViMzdjYSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_38a19ab426ac4717bcebba14d63c5149",
+      "statement": "SKILL.md lists the seven tools (context-mode, claude-mem, RTK, pxpipe, graphify, caveman, ponytail) and states that OpenWiki is the recommended project-memory layer rather than an eighth live lane, never to be initialized implicitly.",
+      "evidence": [
+        {
+          "resource": "repo://SKILL.md#L7-L31",
+          "version": "repo-lines-v1:sha256:e8fe54c95bed28cc97987e860f94b00c97fa26b40769698023cf5ae9f50b5e16:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwYjU4YTg1ZjNiNWZiZTdhOGJkN2ZhODAwZmMyMjE2MzJjMThmYjVmZjQxNjg3ODEzMDc4MTRhOTA3ZGNlNTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZmNmFlZTNjMjFhZmI2MTJhNDQ0MmMyMTUwNGRlNmI5YjA2YTM3MmMwNGU4MGRjMTE0ZjcwMmUzODBiZWE1OWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVmMWVjMTA4NzcyMjQ5MTZhZGQwZGZmZWExOWZkYjJlMTBjYTlkZWE1NDFlNDAyOGMzNDgzNjk5Y2ZhZWU3YzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEzOTI3N2M0ZDg2ZWNhNDA2ZTdiZjhlZTM5OWJjYThiZWYwNjkwZmY3NzAyYWQ0MzgwMWE5NjAxNmFhZGY2Y2EifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f8dbec6a350841dc8266aa6c87f38f52",
+      "statement": "The quick start installs with install.sh --all, reloads the shell, then runs tokenwar status, check and gain; on Windows it uses install.ps1 -All with Git for Windows as the engine.",
+      "evidence": [
+        {
+          "resource": "repo://README.md#L29-L60",
+          "version": "repo-lines-v1:sha256:da58f143fac8eb833faf720bc8b56fbacdbe4ca83edac97ada309af715efbc32:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1M2ZiMjQ5MTZhYTk5ZDZkNTdiMTI2NzM1ZDVjZDNlNGJkOWVlNmQwNGU3YTFhYzViYTE5MjNhNGQxMTJhMGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIyNmIwYWQxNWVmYjdiMDJjZWU4NWYzMjViYTk0MzRhZDY0MGM3NDBlMzliOTIzNjk1MGQ5ZGNlODQ4ZjhiYzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZhMjBiM2E1ZTliMGU0YTM2MzBmNTQyZjAwN2Y2NGFiNGE1OTNlMjg2OWExYTg5NmUyMTRhNWQ5Y2Y4Y2ZlMzEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_226f173087ef45e89cf353c0a4387284",
+      "statement": "A bare install only wires the statusline and shell functions and installs none of the managed tools.",
+      "evidence": [
+        {
+          "resource": "repo://docs/installation.md#L56-L66",
+          "version": "repo-lines-v1:sha256:35e4e79a65bc8cb6cb6d28fe3db66827d3bd5bad43a6435bb24845b91d80dd8d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzMjhkMjY2NWU1N2FkZjU0ODg0ZTU4NmFiZTU3MzFkMjRmZWEzMGRhNzNiODYwY2NlNzg2ODQ2ZDVlMzQ0NDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImExOTRjZGQyY2JkZmM5YWUyNjg3OThjNjA2YzdkOGFkZDhjNDI4YTkzZGMwNTJlYmZiZDE5MTdhMGEyZjBjMDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdlNzM1ZGRmMzI0NTRiZTViNWUzMzMwYmJkZDgzZTgxMDdiZTU5MDBhYWI0ZWMwNzkyYzE2OTczOTU0YjhhZDMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bd89432019e84fa486c32dcad369fdc4",
+      "statement": "scripts/tokenwar.sh defaults to status and dispatches status, gain, scan, prune, bundle, check, copilot, pxpipe desktop, test, upgrade, updates, enable/disable, doctor and help, exiting 2 on an unknown command.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/tokenwar.sh#L28-L87",
+          "version": "repo-lines-v1:sha256:0cc739371b423d8bae858e6e92ec8bd470cac88d4869a336f87fd00fd4ebe1b9:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3ZGJkNWExYTVkZDNiNGJkZTdmNDQzYTI0NjRkOGVlYzZiOGY4ZjI2NWJlNDAxMmY3ZTM0YTg1YzJlYzk0ZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0YTJiZWNmZjhhZmIzNGRiMjYwZGFiYzk2OTE1ZmZlY2ZkZTg0ODkyOTU0MWM2MTkzZGU2ZDE2NGMyMWU4ZGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhNzg1OWMzMDkxNGZlYzZiZmUwNmJmMjJlOTRkZmI4Yzk0MDE2ODI4YTViZGYzYTUyYWNkN2Y3NTRkZjdiMDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_74c2de917c344c76ba94ad1be2221c32",
+      "statement": "doctor runs status --test, then check, then gain, tolerating failures of each step.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/tokenwar.sh#L80-L84",
+          "version": "repo-lines-v1:sha256:061659ab5c5edf9e0b83f15d18be5b7a1074fd9fc774c0baddff6159ddb9170f:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTI4ODUxZTdmMDk2NTgyZTc4YTcwOTQ0MWEwYzUzZTJlYWIwMDhiNDE1ZTBmZDJjOGRjNmNiNDcyN2Q3ODIxMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmRjNDMzYmM3ODNmMmUzYWJjYmI0NzI3NWUwZGFmN2U0ZTcyY2ZhNzk4ZjgwZDAyMjJhMzlkMzc1NTg1NTlkNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGU0YTczYWEyZTU3YzUxOWQyMjBhN2UwZmI3ODc4YjJhZDExNDA5OTIwNDU2MDE3ZWQyYTgwOGJjNzFkZWNkYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDUxM2RhNTRjYmZmNjc2NTZkMmE2ZWVhMTAzYTg2MTEyYWYyN2FlYzZlYWM0NmYzMmVjNTRmNjIwYjJmNTAzNSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.0",
+    "at": "2026-10-05T04:01:37.525Z"
+  }
+}

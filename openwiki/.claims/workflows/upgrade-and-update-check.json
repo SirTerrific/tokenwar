@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:666410954628776f38907a133458add3971ac04e48db734041eb9484c18e3b3c",
+  "claims": [
+    {
+      "id": "claim_ad9d4503fd35437193c0f70ed3d28cd6",
+      "statement": "check-updates.sh reports up-to-date, update-available, ahead or unknown per tool, exits 0 when all are current and 2 when an update exists, and caches results in ~/.claude/tokenwar/upgrade-check.json for 24 hours.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/check-updates.sh#L1-L20",
+          "version": "repo-lines-v1:sha256:27c69d812f57862e60230024232cd9bdd721c2500706f43e6ec21237bfa7f9dc:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFhODVkYzJmZGYyZjUzMDNkZjBhMjQ5N2VhOGJlOGFiZWVhNmFlMDIzNzVjNjM0NGU2MDRlZTUxNzUyMTBlYTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ2ZThkMWUyZGM4MDgzZTlmMmNjYWI0YzBhMDNlY2YwN2VkN2M3OTg3ZTYzZGRjYWNiNWQwNDliMzA5ZmM2ZWYifQ"
+        },
+        {
+          "resource": "repo://scripts/check-updates.sh#L75-L82",
+          "version": "repo-lines-v1:sha256:677fc568081f14b9ca73bce7bc1a1aebaf1e27e1072f270ead7fb5c31ecc0cbf:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWY3ZmQyNjg5MzU3ZjU5ZTRhMWE0YzRiZmJmMDA1ZTczZGJjZDdiZDJmZWMyMzU3ZTdiZjg1NmIyYzZjMWU3YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2NhZDkzMGY2NzZiZGE4OGNmNjNiZjE4MDZiMDljYmU4Y2JmZDQxYTk0OGM1ZDMyZTg0MTdiNTdjMDE4ODEwMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjBjMmRjYTg5NTg0ZWI1MzcyMDE4YjY2Y2FhODliMWUwNTZjY2M5Zjg1NzA1MzNmODdkMjc2YTg3MDFlYTk2ZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_0428fa441eb74018b8e87c245e1cd7b4",
+      "statement": "Latest versions come from each component's own registry (npm, PyPI, GitHub releases, marketplace manifests) with a 10 second timeout and overridable URLs, and a failed lookup yields unknown.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/check-updates.sh#L214-L241",
+          "version": "repo-lines-v1:sha256:c095bc2ff41f88ae35c9564b5ec8b57d9910161cf1d82b7f87dfcd970f527663:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdkY2ExMGIyNGM4ZjQxYmMxNDQ2NjlhZThjNWUwNzdjYzIwODQyMjI0ZjY4ZGE2NjA4YTg0YjA4MTg1NTZlOTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3ODBkYzgwOTk4NmExMGU2NTNmZTUwOWM0M2NlMjExYzFiNjBmZjliZDViNzczMGQwMjY1MjEyN2VjNzhiM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdlZWM2YzY2ZTMzOGU2ZGEwNTIwNTY3ZDIyOGE5YjI1YmVmOGMzYjgyMjZjODA0ZWJkZGEyZDFjYzc2MzJiM2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ0OWQyOTM0NGE3NjRjOWUzNmRlZGZmNTY4MzQ1N2RkZGIzYjQ0MDc1N2NhY2M1MDRmYzIwYTQwODJiM2RjNGQifQ"
+        },
+        {
+          "resource": "repo://scripts/check-updates.sh#L36-L56",
+          "version": "repo-lines-v1:sha256:9e07e0b3658fa07ae7aaf7865b1344ea147ea8306bb06e695175f71460df672b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3NTQ5ZjYxMjhmZDVkYWVhYzA5OTEyZTk4ZTc5YTQ3ZDI1ZjBkNjk1ZWUyZGQyNTM3OWRkMGMwZDdhOGJkYzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA4MjllMTY0NmQ3YWI0ODMxNTQyMzdmZWFiYTFjZmNkZGRkZDExYTY5YjQzNzM1MGUzMmZlNGJhY2JmMmM1MTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk0Y2ExYzFlN2Q0YTdkOWExOGU3NWZjM2RmNzQ0ZjlkYmM3NzMzZGE1NzZhNGI3ZTk0MWZiNDY0N2EzMmU3ODAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4NTAyMWFjYTNmY2QzNTJmMWQ0Nzc0M2NkYWI4ZjFkZDU3YzEwY2M3MGU0M2MxNmZlNTk5NTkxOWNlY2Y0YjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c617c956ed18477288b8cd5cdd722d6e",
+      "statement": "Marketplace clones are refreshed with git fetch only, never pull, so locally customized clones cannot poison the cache.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/check-updates.sh#L84-L125",
+          "version": "repo-lines-v1:sha256:5ad962c0413e8767b4d402a52e06ade2191cf2114b41ae27668b5357c93b199a:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyMGY4ZmI5YzE0ODMzNGFlYjE5ZjdiY2M3M2U2ZWQ3ZjFlMDg1YzA5MDc5ZTdlZWM2M2MyODllMjc2MzdmNjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUxZDZmZTkyNTM4ZTI0OTc2YWUwODg5ZWViYjk4MTIzZTZjZmIxZGZhOWViYzc2YWI1NTJmN2ZmZTMwNzc2YTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwZGRhMWQwMDlkZDA2NGI3MDc4MWUxNzg5YzMxNzFhYmY1OTliZTAxMjM1M2NiNDNkY2IxNjJmN2U3YmM2YzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBjOWIxMDZkYWNiYTFjMWVmNDBmNzYwOTgxOTg1ZDQzM2MzNjVjN2ZjMzViZDU0ODRiNzFmZDk0MjViMDc2ZjQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5aab7539a4fe4630b266eaefe3b148ef",
+      "statement": "classify compares plain semver with sort -V, treats equal as up-to-date, and assumes update-available for differing non-semver strings such as git SHAs.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/check-updates.sh#L298-L326",
+          "version": "repo-lines-v1:sha256:4cbe4164e6eaa79ad78e054d68f5cb6ef448d7e3748aec2773a3bb11e4670521:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYxMmJkN2Q2ZjdlYzM3YzM2YWViYTgwMDEwNTU3YjNmY2U1NWEzMWFkOWY3MzI2OWRmMzE2ZDc5N2JmMjI1N2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQzYTEyMjg2ZGVjMTIwN2MzM2Q3Y2JjNDY5Yzc1NjM3YjBhMWFiMjk5ZmMxNGNmNDI1OWM5NWI3MmNkODI0YjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a50b27f86e21492b8f4477d2860454b4",
+      "statement": "RTK's latest version is the Cargo.toml version on the upstream branch for a cargo --path dev build, otherwise the latest GitHub release tag.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/check-updates.sh#L268-L296",
+          "version": "repo-lines-v1:sha256:63373c8947f5b7192589178989199f863af6701d46bdd9e4636c3ab0bf29eb57:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlYWZiY2E4OWYwM2M4ZDdiNjUxM2Y2MzcxMjNiZDAyYzdkNzcxYmI5ZDIyNjYwYmVlZmQyYmQ5MmIyN2NiMzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU4MGVmMmU3YTMwNjYwZDBmNmNiOGEyZWE1ZDIwY2Q3YzczMjY1NGQzOTUwZTMxNDM2MWJjMTdhM2UyYThkMWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmNmIzYzc5OWE1ZDFmZjBkNjMyZGVjOGNlMTg5ZGM2ZDI1ZTQzNTI5MmQ1YzFkMGFjN2U3OTgwYWMxYTFkNTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3YzNhOWE2N2Q1Yjc0NjEzOWZkNGMwMmJlZDdjOTdjY2VhMmYxMDYyZDgyNmNiM2E3NWNmY2E3YmMyNWI2YTMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b92d6a7a1c054aa181dd6628c54053e7",
+      "statement": "upgrade.sh re-runs check-updates with --force first, then asks Upgrade now? [y/N] on /dev/tty unless --yes is given, and skips when no terminal is available.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/upgrade.sh#L250-L295",
+          "version": "repo-lines-v1:sha256:4e76fccfea7b0cf72a4e323ea090e06eb3728986de807324160fe97b8b475efe:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmNDRjNmJlZWI4NDdiM2M2MjA0NzE0MDg5ZDgzYmVhNjM3Yjk2NDVmYzQzMWYxOTc2Yjc4YWVhYjJmOWJjNDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMyNDUwNzhhYWU3ODY3NzZlMDI0ZWNmMzZmZTFhYWQ5ZjZhZjM3NTkwZWVmMWM3MWExNWFmN2FlNDQyMWE5NmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhM2Y5ODFkMDhjNTY0NGQxMzIyZmY1ZDc5ZTZjMTRiZGQ3NmNjMmRmNWM0N2Q3NmEyMDNkYmU4ZDY0MjhmMGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0de805070df3441fa54318cee1e6233c",
+      "statement": "Plugins are upgraded by fast-forwarding the marketplace clone and then running claude plugin update with the detected scope, to avoid a permanent update-available loop.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/upgrade.sh#L120-L177",
+          "version": "repo-lines-v1:sha256:b3c855ca47477da5f7e5093e1a5c9a2a19babdcb7bba0dd29c7fb65f385f2446:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhZGZlNTY4ZjBlZDM3NWEyODQyYTcwM2MxNzJlOTU4M2FkNGE2MzIzNGU5MGI3MzcwMzhlMGJmMWQ1MGE0YTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhNmI0YTEyZTZiOTAwZWYzZWUyZWFlMGRkY2NjYzcxMGU5ZmM3NmNiNGRlNDM2MmEyOGMxNzNiYzEzZDRmMTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc5MGEzZDBlYWJmZGQ4MGU5YzBmMDZmOGQ3MGRiNjEyZDBiMWQ1OWZjODY5Yzc2MTFlNGI0M2FjMTRiMGIxOGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5NTc1ODA4ZjdiZjY1YzI5MTMyYmZmNDFiMTUxYjc5OWQxYjg1ZjY3YmE5OThjNzU1YmZhNzc5Yjk1Yjc0MGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5c4aaae6605e430a90165a3c14392e0d",
+      "statement": "pxpipe and OpenWiki are upgraded with npm install -g at @latest, graphify through the owning uv tool, pipx or pip followed by graphify install, and tokenwar itself last with git pull --ff-only.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/upgrade.sh#L193-L248",
+          "version": "repo-lines-v1:sha256:c1f78409dc6902436689daf0dd59cc67ba61a3da468b96c832a4106bea314492:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjNGNjZjVhZTFkNTNhNDBlNDI1ODhjM2JiMDRkMWU3M2U2NTIwODNmZTUwMDU3ZmRmYTJlNWRkNTFkYThhMzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE3N2Q2Y2YxNzhmNTE3MDk0ZjQxNjRmYzM5MmVhMmQ3Mzk4ZThhZmI2ODFlMTMwYWJhYTQzMzE0ZjJiMmVkMzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc3ZjM3YzkxNmU2ZmYxZmQ4MGI0YmU2YjE1NWFjMzgxOGNhYWJhNGZkZGY4OGU1OGZiNGY1ODBjYWI4ZTIzMzIifQ"
+        },
+        {
+          "resource": "repo://scripts/upgrade.sh#L296-L325",
+          "version": "repo-lines-v1:sha256:35a958a48a476970aa075b404e1ee3f61074001e7e08e713423147563abb448c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkYTg2NmMwZTEwYjAwMzY1YWJlYTYzZjc5ZWEzODhiYThiMGZlMzZlODllYzkwN2U4ZjVjMjhhYTgzYmVlMjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3NWVlMDczZmI2ZGRjNmZhOWVlYTg3MmY2YTEyMzE1Mzk3M2I2ODY4MzAxMWMxZjA1Mzg3MzUzOTIyOTE5MjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1c5b64e9889f4582aea56c2dee82a808",
+      "statement": "rtk-update.sh only manages an rtk in ~/.local/bin, uses RTK's official installer on Linux and macOS, and on Windows downloads the windows-msvc zip, verifies the published sha256 digest, scans for unsafe paths, and swaps rtk.exe via a .old rename.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/rtk-update.sh#L28-L50",
+          "version": "repo-lines-v1:sha256:5c676014bcaf57505400fb46b8f4c66ac2fc07843d83fbdf5e7a2879745c4595:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyNTRiZjk0MWQ2OWY3ZDUwZjI2N2E1YWQ4NDQwM2E2Zjg2NDAwMDNjYTAxNDE5ZmFkNGYzYmU3N2Y0OTI2ZjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3ODExNTZiYjAzZmY0MTdiYjk1MzZmNzkzZjdlYWJjZGVmMmJkYjA3NzgyMjA3OWJmZjNkNzUzMmFkM2VjYjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM2ZjZkZTkwNzdiNzJhZTk4MjQ3ZDFjNjM2NGEwOTEzMmVlNzkyOWJmMjBiZmRkODUwNjhlNDJkYTZiMDgzZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ3MGQxN2Q0OWI4NjEwNzdjYjc3MTQ3Yjc1MTYwODA3OGNjNWRiNzQ1NzI1MTE5MTg4YTZlOWExZDExOGVjNzEifQ"
+        },
+        {
+          "resource": "repo://scripts/rtk-update.sh#L51-L116",
+          "version": "repo-lines-v1:sha256:4bf53596a97dc897d67f0eccbd0e9bfdfcc7cc05bdb55fa271cc5844767a9642:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3ZTAwYWFlODYwMzEwZTg0OWY5M2Q0ZGE3ZWMwYTM1NmU1OGRjMWUwZTA4MTA0ZGFmMjgyYzYyZWY0OWI2ZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1OWZiODcyMDI3NzE3OGZkODMyMjY1NzcyN2EwOThiZTdhZTZmMWQzYWE0MzNmYmJkYTA1ZWY5MGJjNjJlMTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM4MDgzZWFjY2E1Yzk3ZGY1Y2Q2MWYyNGZmZWIwOWY1ZTEwZjc3Mzc1Zjc4OGEzZGUyZjY4ZTNiYTAyMWM2ODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.0",
+    "at": "2026-10-05T04:01:37.525Z"
+  }
+}

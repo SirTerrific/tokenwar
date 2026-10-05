@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "pages": {
+    "/openwiki/architecture/overview.md": {
+      "pageVersion": "sha256:04143988e45ba75cabd26c2b1f239aa401e0b619f739dff75e5474d3df619975",
+      "completedBy": "claude-code",
+      "completedRunId": "422dc5a3-3e14-49ac-9acd-4feed93dedc0",
+      "gitHead": "32973361e29b539533c7faa57340011c5cb55511",
+      "sourceFingerprint": "sha256:1dc7158b9c3064cbb9d510277b1b30eed108d74744ee17b7236812b7490f8a7d"
+    },
+    "/openwiki/concepts/savings-accounting.md": {
+      "pageVersion": "sha256:829daec029068305a9fde75bda1a5fa0fa9a36280a8212f11ca6d51280b0f5ae",
+      "completedBy": "claude-code",
+      "completedRunId": "422dc5a3-3e14-49ac-9acd-4feed93dedc0",
+      "gitHead": "32973361e29b539533c7faa57340011c5cb55511",
+      "sourceFingerprint": "sha256:1dc7158b9c3064cbb9d510277b1b30eed108d74744ee17b7236812b7490f8a7d"
+    },
+    "/openwiki/concepts/scan-and-audit.md": {
+      "pageVersion": "sha256:bb2fb369152945d562ab1c069a584bf22599143b2ec72aab44b1abac644a1395",
+      "completedBy": "claude-code",
+      "completedRunId": "422dc5a3-3e14-49ac-9acd-4feed93dedc0",
+      "gitHead": "32973361e29b539533c7faa57340011c5cb55511",
+      "sourceFingerprint": "sha256:1dc7158b9c3064cbb9d510277b1b30eed108d74744ee17b7236812b7490f8a7d"
+    },
+    "/openwiki/integrations/providers-and-launcher.md": {
+      "pageVersion": "sha256:7483979b38b0c881d17a4c6f007e83a582a01273c3c9e4ea0c8903fe031409a0",
+      "completedBy": "claude-code",
+      "completedRunId": "422dc5a3-3e14-49ac-9acd-4feed93dedc0",
+      "gitHead": "32973361e29b539533c7faa57340011c5cb55511",
+      "sourceFingerprint": "sha256:1dc7158b9c3064cbb9d510277b1b30eed108d74744ee17b7236812b7490f8a7d"
+    },
+    "/openwiki/integrations/pxpipe.md": {
+      "pageVersion": "sha256:b6f6e747525973ba855217004a710e7cc4110c8af80ed702987b782451250cf6",
+      "completedBy": "claude-code",
+      "completedRunId": "422dc5a3-3e14-49ac-9acd-4feed93dedc0",
+      "gitHead": "32973361e29b539533c7faa57340011c5cb55511",
+      "sourceFingerprint": "sha256:1dc7158b9c3064cbb9d510277b1b30eed108d74744ee17b7236812b7490f8a7d"
+    },
+    "/openwiki/operations/project-memory.md": {
+      "pageVersion": "sha256:ddd7ccdfbcdec888e4ab76c8b40364e17ed0e36bdd6061acf3fefe1b9ddb8765",
+      "completedBy": "claude-code",
+      "completedRunId": "422dc5a3-3e14-49ac-9acd-4feed93dedc0",
+      "gitHead": "32973361e29b539533c7faa57340011c5cb55511",
+      "sourceFingerprint": "sha256:1dc7158b9c3064cbb9d510277b1b30eed108d74744ee17b7236812b7490f8a7d"
+    },
+    "/openwiki/platform/windows.md": {
+      "pageVersion": "sha256:2e6fd5b42b10b7f98a5e1e93501463d42040232a1aec10c6310177f1431d33ee",
+      "completedBy": "claude-code",
+      "completedRunId": "422dc5a3-3e14-49ac-9acd-4feed93dedc0",
+      "gitHead": "32973361e29b539533c7faa57340011c5cb55511",
+      "sourceFingerprint": "sha256:1dc7158b9c3064cbb9d510277b1b30eed108d74744ee17b7236812b7490f8a7d"
+    },
+    "/openwiki/quickstart.md": {
+      "pageVersion": "sha256:7c0a76375b40e11b3022b469d4ea69b1a62f03640f619293fff3cf5d1355db5d",
+      "completedBy": "claude-code",
+      "completedRunId": "422dc5a3-3e14-49ac-9acd-4feed93dedc0",
+      "gitHead": "32973361e29b539533c7faa57340011c5cb55511",
+      "sourceFingerprint": "sha256:1dc7158b9c3064cbb9d510277b1b30eed108d74744ee17b7236812b7490f8a7d"
+    },
+    "/openwiki/testing/test-suite-and-ci.md": {
+      "pageVersion": "sha256:3a6bad578d2f41e6d1ff3c14c283cfaecd73c83952054d97c3f5bc553c304e2f",
+      "completedBy": "claude-code",
+      "completedRunId": "422dc5a3-3e14-49ac-9acd-4feed93dedc0",
+      "gitHead": "32973361e29b539533c7faa57340011c5cb55511",
+      "sourceFingerprint": "sha256:1dc7158b9c3064cbb9d510277b1b30eed108d74744ee17b7236812b7490f8a7d"
+    },
+    "/openwiki/workflows/install-and-uninstall.md": {
+      "pageVersion": "sha256:e3a66afa6711d0250681c5ebde37c9863d0c99faca5b400199d0e20c17a88cde",
+      "completedBy": "claude-code",
+      "completedRunId": "422dc5a3-3e14-49ac-9acd-4feed93dedc0",
+      "gitHead": "32973361e29b539533c7faa57340011c5cb55511",
+      "sourceFingerprint": "sha256:1dc7158b9c3064cbb9d510277b1b30eed108d74744ee17b7236812b7490f8a7d"
+    },
+    "/openwiki/workflows/status-check-toggle.md": {
+      "pageVersion": "sha256:c41c6e6c039d9ce4ed0605f6900e0dbba84fd1b8a3d33a4e3080dec436e7637d",
+      "completedBy": "claude-code",
+      "completedRunId": "422dc5a3-3e14-49ac-9acd-4feed93dedc0",
+      "gitHead": "32973361e29b539533c7faa57340011c5cb55511",
+      "sourceFingerprint": "sha256:1dc7158b9c3064cbb9d510277b1b30eed108d74744ee17b7236812b7490f8a7d"
+    },
+    "/openwiki/workflows/upgrade-and-update-check.md": {
+      "pageVersion": "sha256:666410954628776f38907a133458add3971ac04e48db734041eb9484c18e3b3c",
+      "completedBy": "claude-code",
+      "completedRunId": "422dc5a3-3e14-49ac-9acd-4feed93dedc0",
+      "gitHead": "32973361e29b539533c7faa57340011c5cb55511",
+      "sourceFingerprint": "sha256:1dc7158b9c3064cbb9d510277b1b30eed108d74744ee17b7236812b7490f8a7d"
+    }
+  }
+}

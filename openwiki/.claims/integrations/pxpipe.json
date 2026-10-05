@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:b6f6e747525973ba855217004a710e7cc4110c8af80ed702987b782451250cf6",
+  "claims": [
+    {
+      "id": "claim_06a3c33011f04d8bb706ec197e2e5015",
+      "statement": "pxpipe-claude.sh execs plain claude for commands that never call the model (version, help, update, doctor, config, mcp, plugin, install, setup-token, migrate-installer).",
+      "evidence": [
+        {
+          "resource": "repo://scripts/pxpipe-claude.sh#L26-L30",
+          "version": "repo-lines-v1:sha256:29e53f2f6ef566950efe366e8390520499c121346a47140d33c1c1bdc5ba0540:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGIxMjY0YWI0MDYzMWQ5MjdlMjlmYmNkODQ5YTRmOGI0ODcyYjJiNDc2ZDk5MTE0YmZkYzBkN2E5NzM1NmYyMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzI2OGY3ODRiN2M3ODZjNzcwZjA2ZTE5OThmYTc1Y2M5YzJiMzZmZDFmYjZhYzYyYzUyMWVjNDNjOTkzMmJiMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWVmMGM2MGQ2Mjc2ZTcxMzBhOWVmYmY2YjMwZDIwYWUwZDc3ZmQzYTc5NGIzZmVmYzViY2ZmYzZhNjRjMDBmNCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ef8fd49e9ffd4944ad66c2ede792c658",
+      "statement": "pxpipe-claude.sh runs plain claude when TOKENWAR_PXPIPE=off or pxpipe is not installed.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/pxpipe-claude.sh#L33-L34",
+          "version": "repo-lines-v1:sha256:27bc60782328cbd124005e9c2d59362a93d872c846e5d64a03e15c271e5b31db:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzAxODY0YjUxOGE5NjM0YzkzN2RiZDExM2Q2ZDQ2ZmNiZDI5NjdhYWU5ODM5MzgxMDJhNmUyMjQwMTkyOTc3MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmM1MTMyZDJkYWRhZDlkY2MxOWFkMjE0OWJkOTliODYyYTJmZGU4YTBiNGFiMDU5N2VhYTdmN2RjZTg1OTgyMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODM5MGUxOGUwMTg3NDM5YWJlMDM5YzQxZjgxM2UwMDQ2OWZjOGM2MDkwYWI5YzNmNWZhNGVjOGI0MGNiZjczNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2RhZmVmMDNlNzg0YzMyYWE4ZTkwZmVlMDM1MThiZWZmNGQ4YmZiZDllOTBmOTQ5YzM1MWEyMGQ3ZDNkZTg4YSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_6ed1d4d94ac14863a211fcd7e60bcb57",
+      "statement": "When the pxpipe proxy on 127.0.0.1:47821 is down, pxpipe-claude.sh starts it detached logging to ~/.pxpipe/proxy.log, waits up to TW_PXPIPE_WAIT_SECS (default 15), and falls back to plain claude if it never comes up.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/pxpipe-claude.sh#L19-L25",
+          "version": "repo-lines-v1:sha256:8f635dc2457cd769cce186f9ce9b53cf263ef0f3f4f67cda7e1cafb3b03cb424:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmE2YjYyYjViOTI3NzI4YzZmNWFhZTA2ZjFlZWRlMGUxZjdlOWE0YTgwY2E1NzcwYjBlNjJkNmE0NjA1NWRhMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDE5ZWQ4YTQ4YjUzNDdkN2FiZTlkMDY2NzU3OTEzNGFmMzA1ZDJhMTQ4OWFiOWYyYjFjYjE5MDg3MTA4ZWIyMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2E1OTM5NmRjMThkYzFjNzBiMjVhYjIzNDcwNjM4MDllNjUzMjc5NDc0YzZlZGY4YTUyOTMwNGM4MzRjOTE0OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzM3OTYyMGNiNTg0NDUxZjcxZjQzYjhjZWVmOGM5ZWEwZmUzZTJkMmRkMzJmZjVmNWViZjBmODY1MjE1MGY4MSJ9"
+        },
+        {
+          "resource": "repo://scripts/pxpipe-claude.sh#L37-L48",
+          "version": "repo-lines-v1:sha256:8249881cdc4045b6d0b5b7a1426ad5d8a126b66ebf3d08167e59c83ae629a41e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3OTAwZjM4Y2Q1ZGEzYzA3MDU0Njc4NDlhNzljYjZiMTM5OWY2ZTgwMzVkOGQzMzgzMTYyZjUwMmU1OWJiYzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwNDgxYzY2Njg0YTc0NTI2NDZhZTQ5ZDc5NGZiMGI4OTExNDg4MzkyMjE1ZGNkNDVmZmNiZjcyYzhkNGFiZDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZkMmU1OGYxZWE1Yjk3OWI5ODNmNWYwMDE0ZThhNGM3NmM1ODVlY2E5OGM4OTVlMTYwMTA1MTVlMDU4YjU1OGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkxNGIyNjE1NTkxMjE1ZTQ4ZTM1MzM1YWQ1NTA4ZTg2MzdiYmU2NGI5OWU0MmExZjc3MTExNTAzODUzMjIzZGMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d54d550189c54614abcf9cae934f6c60",
+      "statement": "pxpipe-claude.sh finally execs pxpipe warp -- claude with the original arguments.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/pxpipe-claude.sh#L52-L52",
+          "version": "repo-lines-v1:sha256:220b36ee7e93f3f646b6e53ba49fb44c02f70ab80f41fe4200e75dc1dc13e684:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjIwYjM2ZWU3ZTkzZjNmNjQ2YjZlNTNiYTQ5ZmI0NGMwMmY3MGFiODBmNDFmZTQyMDBlNzVkYzFkYzEzZTY4NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjIwYjM2ZWU3ZTkzZjNmNjQ2YjZlNTNiYTQ5ZmI0NGMwMmY3MGFiODBmNDFmZTQyMDBlNzVkYzFkYzEzZTY4NCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTE0YjI2MTU1OTEyMTVlNDhlMzUzMzVhZDU1MDhlODYzN2JiZTY0Yjk5ZTQyYTFmNzcxMTE1MDM4NTMyMjNkYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ab0f647f344e4ee2b42c5ec02cfc9c6a",
+      "statement": "pxpipe-desktop.mjs is an HTTPS proxy on 127.0.0.1:47822 (TW_PXPIPE_CONNECT_PORT overrides) built from pxpipe's dist/warp modules, diverting api.anthropic.com/v1/messages to pxpipe on port 47821.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/pxpipe-desktop.mjs#L23-L32",
+          "version": "repo-lines-v1:sha256:069dc1bf719d1a969f82ac8ebe335b84f3b761df92fc36f159e60f78c04bccb9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzYTdkN2E1MjIzNzI3YzAxZTc0MWY0MTNlMTlmZDM0ZDQ5ZmU4YTlmYzYwZTk2OTE0Njk4ZjM3Y2U5OWQyZGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliZGEzNmU5ZTkyOGYwOTdmN2U2OTMxYzNhZTcxMWU0YjRkNGNmZDkzNzI1NDBhOTk2ODIyM2YwODlhYWY3OGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDllNjU1MWRkOWM2NWQyZDIyZTgwNDU3YzAzY2Y2NGE4MTMxMGFjNWY2Yjg0ZDFhZmFkMWJiYjZmZjhlNDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU3NGQ1YzMzNDg0MTZlODQxOTVjNDUwM2NiZDJkYzM5ZWFhMDc5MGFkM2ZjMDU5NjU5MDRjODM5ZDJlYmU5YTUifQ"
+        },
+        {
+          "resource": "repo://scripts/pxpipe-desktop.mjs#L66-L68",
+          "version": "repo-lines-v1:sha256:f7f10a30f506ae4a05c5bd244e25f6cc821494aab13d124e9f8d5cf8923fafca:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjNmNDY5ZjAyMjExNTc4ZjcxMTU3MGZhNGVmOTQ0YjE5OTE3NTZlYTI3Y2ZjNjJkZWRkNDI2NDJlMjNlNWVjOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzg5OTBhMzU5ODAxYzg2MmEwMjhhZmJlZDcxZDAyMmU5YzFiOWEyZmZmMGM0ZjBkMGJkNWUwY2EyYmNlNWIwMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2IzNTIzMmFlOWE0MmUyZWEwNTFmMzJiZDU4Yjc2MjFkZDMwZWE2MmMwZjZlNDllMjI4MzhjMGEwMmQ3ODBkOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTFjNjExYjdkYzY1NjkyYjgyMmJlYTFhMjg4NDM5N2MwMDFiNzAzN2Q0ZTU5NmM2MThiNjEzM2Y2OTdhNjBhYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_fcea26dc2a9e486398fd02a3a37ddc4e",
+      "statement": "pxpipe-desktop.mjs supervises the pxpipe proxy, re-checking every 30 seconds and restarting it 5 seconds after it exits.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/pxpipe-desktop.mjs#L25-L25",
+          "version": "repo-lines-v1:sha256:453b39c7424f787389b3bc4586e7eb22ce53126430a0d6bd0c55c66923a34489:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDUzYjM5Yzc0MjRmNzg3Mzg5YjNiYzQ1ODZlN2ViMjJjZTUzMTI2NDMwYTBkNmJkMGM1NWM2NjkyM2EzNDQ4OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDUzYjM5Yzc0MjRmNzg3Mzg5YjNiYzQ1ODZlN2ViMjJjZTUzMTI2NDMwYTBkNmJkMGM1NWM2NjkyM2EzNDQ4OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjdhN2NkMWNhMTQ3NGJmOTY5OWIzZDEzNzlmMmNmMzkyZjI0Yzc1YjZhYTRmZDY4MmFkZmY2ZDBkYWJkYmI4ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDQ3MDlkYTIyMTJjYzJjZmEwMzcxYmIxYjNmMjZhZWQ3YTk2YzQ1NmM3Y2Q3NDlhNjA2MjhmYThmOThiOGFlYSJ9"
+        },
+        {
+          "resource": "repo://scripts/pxpipe-desktop.mjs#L52-L64",
+          "version": "repo-lines-v1:sha256:b4e594975913c880144546ca59dbab0ad7cf768fc3b9a8fbdbdffbb889f1c5c6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUyNTUyZTE5Zjg4NjhjYzVmNGFlNDg3NjExMjI3NDg0NzgzMWIyOTgwOGIzNzU3MjAwZWZmNWI2Nzg0YWQ5NDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjliMjdlYTE0ZWVmOTQwOTlmMDcwZDc3NGYxMWUyMWZmZjE1MjVlNDA2NTBiMmY0NzFmMDU3M2FhMWZjMDY0ZmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI1ZDk0NzQzYTY1YTA0ZWZlNmJhM2NiYWI3ZDRkODk4MmM4MjJjMmIyODI1NGQyMDRhODYyYzgyZjc0MGRlNzQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_26ab2247ad394faeb4b4e45be9997162",
+      "statement": "The pxpipe CA is trusted only through NODE_EXTRA_CA_CERTS; nothing is added to the Windows certificate store.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/pxpipe-desktop.mjs#L4-L9",
+          "version": "repo-lines-v1:sha256:8102ecde3548342fce663cdaee16adf53e413441efb7aafafe02836358bf9f6d:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTY3NzNkOGZlYzJmOTU4ZDE1NjJjMDQ3ZmIyMjc4NzRkNWJhNDdjZDU3NzIxMzQyNTA2ODgwYWQxOTAzNDhkNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjBkMzlhMDkzYTM2OTM3YzRhZjQ3NDdiMzBiZGZhZTdkNWZkOWY1NWE5ZTlkYjA3NmU5ODBhOTcyNDc1YWZmMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGQzZDdmOTU5YWRlM2UzZmE4YmI2YjliNzcyNDVmYjdiYzg1YzE3ODQ1ODE4NmM4YTAxMjY2NjY3ODNlZjhmNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTMyZWNkMDNlMDc3M2Q4MzA4YmVjZjE3OWUxYjY3MzIxZjFhYWFhMjZjZDU3NmRkNDA4YzRjNjZlOTM2MDkyNCJ9"
+        },
+        {
+          "resource": "repo://scripts/pxpipe-desktop.sh#L13-L14",
+          "version": "repo-lines-v1:sha256:0c4b29dc00362d5d61d5fddc68f90651b1263175849586eafa878b624e3511db:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiM2IwMTVhZTE2ODc3Mjg3ZjE5NGE4ZTE3MDEyZTVlOGFhZmU4YjU1NGM1NjFhNmRlYjAyNTg4NTNkMTM5N2ZlNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMGViZWFjNTk1YjkxMjg1NmZjMjA3NWY0NmVhOWYzZmRiMTcyOWM0M2FiNDc4NTZmYzU1ZjgxMmQ4MjE0ZmQ5NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2I2YmI0Zjk1MTYyNmRhNzkxZWM5OTdlMTQzMDJkZTVkNTAwMmRkMGE5ZmJjZDY4M2Y2MTg0OTBlYjM0ZDgyYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGFkNzQ4MGM4NGU1Njg5ZGQ1YjQ5ZjI5YzJmYTUyOWI5MDE1YWU3NWE1NDI5Nzc2Y2NhZmM3ZjI3OGJkMzJiMSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_4a945e44c4ec492589adc7c8728ec89d",
+      "statement": "tokenwar pxpipe desktop on starts the proxy, and only if it came up adds a Startup-folder shortcut and writes HTTPS_PROXY, NO_PROXY and NODE_EXTRA_CA_CERTS into settings.json, backing it up to settings.json.tokenwar-pxpipe.bak.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/pxpipe-desktop.sh#L1-L11",
+          "version": "repo-lines-v1:sha256:aa68efffc5a58b6d1aaa37f16b0a751ab9fec4daa3c258fd5c3fedbb3f46d1f9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5ZjA5Nzg3YzNhMDRhZDI5NGM0ZTM1NTI2ZGFjYTQxMDgzNTJmMDM4ZWZjNmI3NzNlNDAyODkzMmNkOTU0NTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE1ZDM2ZTE2NDdlNzJlYTRkMzlmOTkyMDhhODliOTU2NWMwMjEyZGIzMWJhMmU2MWRjZjFmNmRlOWE0OTUzNzEifQ"
+        },
+        {
+          "resource": "repo://scripts/pxpipe-desktop.sh#L123-L152",
+          "version": "repo-lines-v1:sha256:1a56db2714daea59942116d83a97d433ecb8ad2d4e91ca1f7031094ae226ba63:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3YTllOWYwZDQ3MTI5NWU5Y2U5MjYwMjM5ZTYxMTk2MDE5NzRmOTZiNTMwZWEwZjIxN2UyNzhmMjVhZmNiNjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0NWNlZDA3NmUxMzUwOTFlZTk4ZjUzMDk5Y2FkYmIwNDliYjVhNjBlOTk5OGIwZTI3Zjc1ZWIyOTYzNjcwNGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFiYTkxMWJkNDA2NmJkNzY1N2NjMzJkZTAyNjU3ZmZiMDI0NTlmZDVlZjZjNDE0OGIzYzJhNTFhMDYwNDEzYzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiYmUxMTM3ZmM2MGY1ZDNjODBkZTBlZWNjYTkyODEwMzQzZDk1YWVlNzkxNTMwZTM2ZDlmYmI2ODk2OGY5NjgifQ"
+        },
+        {
+          "resource": "repo://tests/pxpipe-desktop.bats#L51-L69",
+          "version": "repo-lines-v1:sha256:bf68e59557f659a80f1cea9490b9c2602c5cc46e58ce6ce2b791451aafc0411d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjYTU5MTQzNjlhYTdkYThkMzA0NzFlZWRiZjcwY2Y1MTBhNWFkNDI0Yjc2ODI3MWFhNmIzMTZmZTQzOGZmMWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5ZTdmZGY2OGI5MWIwNGU1MDJjZjg0YzlmNTY1YmI2MzhhODJmODg2NWEwZTUwOTNmYTA1NzViYjhhODFkNWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2ZDBmMGI3ZjhlODEyMzQ5ZmNiYzUzYTAxMDQ1MTA5NGI3OTA0YTI0MGIzOTUzZmI3NTU3MzY1NjAxOTQwNmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1f8f85d983a44f9a89011b1d17f112be",
+      "statement": "Autostart uses a shortcut in the user's Startup folder because schtasks /SC ONLOGON needs admin rights.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/pxpipe-desktop.sh#L4-L6",
+          "version": "repo-lines-v1:sha256:c409843e469416d7cb3c448a3b2a4c48fedf04c330521ff619acb3d47351b2df:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTJjOGFkZmUzMWRhZGMyZDczNWY5YjcxMzEzZTcwZTIzN2FhYmQyMmNkY2NhNmQ5Y2JjZDljZWZhMjAwZjUzNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTc2MTc4NzdiNTc1OGRkZGE1MTE2ZDhhNmE1MDVlMGE2OTg3ZTczYzNhOWQwOWRmMjJhYmRmODUyZTEzMTY5OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMThiNDg2ZjgzMWM5MWUxZTAzY2RjMjljZGI0YzZiZTZiMDA5ZDlhMzM1M2E2ZjE5ZmM0NzI3ZDJiOWE5YzA1YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjNjZTljZjU1ZGI2OTU5MTM5ODdmNjA2ZDc3NGExOTAzYTkzZmI0ZjgyZjI3MWMwMGMxZjQ5YjBjYmE1MTg3YyJ9"
+        },
+        {
+          "resource": "repo://scripts/pxpipe-desktop.sh#L91-L115",
+          "version": "repo-lines-v1:sha256:80deb5f171c23d1e3c142a3bd446dc1fa7be402fe279f6d91494ec0cf2357112:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlkZWMxY2EzMTAzNjcxMDJiMjJlYzhhM2M4NmM4MzEwYTE4YTZhMWZhMWQzZTkxMGE4MDhmNWNhMmM1OTg0YjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU1ODVlOWFjODNiY2QzNzgwZTI0MTdiOTUwMTMzNDZkNzI5ZTAwZWJlNTFlY2M1NGVmYTAwMDYyNGRjMzk2MDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY0ZTEyOGI0MjVhMGMzOGNiZGQ4YzNmNTZiYjM1ZDMyY2Q0M2UyOGFhMjc4ODZiMmI0ZjM0NTY0OTY3NTQzMDAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ce73495ed26848cfb4335acc9d35db33",
+      "statement": "tokenwar pxpipe desktop off removes only the keys it owns, leaves a foreign HTTPS_PROXY alone, and removes the Startup shortcut.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/pxpipe-desktop.sh#L155-L162",
+          "version": "repo-lines-v1:sha256:ac71b2b69e4ba1c20114c36fd3f6b942f359d8bb834a44aa23d89bb0aa6bbd53:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjgyNDg5NDVlNzdiMjEyODhiNWZhYmJlOGQ5MjE3ZmExODBiYjc2YzkyMjQ5NWJiZjJhMzExODk0ZWY1YzVmZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmNmZWJhZDU3ZGY2ZGE5OWY4NTVhNWNmZTJlODZhMTI3ZmVmNGUwNDE5MThkYTQ1ZGMxNDExMGRiZmFmNjZhZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODAzYmM2YWY4ODcyMmNlNGUyNjViNTRlNGY4MDcxNTAyZjZhZmI4ZjE3NmRmMjUyZTNkNjE3NWQwMDU0ZjNmNiJ9"
+        },
+        {
+          "resource": "repo://tests/pxpipe-desktop.bats#L82-L93",
+          "version": "repo-lines-v1:sha256:b9e3969dc027db8d9fb8dbfcb11d281cdc215cc8f2a0109347ad472a0b001c33:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEyOWE4YmZlMjc2NTc3YWIxMGE4ZmJlYmViNzk4MzZjMDgyN2I1NzliM2Y1YzQyMjc4M2YzMjU0NGYyOWMzOWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk2OWQ1YzdlNmI0ZDNhODU5MDczNzg4Y2U5ZGFkZTliMjNhZWI0NDJmMWNmZDgzMGEwM2Y2MjM3YmRmYWNiYjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzNWY3Mzg1OWVlZWQzZTA3ZWM3MzhiYTZiYjYzNjQ4NjBhNWJjNzI1YTY1YTdmNTEzZGM0YmNhMTgwODQ4ZjMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8d63883c76a14954bedf19df08ab189b",
+      "statement": "tokenwar pxpipe desktop status reports settings wiring, desktop proxy, pxpipe proxy and autostart, and flags settings wired to a proxy that is down.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/pxpipe-desktop.sh#L164-L176",
+          "version": "repo-lines-v1:sha256:7dfdeeb850e067cea5a892c7c8ffb6e222ce4b9fdaebf9e0de82e30854b7547c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViYmFjMTQxMjVhOGUwNWRiMjFhODkxN2IwZTFlMGZlMzRhNzMwZTVmOGQ1NzNmZTk5MzE2MmNmZjliNTNiZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU4YmUxZjA0NjMyOWYxMDczYzA0NzU1MzgzZjMzMjdkNzhlYWU5MWE5NDQzNDVhZDI4ZDI5Yjg1YmM5YmU3MjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYmViN2Q3ZTZlZDNiZTdmYmNkYThiZGQ0YjIwNWNmMWFiNjJmYTFiN2FjNDI1M2I0ZGJjM2ExYzZhNmZlZjkifQ"
+        },
+        {
+          "resource": "repo://tests/pxpipe-desktop.bats#L94-L102",
+          "version": "repo-lines-v1:sha256:765b8bb4dae8d3ebf1ad83ce97a25a5142e955d37a8929f82755baf5a3509587:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWY4N2NlMTZmMWIxZTEyYTRlN2Q3Y2E0MmQ5ZmI3MWU4ZmNkMWI4MjM3ODZmOTcwYzAzN2JiNzRmOWJmYWM1NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWQ5MWFmZjgzYWNjODUwNGQ4YzE2YzY1ZjA2NzA4ZmRjZjkwZTRkNDMxZGU4NWFiYjU3ZmIzZWEzZGNjZDMzOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjU0NTZjZjEzODU5NDQ3ZGM3MTljYWJjMzk2OTgxOTk3MGYyZWU5ZmM3OWFlZDkyNDY2NDRmNGMzNDBmOWM5MCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_0c71b89168ad4b9cbfac59dae335ad58",
+      "statement": "pxpipe images only the models in PXPIPE_MODELS (default Fable 5 and Opus 5.5); Sonnet 5.5 must be exported before the proxy starts.",
+      "evidence": [
+        {
+          "resource": "repo://docs/windows.md#L203-L208",
+          "version": "repo-lines-v1:sha256:88ed0dadb38ecd17766aa4b5d15072e526b69e0e915597763f8b47bf196a1f66:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTczYWNlOWZkMGZlMDgzMmU3MzIzNTI5OTA3ODg2MWM0OTE4NWMwZDhiZDIwYjE2ZGQ1YmQ5NGI0MThhZDk1YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDUzOTQ1ZmQ1ZDA4MDgwZDJmZTYxODVhMTUxMzRmMzg1NTQ0YjJmY2QwNmNjNjczMGQzNWM4MGNkZjRmMTgzYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2Y1ZWU0OGI2ZGM4OGQ3OTFhOGI4N2U5ZDkwMTZjNTYwZTgyMTFhNjExNmFkZWFlODg2ZjY4NWFjNWI0MDQzOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDE1YzQ2MDRiZDdhOWQzMzU4Njk1N2YxOWFmNTdlZTlmYzM5YzM1NjBkOWM3MDAxOWQ0YWZkZjJlYTEwNjhlMiJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.0",
+    "at": "2026-10-05T04:01:37.525Z"
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:e3a66afa6711d0250681c5ebde37c9863d0c99faca5b400199d0e20c17a88cde",
+  "claims": [
+    {
+      "id": "claim_32852836ba08428ba066a894ba5fdc4f",
+      "statement": "install.sh flags are opt-in; --all enables plugins, RTK, pxpipe, graphify, OpenWiki and Copilot wiring.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L172-L197",
+          "version": "repo-lines-v1:sha256:6bf3d12a7430d1df27bf20843251ad507823edf5cec4f0faa04b3a405cc1d5f5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzNzlkMzQ2M2I5NWFhZGY2ODg3ZjQ3ZDE4ODY2YzhiODA5M2VlZTZjZTkxY2Y2NmYwMGU0Y2JjN2I0OTllMmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRlZTllNTg1MDRkMDA2NmVmMTY0NzkzOTE5NDA5NDI2MDE5YWFjMTNhOGY0Y2EyMDkzMmFkODY4NzE3NTgyZTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk3MDU5OTE3ZTY4NzgyY2JkYjU2NWMyNjRkNTcxNjhlYzNhMmY0MWMwZjQ3M2MxMzA1ZjM5YzgxZDI5OGNkZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJmODUyZjBlMjZmOGEyY2U2MjQ0MTY3MjEyYTk3OTM2MWI5YzFlZDU0NDQ1NzFkZmI2ZjEyZWJjMjU0M2VkYTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ce3798358fc841a8bda00d2bdae4341a",
+      "statement": "install.sh clones into ~/.claude/skills/tokenwar, or runs git pull --ff-only on an existing checkout, and moves a non-git directory aside to a .bak-timestamp copy instead of deleting it.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L204-L222",
+          "version": "repo-lines-v1:sha256:bcc9479274ed7ce08d4349385fe888c0af1a618f5a3c04b61965e915b5e7874f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwMjJlZDIyZmM2MjViMGVhYjEzMmU5YmIxNjkxYTBmOWMxY2FiMDM3ODdlMjVjM2E1ZjIwYzVmNzcwOGViMGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3NjlkMjM3Y2Q0MjBiOWQzOGI5ODFhMGE0ZjY3NzAxOTBhNGE4M2RjYTFmZTU2YzRmNWJhMWUyY2JjMGVmNzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyNzFhMWNlY2QxMTU3YjMxMGZiNDFlZWEwMGRiNGFjNzU1ZWQyNmMyZTdjNmUxMDQ2NzUxYzljYzRlZmE5NDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU3Mzg5MmI2NTUxMTY5NGU3ZGJiNjg0N2U4NzUxOWYyZmYyMjJjOWNkOTgyNTJjY2JkNTU5N2I4M2VhY2JhNjUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a3443c6dfc1c40fc9de9286c6d033ca3",
+      "statement": "The statusLine in settings.json is patched after a timestamped backup and left alone when already wired; on Windows the command names bash.exe by full path with -c.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L226-L262",
+          "version": "repo-lines-v1:sha256:c3cc72a5c4961e73a81d8069dd3236d727eec3cbb1bf049d29277531163d828d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2OTkxYTZlNmM2ZWQ0NzBjZTc3NjIwODNlNWU5MTE0Mzg0N2NhYjRjYWMyN2FjMDIwMjc3NDcxMjQwNjYzZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmZGM1MDc5NmJlNGJkNDUwMTcyYzdiZjBiYTdkMjA0NjE5ZmU2N2FhYzhhNDE5NzEwZDJiZTkxYmFlZTU2YTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU3Mzg5MmI2NTUxMTY5NGU3ZGJiNjg0N2U4NzUxOWYyZmYyMjJjOWNkOTgyNTJjY2JkNTU5N2I4M2VhY2JhNjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY1MzU1M2EwYTIxN2E4Y2VlY2Q3ZmM2NjllN2E2YzI2YmJlNTIwNzYzZmRlMzBhZWZjY2IzNTRhOTY0ZTIwYWYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ae92f93527cc4cbb8a20e144d9341505",
+      "statement": "wire_shell_rc strips any previous marked tokenwar block with awk and appends a fresh one that exports ~/.local/bin and defines tokenwar(), claude() and wrappers for codex, gemini, kimi, opencode and copilot.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L273-L318",
+          "version": "repo-lines-v1:sha256:84027e5d1661001510479ed8c8af0cc7894631cc027604289a01fe0e4bfed364:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5ZDMzNzBlZjRmMjdlODYyMWJhYzk2MGQxMGQ4MjQxNDBiYTFkMGVkYmExM2Q3NTYwODJkY2RmYzkwOWZhYzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZWRlMTBkNTNkNDZhYmMxYzk1MTVkZGQzMjkyZDExM2FjYTlhZDFlMmRlZjEzZDcyN2QxYTljOWIxNzQyODQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM5YTQyMDIyNTllYTVhMGRlZjQ4ZjZjYjQyMWJlMzNjNzIyOTYwNWVkZDAxZDQ1MjQ4MzAyOTQ5ZmIyY2I2N2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE5ZmZkMDUwZmE0ODliOGNjZjBmZjZjZDEyZDQyNDZmZjgwYWYyYmVmNzJkNDMxZmM5NjkwMGE0YjU1ZjM5NDkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_68d97aa71ad843e1b0ef61df92ea4d31",
+      "statement": "wire_claude_md writes an idempotent context-mode routing block into ~/.claude/CLAUDE.md only with --with-plugins.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L320-L343",
+          "version": "repo-lines-v1:sha256:b7f10d4289be526e7c87e58d4b1b01f229e073ccc797ad53dccc173ce42f639e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwMTY3Mjc2MGY5ODE0OWExY2ZjYjAwODczNGY5OWJhMWVmNGFlZWNlY2ZmZjcwODRmNzA2MzJlZjY1MTAwOTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlZDcwM2EzZGM2NWNiMGQwMTZmZDc4Njg0NGY4ZTViNGY2ZGVjNWZlNzdlY2M4NjA5OTBiZWUzMGFmYmI5YmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc4NjgxYzUwYjllOGUyZjA1Y2RmZmNiMzA1MmRhZGM3NTU0MWFhM2YwZDBlMDQ2ZjIzOWUxNDNhMzQ5ZDJiNWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg4Zjk4MDM1NjNhMDU4NTY3YjE2NmIzNzcwNTE3OWZhYTI1ZjQzNzdiNDNlZmFlOWQ1NzQxNDYyOWJjZGEwNDUifQ"
+        },
+        {
+          "resource": "repo://install.sh#L602-L602",
+          "version": "repo-lines-v1:sha256:9cb4c01ebf5a42876a6ca2ec04950aaa4ede81c772d99842ff5c52be6a16ebbc:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWNiNGMwMWViZjVhNDI4NzZhNmNhMmVjMDQ5NTBhYWE0ZWRlODFjNzcyZDk5ODQyZmY1YzUyYmU2YTE2ZWJiYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWNiNGMwMWViZjVhNDI4NzZhNmNhMmVjMDQ5NTBhYWE0ZWRlODFjNzcyZDk5ODQyZmY1YzUyYmU2YTE2ZWJiYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODQ0MDc4MzczYTY5YTg4N2IxZWMxNDNiZDU1YjA3MmYxODRjODhhNTMyMTc2MTU4NzcwMTc3YTI4M2I2YzIzOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjU3NTFmOWI0YjJmMTE0NjU3MTE2MjhiYzkzMmU0NTNlYzZhYWZjM2E4OGE3MDdjM2Q4MjdjNzM4ZGFkZTIwZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_aebc2ebe33bb4d38a23a7b502defa031",
+      "statement": "install_plugins snapshots the enabled plugin set and re-enables any plugin that claude plugin enable disabled.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L360-L403",
+          "version": "repo-lines-v1:sha256:fbb911479be94c6f9dd9752a7c024e083d5ab6b0d670ab1aa99ac55aed83e0ca:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRiYTcxMDhiNmE1Nzg5ODAzYWQyYzc4YzA5YmIwMGQ5ODIxODBlMTg3MmI1MjgxOWM3NTE0MmY3ODUzOTU1ZGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyOTk1YjRhZGY3MWY4NGVmNDU4ZmIwN2IyN2U3YjcxZWMzZDQyOGZkMmIyYWI0YTRhZDFkMjQ0ZDgxYzYxOTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY0NjE0NGJhMTNlODFmOWIwMjFhMzViNWJlZDQ1NjZhMTUxYjg1YTNiYTlhNzVmMjMxM2FhNzRkMjllZTFhMWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIxMGFlMDVmMTE5OGVkY2MyZDMwNGI2Y2I3MjZiYjlmOTgyMzcxYTU1ZjE4MWU4MDBmYTMwMzRmNzFlZjk3NTAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_66a5d3cb3cd4436ba7a0edea214ae0ae",
+      "statement": "RTK's hook is wired with rtk init -g --auto-patch --hook-only, plus rtk init -g --opencode when opencode is present.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L405-L420",
+          "version": "repo-lines-v1:sha256:493ea29a7cac88078d4b9bf20aeac3ffb6adf6c0800ce4178f254948966b82e6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxYTJmYTRjMzJiMjdlMGQzNjFhZmRkMjRiOTBjZTdjYmI3OWFhMWI4NTcyYWM2NDUyNzU3Y2QzNTQ1MzFmZTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZkNDMxZTdiNWZhMGE2OTQyYTkwYmJlMDM4MzE5YjQ3MWRmZjdmYzE1MWQ0ZTk5ODkxNTY3NDRjMDFiZDVjYWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIwNjBmNGQ2ZTE1OTg1YTQ5OGM3NjMzOTEyZDJlNGVjODdhMWFkZmFhODk2ODMzMGVlMmMyMGE3NTdlZmRjMGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA1YzliOGQ1ZDQxOGQ1ODRiODg0YzFhMWIyZTliYjNmYTkxOWUwOTMzZGQzYTIyZWU1NTg4N2JjNDQyYTMwMmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4c552edca37f45c5b8b629def0c53952",
+      "statement": "install_pxpipe handles npm's Windows global bin layout, copying the shim into ~/.local/bin on Windows, symlinking on POSIX, and skipping the link when source and target are the same file.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L445-L512",
+          "version": "repo-lines-v1:sha256:d1f2ca3ba687bb267b238da0f53eaec22afe070b54d5633c86f07b80edd9dbb4:eyJzZWxlY3RlZExpbmVDb3VudCI6NjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVmNDNmNDdhY2I1OTM1YTU1NTE5Mjg5MDBiMzkxOGRjNjg2NWNlOTQzNGY5ZjYzOTBkNWU5ZGE3YjRlYzU4MzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyNDc4ZDhiNjE2YTk4ZjA3M2Q1YWMxNGQwNTI3M2I0MTI2OGQ5ZDNkYjYzM2QzMzU4MjMxYWFjYmUyZGFkZDAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5ZDU3ODFmYTc5YmFkNmE1OGFjZjBjMzM4ZjM3ZjM0OGFlOTFhZjM3ZmRlYzhiMjc1YjViNDU2NTdhNTBiODciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ4YTM5M2E4Njk2MjFhNWRmODFmNzRkYWFmMzQ2MTkyNDcxNGFjNGY4NjZhMmJjOTNmNzkyNTJmYmI3NWI5MDMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e74a1feaf633450eaa81e3e6881a0057",
+      "statement": "install_graphify tries uv tool, then pipx, then pip, and registers the skill with graphify install; install_openwiki installs via npm and never initializes a repository.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L514-L572",
+          "version": "repo-lines-v1:sha256:f84fa31471a76b25c2b929ebef0278a2ec5946d3dd31bfdb5952d872001a60fe:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZWMxNTk5Zjg1MjJmNDQyMDYzOTJhMWRhN2EyNTc5ZmIxNjY3M2Q0NGEzNmMxMWFhNDA4OGM4NjI1YjI5ZjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ2OTA0Y2YzMmFiOTRkZTA1Yzc1NDI1YTYxNTM1NmI1MTEzMDdjZjNhNGVjZGI5OWU5NjhlMDc2ZDkxODA4NzciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJiYWE1NTc0NTAzOWY5OGRlNWRkYzFlYmFhZDQ4ZWJmOTFlNGRkMmRlMzY3MzBhZTA4MTA1OTdmMGQwOGU5YTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZjOWE0YjI4MDFlODZmM2I3NTZiNTZmOGRmNmM1NWY5OTExM2M2OTcxOTM0YTc5OGVhZmRiNTU2Y2YzYTM4YTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7bdbcabaa01e4fb2871a9738161ed737",
+      "statement": "Copilot wiring delegates to scripts/copilot.sh wire --yes and runs last so it reflects tools installed in the same run.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L574-L588",
+          "version": "repo-lines-v1:sha256:c558ff4e10d038581276d81c0b770c49b3a83637b2ec8623e823593b8c50334d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjYjQ2Njg0NjM2NDhmM2VmZDBmZjQxODAyZmZkZTZmMWY3NDI5ODE2MzZhMWNkOWUxMzk0NGEzMGVkZjZhMTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxYmQzNWZhYTRiOTZjNmVkZWQzODM4NzVkMmE4MmJiY2M2ZWVlNGVmMDcxMTE0YjA3ZjVhZTJjYjljNDg5N2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlN2Y0MGI4YTFjMjY5NmRhMzcwOWJlNjQ1ZmYxZmQ2NzhjYjhmZDNhOWRhOWMyNzU5YTYwNGM2MGI0ZDNkMjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI5YjAxZjRlZGRjOGYxMjY4ODQ1NmQyY2Q5YWRhNTI3OTFkMzA2M2YxMTQ4ZmFkZGE2Yjk0N2Q5MTFiZWNiNGEifQ"
+        },
+        {
+          "resource": "repo://install.sh#L600-L610",
+          "version": "repo-lines-v1:sha256:41f0764a515b3c8d147425030d737c7ac2f3e274a8854cef03b0460aae488199:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUxMDVjNzVjNTYzYjZmMzE3YzBjZTdhY2FmMWNlZmE2NzliZDVkNjI5YzA2YzNlMjFjZjc0ZDYxMzk2NzYzNjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFmYTJkNzEyNzgzZjM2NDUwZTMxZDQ0MjgwMzVmZDFjNTg0M2ZlOGNjNDQ4OTc5OTdmZGU3YTQ0MjhkNmQ4ZWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJlMzI5NDdjYzg0Y2ZiZGYwMTJiOTQwNmU3NmU4Y2I0NTJkMDEwZmFiNTgxNTY3ZmZkODYwY2Y4NDNiOGRjYTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6386120a666d4e289af8edd37db792e3",
+      "statement": "install.ps1 forwards its switches to install.sh through Git Bash, then adds bin\\ to the user PATH and a tokenwar function in $PROFILE pointing at tokenwar.cmd; -SkipProfile skips both and a $PROFILE failure is only a warning.",
+      "evidence": [
+        {
+          "resource": "repo://install.ps1#L47-L56",
+          "version": "repo-lines-v1:sha256:14a1b74a2b24028baea0aec2f878f31c9b6bcf817584d8657ef04cb73dda7c21:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiMTUyZjE3MGRkNTQ1NjA0MzdlZTAxNzY5MmUwNjRlZWNiMTJiZTEzYWMyMzRkZjlmMTU1ZTdiYzkyNDk3ZjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYxMTE0NGY5OWEwMzlkNjcyMDgzYzc0MDdhODkyODgxNTY5ZjFiOWM1ZWEyMDY4OGJmOTAxZDk4MzlmNTU1MjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE3Y2E2NTBlNDMyMGJmODdmMDM3MDRiOGRiODhmMTdhZWJhMmY0YmNlYTEwNDEyZmI3Yzc3MDY4YTg1NWU1NDkifQ"
+        },
+        {
+          "resource": "repo://install.ps1#L91-L184",
+          "version": "repo-lines-v1:sha256:a010969919d1ff6509c00de92df826878d3f267ae154ed72eb4b8a47ae887b2e:eyJzZWxlY3RlZExpbmVDb3VudCI6OTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRhMjlkN2RmNjNjZWIxNTAwNjI3NzI3YzgzZjdiNWE2ODhjZTZhZmM0NDA0YTllMzRmNzJiZTFkMjA3ZjZjNjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3NmE0Y2Y1ZTY2ODI0NzczMzFkNjNjN2QwZjc4YzhhNjE5MDMxMzlmMjNkZWE4MmJiYWNjNjY4MjhiNmJmZDQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk1MGFmYmZiNzM2ZTIwOGFjMWQ2ZGY4YTE5OWM2ZjViNjUyNzc1NjQ4NWIxNjgzOTQwZDM3OGRiNzA1NTAwOGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmZGU5ZDZmYWJmNjBjOTk0MDEzMjI1MjI1NTg0Y2NiMTU3NmZhNTk1NDUyYjQwZjk5YjIwZjIyZThhMDM0NDEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_84b52ea71fe04d87951f49574fa5ad99",
+      "statement": "uninstall.sh removes the tokenwar statusLine (matched by script name), the shell and CLAUDE.md blocks and the install directory, and leaves the managed tools installed.",
+      "evidence": [
+        {
+          "resource": "repo://uninstall.sh#L1-L135",
+          "version": "repo-lines-v1:sha256:0955415cdfaa8c2c8170c1c1b35b5f1afccd8c3e8545954b7ddbed7bc5bbf9be:eyJzZWxlY3RlZExpbmVDb3VudCI6MTM1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxZDk1ZmMwNGE4MGM5NTJmNDljZTQxODg2MjdjNTNiMGZiZThjNDQwNDFiOTUyZDU5MmFjZDFkZTk5ODYxNDY2IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIyYTIxYzViM2JmZjAyOTljMDE2MTQ3MDQ2OGYzNTVlNWI0YWZjZjE3YTVmNTkzYWI2ODM5NGVmN2FmMzE5Y2RjIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_4496bc227a4a41e585b9f012e578db6c",
+      "statement": "uninstall.ps1 removes the $PROFILE block and PATH entry, then runs uninstall.sh via Git Bash, warning and leaving the rest in place if Git Bash is missing.",
+      "evidence": [
+        {
+          "resource": "repo://uninstall.ps1#L1-L85",
+          "version": "repo-lines-v1:sha256:9b38c6024bdb2f27c82e189904afe017f3235dac10bcd8e7da79e72045d2660a:eyJzZWxlY3RlZExpbmVDb3VudCI6ODUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzMTFiOGU3ZjdlNTg2NGU1ZTM4YzU1YzhjMDI0YjdhYjJjNTBkMzkzYzNiMWU4MzJhMmE0MzE3ODNhMTA4ZWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1OGNmMjBkNjI5OWMzYTA5NGZjNGE0NTA3ZTNlY2UzMjFiNDYyZmYzZDAzNjAxYzFkZjk1ZGE4NmE4ZjZlNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.0",
+    "at": "2026-10-05T04:01:37.525Z"
+  }
+}

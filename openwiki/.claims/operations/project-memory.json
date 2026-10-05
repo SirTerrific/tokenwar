@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:ddd7ccdfbcdec888e4ab76c8b40364e17ed0e36bdd6061acf3fefe1b9ddb8765",
+  "claims": [
+    {
+      "id": "claim_901eb9ab4be5440fab127d7382313e94",
+      "statement": "Graphify's AST and code-only extraction is deterministic and uses no LLM, while semantic extraction of documents, papers or images may use an LLM.",
+      "evidence": [
+        {
+          "resource": "repo://docs/project-memory.md#L91-L93",
+          "version": "repo-lines-v1:sha256:37293473415abfe797aac50c62c87f16ddf4e1d0b5f8e788b85fe48849f5ca90:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTM4MDNmNjBhZjNkMTc0MmZmYzYwN2QxNGQxMTMxNWFjNWUyNzcyMzUxODJiYzIyZDkyMjM2ZGM2ZWZiYWM1OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDRkZTkxMGNhNzFkODA1YTQ5YTk1MDNjNGYxMGVjMjJhOTkxZDhmYWYxYjcyYWY1MGNiMmQzZjcwZTRlYWIxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTgwNDUxYjRjNjlkNTUwMzYyY2YwNThmMWIwMWY2YjI5MmExMDUwYjYyYTIzNzZkZTYyYzdhNjg5NzUzMzRhOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTc2OThjZDNjNDkxYjAzMjZhYjAwYjhjMTkwYmMzYzEyNmI1NWEzNTI0ZmUxNmMwZGQzNzBmNDlkNmU1MDgyZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_40e6dbaaa20e4ae5af85b1a4071c098f",
+      "statement": "OpenWiki net gain is repeated repository-reading tokens avoided minus wiki generation and changed-update tokens.",
+      "evidence": [
+        {
+          "resource": "repo://docs/project-memory.md#L19-L29",
+          "version": "repo-lines-v1:sha256:910aa690fc06135345fce030b2108712748ff1e7f7116ec4d5e20823a45ba205:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk0NzQzNTIxYzBmNjVkNmNlNGY0ZDllNTg1NzU5N2FjNjliM2Y3NmYwNDQxMTRhYTAwYjI3MjhmNDYzZmIxNDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5MTc3NjBjOGMwNjM1MWZkNDNmYWRhNjVjMDc3NmM0NzBkMGIyODZiZTAwMmI4ZDBjMGI1MDgzNzg1OTJhMTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ4NTQ4NzY2Nzg4MmVhZTgxMTc4YzNmYjIyZjFmYTNkZjhlOGY4ODAyYWVhZmNmM2M4NWYyNWJiYmI1YjBiNmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJkMDdkMThjMzNlMTRlYjA3NGQwOWVhZjg1NWVkMWU5ZDc4ODg3N2NmZDQxNGY0OWQ0M2ZlNDA2ZDg2MTFhZTAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c40897a18aa445b486da53cd2f9d1889",
+      "statement": "install.sh --with-openwiki installs openwiki@latest and never initializes a repository, because initialization writes generated docs and invokes an LLM.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L548-L567",
+          "version": "repo-lines-v1:sha256:9ebdaad409c510b1cfed4c1aedc69b0882803bcadab1f8c4a43ee114cee19615:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViNjQ4ZWQ1MzVhMzBiM2Y5ZWJhMTYzZjMyNjM1ZGYzMzMzOTIwMTJkOWJmZTY3YjM0NGIxM2U1OTFiNDNhY2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyMGUwNjU3MTEzZDYyYTk4OGNhYzNiZDEzMzI4NDdkYWUzY2M4ZjQ2OGI0M2JiMWJmMDM2NTBkZWRjYjZhY2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMyNDUwNzhhYWU3ODY3NzZlMDI0ZWNmMzZmZTFhYWQ5ZjZhZjM3NTkwZWVmMWM3MWExNWFmN2FlNDQyMWE5NmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3NWJkYWQ5ZThiNTIzNjZiYzEyNWU0MTRkZDE5MDEwYzU0OGIyZWI0YzVkOGNlMWI3YjkyOTI5ZDI4NDE3MGMifQ"
+        },
+        {
+          "resource": "repo://install.sh#L91-L92",
+          "version": "repo-lines-v1:sha256:ccbc7621adb805f0b928404affba27396c46a3904016b0856b3ee915c7f698a0:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODlmMDU4ZjMyNmE0MDY3NjUyOGQzYWJmNjBlNTdmNWI5MzIxOTA5ZTg1NGRiYmY2NDk5Nzc1M2Y0NTVjZGNiZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZWU3ZTgzZmY0YmY2OWM3YTBiYThkZjgwNmY2MTJjYWM3NjdjYzY0NjMxZDQwOTc3YmExNGIxMTA0ZjYxMGEyNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDhjOTFmODRkNjg2NTFlZTRiYzY2NjA1NDdkODg5MmJhOWE0MWZhNmIxM2Y4YjhhODIwMTNmNzk4ZWIyZTgyOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGZkZDExYzYwMzliNmI2NGM4ZGY2ZGU1MzVjY2JhMmM5ZGJhOGUzYTIyNzJhMWQwMzJiZWE4NWMyOTFiMjhmNSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_5863d46396d14f3ba6d59436203d253b",
+      "statement": "graphify is installed from the graphifyy PyPI package as the graphify CLI.",
+      "evidence": [
+        {
+          "resource": "repo://install.sh#L86-L87",
+          "version": "repo-lines-v1:sha256:70075b4628f3c5134284919b996a36c58239dae6ea3d0532fc6542d0c183c35e:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWI0NmFhNGU3ZmIzMjVkMDNmYjkwMzRiMDg4MjZmOTk0M2FmMTNhYzI1YTFmMGNhNjU3Mjk1MTliZDQzY2NlMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODI2NmZjNmE3Mzc3M2EwY2YzY2EyMjhhNzQwMWU2MmY0YzAxOWZjNDMxNjUxYWQ2MDgwNThlYjkyNjZhMDZiMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjYyYjBjNDM4MmU5ZTY3ZTIxODY1NzQxODJlYTQxODQ2ZmRiZGEzODIzMzliN2Y5NjgyNzliYzBkYTA0Y2VjMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDhjOTFmODRkNjg2NTFlZTRiYzY2NjA1NDdkODg5MmJhOWE0MWZhNmIxM2Y4YjhhODIwMTNmNzk4ZWIyZTgyOSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_cfe81a5934274538986def06ee627210",
+      "statement": "upgrade uses uv tool when uv owns graphify, falls back to pipx, never runs pip against a uv-owned graphify, and reports failure when no Python installer is available.",
+      "evidence": [
+        {
+          "resource": "repo://tests/graphify.bats#L159-L252",
+          "version": "repo-lines-v1:sha256:d37bd5e4af9a940aab0d9f43f52a49771bedbc1331dfb3ed476df8377116527f:eyJzZWxlY3RlZExpbmVDb3VudCI6OTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3YWE3YjIzOWQzYTYwOTJlNWJkMzZjYTdiZjcxMWQxZmU4ZjMyNzg3Yzk1MTVhNTdjNzkwNDBiY2Y5YmYzMjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIyOWNhMWY0NjQwNzAyODU0NWExNjc1MTRjMTM4MjVhYzQ3OTk0OTU1ZTdhNGEyYjU4ZjViMDQ2MGMyNmQzN2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjExODU2MjMwOGEzNzUyZGFkNTY2MzNkMzIzMmI1Nzk5ZmI3MTFlMjBkZGM3ZDRiNDEzOGY4ZDBiODU1NGEwMmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fdc5578667904257bbf7f9c5c9cd47f7",
+      "statement": "check-updates reads graphify's latest version from the PyPI JSON API and degrades to unknown when the registry is unreachable.",
+      "evidence": [
+        {
+          "resource": "repo://tests/graphify.bats#L127-L148",
+          "version": "repo-lines-v1:sha256:8ee7b2e5cdd3a478413510b92356881733cfec9f27f68f0461c364b1e76a8eed:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlMDI3MDUzMDZmNmMzNjNkMDk1YTExNjJiZGE0YmIyZDU2MWU3NTkzMDg1Yjk3MzNiMDllMDE3MTg2ZjRmZTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzMjJmODNmMjBmZTNhZjMwN2I5MjY0NzVhNTZiNGM0OThmNjc4NjAxNTgwZjVmZDIzNDBjMDliNmMwMDJhNTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU2YWJkNzg4OGU3NWIwMzExNzEwNTRmMmNmNWQyN2RhNWM2YWQ3NzdkODRkNTY5MDI3ZGU4MDRhYWU2NDJiMjYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0665c9cba4404e8ca3d892b711405db5",
+      "statement": "The OpenWiki Update workflow runs on workflow_dispatch and a daily 08:00 cron, with full git history so openwiki code --update can diff against the last documented commit.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/openwiki-update.yml#L3-L22",
+          "version": "repo-lines-v1:sha256:06764e6229c12c590f39629b59b873c40b528a4f70cfd5875ae1eca4b5bbdb24:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5NmRjNDgxNDlmNWE4M2QxZWQ2ZGJiMzliYmM3ZTJiOTAyYWEzZDM0ZDZiZDVhZTRiMjkxYjY4ZGYwY2E3OWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzMDk3NWM3ZTIwZWJhODg1N2VmZDMxZTYyYjY2NWY3ODdlNTE2NDE5NTFhNjYwNzg5ZmJhOTMzYTYzNDcyMTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjoyLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM1YjFmMjRlNjE4MDVlZTFhOWJjNzgwNDdlMWU0YjNkODYxNTdkNmUzN2Q4YWMwYmNiZWJkNWU2NWU1ZWYxYWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdlZjE2ZTNjOGI1NGUyYjIwNDgxOTZhYmI0Y2Q4MGQyMmE1MDhlY2Q2MDc0NjEyNGEyZWEyZGNjMzQxNzk5ZDEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_facda5f5c64e460280d089ce5d2863fa",
+      "statement": "The workflow installs openwiki@0.7.0 with mermaid and jsdom and runs openwiki code --update --print with the openai provider, continuing on error.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/openwiki-update.yml#L29-L48",
+          "version": "repo-lines-v1:sha256:59ac85a69b325775b88b30d4d28ada36977763ceb974347a6ca316d75349d665:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg2Y2UwYjBkM2IzODEyMmJjMjc1MTVhOGQ5Njk2MTVkOWUxMGUyODA2NDRmNzYxMjIxZDA0NDc5YWQyNTM5M2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4ZjhiODAyNzQxYWZjN2ZiMzg0MGZlY2RjNDNkN2Y4ZTQwMjNiYmZjYjViN2VjNjVlZTA4ODc5OGQ4NTE3MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIzZjNiODgwMmIzMTBmZjJhZGQwMDI2YjgyZWUyZTllNTcxNTkxMmVhZjA4MWFmODZjZTExMGRkNjQyZmMxYTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0ZTc5NGRkZjMyYTNlMmRhYWFkODgyNjMxM2MyNGY0ZTRjZGE2ZjYxYWJmNDE3ZTQ4OWJlMzlkNWI5OGE1NTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_28ebfb29e6674b37a0d7d7bc47ce7109",
+      "statement": "The workflow opens a PR on branch openwiki/update staging openwiki, AGENTS.md, the workflow file and CLAUDE.md only when present, then fails the job if the OpenWiki run failed.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/openwiki-update.yml#L50-L88",
+          "version": "repo-lines-v1:sha256:8a16c25992e382f80a5b31b3d85e8d23224696724c52368fb8e668084ee2430c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3OWM4ODBmNjJkNDIyNTM4YmNhODRjYjU1ZWNlOGZlMTBlOTY1OGIwNjExMTVjM2ZhYmNkYzdiM2JlY2Y0NDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2NzE4ZjA2N2I1ZTVjMWYwOTkxYTZlNzQ3MjZmZTJhMjNkMjY0MzQ1ZTA4ZTRlYWQwNGZhZjczYzI3ZWQ0NDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxOTEzNzMyNTgyYzNlNjAzNTkwNzg2Yzg2ODM2OTUxZmYzNWU5YjJkMGY4ZDMxMDY3ZDRmNGM4NzQzZGIyYWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_297d8befe8024291b969e6f7874e184a",
+      "statement": "Agents should read the wiki index and open only relevant pages rather than injecting the whole wiki into every prompt.",
+      "evidence": [
+        {
+          "resource": "repo://docs/project-memory.md#L46-L48",
+          "version": "repo-lines-v1:sha256:a40e5530cab8bfc106db12d091a51c62bbaf0786eaef4e9f7c266a8974487cb1:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTE5Y2VhZjA3ZTI0OTQyN2ZmYWIyMWEyNDIxNmJlYTMxNWYzMmMwOWNkNGM3NDExZDMyZTM1MTgxYjhjYzQ1ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjA1MDkxMGFiMDVlMDYyNDYyYWViNGUwM2U5OTZkMTQ5YWU3NzdmMDgyYjZmNzhhZTNhY2MzNjU4Nzc0YjNiZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDhiMmE4ODViYjM3YjJhZThjOTcwYmI1MTE3YWQzYTg5ZDJmOWQ5M2I5MTY3ZjZmMjAwMWEzZjZkMGFjMzk5NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTU4OWVlNWQxYThhOWJmYzA3M2ExMmE2NzRlNWU0NTM5OGRlNTQ1ZWQyNzQ5YmQ1MjFlOWM4NjRhZjhkOTJkOCJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.0",
+    "at": "2026-10-05T04:01:37.525Z"
+  }
+}

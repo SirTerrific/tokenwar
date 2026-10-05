@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:c41c6e6c039d9ce4ed0605f6900e0dbba84fd1b8a3d33a4e3080dec436e7637d",
+  "claims": [
+    {
+      "id": "claim_d42507eb2d3b42458227f740d56f38df",
+      "statement": "status.sh reports the 7 tools with states OK, installed-disabled, not-installed or unknown, exits 0 only when all 7 are healthy, treats providers as informational, and supports --json and --test (adding liveness pings).",
+      "evidence": [
+        {
+          "resource": "repo://scripts/status.sh#L1-L66",
+          "version": "repo-lines-v1:sha256:42c010e76fd8c9b6093a84a2a7531ec57d128a90a9086c1ae69f10920a001bb7:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxMTdmYTAwNmJhOTIwODUwMGIyOTMwY2U2OWNiZGU0MzZjNjQ3YWZhOTE3Y2I3Mzk2YTliYzkxMTFhNDZkZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU2YmVmOTk0OTNhNzk3ZTI5OTdmM2RmNjEyZmQwNWZkNzQ1NzBmOGFjZGU4MzdiYzc3YzZkOTM0OTZkNTNmZTYifQ"
+        },
+        {
+          "resource": "repo://scripts/status.sh#L160-L210",
+          "version": "repo-lines-v1:sha256:49a167306dcebaa43252717a742a6b5ba7565f8d75f1e59a125549747c7feeff:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ0YTBmMWQ4ZDQ2NDRkOGI0OTI5ZTM3Y2Y1MGE1ZTEzNGY5MjQ3YjJjMTE1MmExODNiNmYxMjBkMWEyNDcwZTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3ZDkxNWE0ZWQ2MTJhMjkyZThkYjI1OGUwYTNlM2YwODc4MmZkYTMzZjM1ODM0YTI0ZGQxNWM0OGUyNDVjN2MiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUxZTQ2YTljYTZmOTllMmVkMGMzMWY5MDQyNGU4N2Q1YTU3NDc5NDIyODNlZDJhOWFkY2NiNDFjNTUxODhiYmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0YjdiNjUyZjU0MDUwOGM5ZGVkYjEwMTdiNjU5ZGQ0YjA3YzMzN2RiYTJjNzU2ODM5MjBiY2JkYzM5NDU2ZGYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ff9c1441709a4ceb841d751bfd438e56",
+      "statement": "check.sh evaluates five rules R1-R5; R1 counts PreToolUse Bash hooks in settings.json, R3 always passes, R4 only checks that tools are installed and R5 passes in every branch.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/check.sh#L66-L192",
+          "version": "repo-lines-v1:sha256:13e83e2672011e95edf9dca55355eb69b6f4b07d62423f69e5379136d153d626:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzMjExZTgxNTI3MzdkMWQ5NTI2ZDg0OTY0MGIzODA4YjQ0NDlhNjQwNGYzYTNhZmI1OTQ5NWMzMmVhNDhlNDdhIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJkMTE3ZmEwMDZiYTkyMDg1MDBiMjkzMGNlNjljYmRlNDM2YzY0N2FmYTkxN2NiNzM5NmE5YmM5MTExYTQ2ZGQyIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIzY2I3YTY1ZTNmYWRmYTI1ZmU4NDg0MTZiNTQ3ZDI4YTBmZDU0MmIxYTJiNThjZWZhMDYwYzY0ZmZiZTk5MmY2IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIxOTU2ZmZiMWIwNjhmMzk3MjYzNDEyYTM3OGRhM2FjZDNjNjQ1ZmE1NzI4ZTMyMDE3NWQ3MjQ0YzkwOGE4OTc4In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_4bd6efe4f6054ffb9e82757a3fb8a156",
+      "statement": "The check verdict is COMPLEMENTARY, DEGRADED (any WARN) or CONFLICT (any FAIL) with exit 1 for the last two, and --json emits rules, verdict and ok.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/check.sh#L194-L241",
+          "version": "repo-lines-v1:sha256:7eb7b9017d89a28830996495770ff1e7eb52cb3b5bafc4afc0b6040524e2ad0b:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjZjFmYThmYzc0YzZmN2NjMTAzM2EyYjZlOTFlZjc5NTI3ODlkMmM3YWEzZGYxZTk3MWE2YjRkZDAwMDQ0YTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3MmZiZmU5M2Y4MGYxM2UwYTk4NjM3MTg0YWRhMzZmMTc0MDc5NjhiNDkzZjRmMmNlMTY5MmY0NWUzZWNmNzIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc5NzFlYjI5YjAzYzczYTE3YjUxNDZkMmE2MDhkZjIwZDMwMWFlZDVkNjE0OTIxMGZlYTkwNzE2ZjNiMjRkZDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_898c68b0891d48c0b41dfe89a2ff276d",
+      "statement": "toggle.sh drives claude plugin enable|disable for the four plugins, and refuses rtk, pxpipe and graphify with exit 3 plus a per-tool instruction.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/toggle.sh#L25-L112",
+          "version": "repo-lines-v1:sha256:d3b8f2d67d941e38dcf514636720d5b0a35170f387a9fbb3e1099051cf9a8b2f:eyJzZWxlY3RlZExpbmVDb3VudCI6ODgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxYTAwOTdmM2FlYmQyOWRlN2NjZWVlNjNmN2YzMmI0ZmY0MWMyNzEwYzk5ZGVkNWZkYTViMGNmZDM5YzgzODQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVkODE3Y2JiMjMwYTcwNmU4NDk3YjFmNzQ4YTIwMGUxNjQ0YTI2M2M2MGM1YmYyMzliOGZiMmE0OTEzYWY0NzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNjNDRiYjRjOThkYmNmOTYzODYzNWU5MWM0YzBhZmM3NmZiYTMxODg0MjE2MDFlODAyZTFhNGY2OTExOWM3NDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ5YmQzMzQzMmY1OTFiZGZkOWUyZTM4ZjNmODgxYWY5YTM0MWU5MzYxYzBkMjkzZmRmMzMwNWVmN2U0MzllZjUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4784e8439cf144d4834a20b7c7f9219b",
+      "statement": "bundle.sh defines the dev, devops, architect and testing bundles, asks before applying unless --yes, supports --dry-run, and warns that switching mid-session invalidates the prompt-cache prefix.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/bundle.sh#L1-L144",
+          "version": "repo-lines-v1:sha256:5d64e0518bd94ca9d400e87d19fa42fc1451cbf5cc6f6585d2277d34543fa963:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQ0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxZDk1ZmMwNGE4MGM5NTJmNDljZTQxODg2MjdjNTNiMGZiZThjNDQwNDFiOTUyZDU5MmFjZDFkZTk5ODYxNDY2IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJiMDZjZGRkOTc3YWM1OTFkNmUzNzljMDRmMjc3MWI4OWE0ZjE1YmE3YWE5YmM0Y2VkOGIyZGU5NjlkYzZjM2RkIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_8969ebdabc28475cb74c28e064349585",
+      "statement": "restore-settings.sh backs up settings.json to settings.json.tokenwar-bak and merges settings.local.json over it with local keys winning.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/restore-settings.sh#L1-L44",
+          "version": "repo-lines-v1:sha256:7d14b0839a5005c844fbdde152614334439f59f9da1dd1d18391c38aadd54e89:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YWIyNTNjNWY5NjAxN2VhNmU1ODhkYjUxMWMyM2Q2MTAyNDhhZTdhNDExZDI1MzJiYWNiMjIwMGNiYTU3MjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5ede46593f464bda996fdfbda26b0c40",
+      "statement": "prune.sh defaults to a 30 day window, lists never-invoked skills and MCP servers with their listing cost, and never deletes anything.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/prune.sh#L1-L104",
+          "version": "repo-lines-v1:sha256:6a3676b551690df7b74c2d4cbecc8efb65ed49185385066a0bc7409ab60b03b8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxZDk1ZmMwNGE4MGM5NTJmNDljZTQxODg2MjdjNTNiMGZiZThjNDQwNDFiOTUyZDU5MmFjZDFkZTk5ODYxNDY2IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJlNmFiMjUzYzVmOTYwMTdlYTZlNTg4ZGI1MTFjMjNkNjEwMjQ4YWU3YTQxMWQyNTMyYmFjYjIyMDBjYmE1NzI5IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_15354a6fcda34191bb4f48ab8e8bca21",
+      "statement": "The statusline caches plugin and rtk gain lookups for 30 seconds, reads update state from the check-updates cache with a 24 hour TTL and a background refresh, and adds ~/.local/bin to PATH on Windows.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/tokenwar-statusline.sh#L20-L45",
+          "version": "repo-lines-v1:sha256:4989c21218c33e441b8d05d92839dbb70fdf26da330437ff5b22aca5c8bae303:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5MzE0ZTQ2NDNhMmMyNmZjMzAyMjZmNWM2MzM1YWUwMjJkZTIzODI3MGViYmU2ZWJjZDQ3MjAzODI5NGUyYzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkMTk4MWQ4MmFkM2Y4ZjE2MjFlNjM1MWVmMTFiODk3YzMzMjI0YTQ2OTczZjQzZDMwYWIzMzhiNGQ4NTUxMzQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhNzg1OWMzMDkxNGZlYzZiZmUwNmJmMjJlOTRkZmI4Yzk0MDE2ODI4YTViZGYzYTUyYWNkN2Y3NTRkZjdiMDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM0M2NjZGZkZGU4MGM1ZGQ0ZjY5YWM1ZThiMjA3NjY0YTc3YTM4ZjM3ZjNjYTcyMTY3ZDIyNDFlMzllNzk2YWMifQ"
+        },
+        {
+          "resource": "repo://scripts/tokenwar-statusline.sh#L78-L192",
+          "version": "repo-lines-v1:sha256:0b5aa2b8f3710e4b6569ff1439236f3455284786e1463fc99aec6f3a804181d5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlNDYxM2ZmZDZkZDJiMzQwNzM5N2FmOWMyNGE4ODBhMzE1NTFjMGNhY2YwOThmNjVjNzEzOWUyMWZmM2JiOWQwIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIwMWJhNDcxOWM4MGI2ZmU5MTFiMDkxYTdjMDUxMjRiNjRlZWVjZTk2NGUwOWMwNThlZjhmOTgwNWRhY2E1NDZiIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3M2VkNDA5NWI4ZjIxN2I3N2Y0M2I2YzQ2MDkyYTRiMTU0YmQ0NjI2MWQ4ZjZkODBkOTVkNGVjNmFjNDUyNWNiIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI3ZDI1NjdlZTNlZmMzOWE1YTJmNjZlYzM5NGU0ZWRmMDU1NWZlNTE3ZDZkODFiNDZiNzkzYzZmMzYxYmNmY2E5In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_12253c9af1b74c35b023566bef5506a3",
+      "statement": "The ponytail badge is green only when the plugin is enabled and ~/.claude/.ponytail-active reports a live mode.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/tokenwar-statusline.sh#L56-L66",
+          "version": "repo-lines-v1:sha256:d1e5dee086f11ecc412b4e09811074cd7bcf51da3d1802038cc7c60e2cc1402b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc0NmIxNjU4NGNjMGIyYThkZjA2MzU4ZjhjMzg5YWFmMjljYTlmNzVmMjljNjQ5NDRlNGJhMGQwZjg3ZmE1ZTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVmM2E2ZGNlNTllOGIxMGQ5M2NiYWYzNmRmMDRmZjJjMTE0YjI4YzNjYzE2MzM1NTA5NjM3OTRhYmNkZGY5OWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVkMDdiYzE3MjFlMDUxMzMyNDNmNWQ2M2I0NjM4ZjYxOTkzYTMwMDY2ZDJmNjUwN2MwMjdkMGE1OWEyZTQzZDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI2MTMxMjFlNThjMzI3NzI0ZGMzM2QwMzczMTNjY2Y4MWE5OWI3NTMyM2JmNzIwNTY4ZjkzN2Q1M2ExM2JkYzkifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.0",
+    "at": "2026-10-05T04:01:37.525Z"
+  }
+}

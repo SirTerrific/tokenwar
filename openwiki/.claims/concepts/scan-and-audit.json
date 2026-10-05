@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:bb2fb369152945d562ab1c069a584bf22599143b2ec72aab44b1abac644a1395",
+  "claims": [
+    {
+      "id": "claim_33bcb95933fb48c3bfd11cfaec038349",
+      "statement": "scan.sh is a thin wrapper that sources osdetect.sh, exports node-readable log-root paths and runs scan.mjs.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/scan.sh",
+          "version": "repo-file-v1:sha256:c5fb357f88361181d13a1f5508cb758ecf045aab918c20404303a4be1ec3f145"
+        }
+      ]
+    },
+    {
+      "id": "claim_1e2a22a6b1e04c2f9e99001dcd866682",
+      "statement": "The scanner deduplicates tool_use blocks by id, separates sidechain traffic and recovers argv[0] by tokenizing commands instead of grepping log lines.",
+      "evidence": [
+        {
+          "resource": "repo://docs/scan.md#L81-L102",
+          "version": "repo-lines-v1:sha256:67d9589ff2fa8a87d1a85c9023e4a15dd0609a4a7b921ffea60d4ea3e8f751a5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxOWQ5OTAyYTljMDU2NzMxZjk4M2YxNjk1NmQ4N2Y4ZjBhZTFmMThiMTNlZjVmYzg0ZDMzMTFkMDQ1OTI0NTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRkNzE1ZGI3ZTYxZDdmYzNkNmJiMTlmNGExYzczZWRkNWE4YjUyYTY0MmY5MjllN2ViNmQ5NTFhMDUyYmNkNDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwNzA4NWNlOGU4MWM5NGQzYzBmZWRhOThjMzQ3MjA5NTgwZjdkM2U4ZTVhNWQwZTZmY2FmNTNkMTcxN2M2OTQifQ"
+        },
+        {
+          "resource": "repo://scripts/lib/parse.mjs",
+          "version": "repo-file-v1:sha256:6a9ff98f1019b664e036d57ce9efe136d27cad51c8586443b7e217005ba52127"
+        }
+      ]
+    },
+    {
+      "id": "claim_8a445e8a502945f89a628d693b609436",
+      "statement": "Non-Claude clients are parsed through ADAPTERS, which covers Codex (rollout-*.jsonl, with usage) and Gemini (logs.json, no usage).",
+      "evidence": [
+        {
+          "resource": "repo://scripts/lib/adapters.mjs#L282-L289",
+          "version": "repo-lines-v1:sha256:d1edc49ca2ee201964e5bccc694babbef4e3e4829ee00c3870ec1f4a5d8a41d3:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTI1MDdhODkzMDBkMGI3YzZmODY2ODZmOTViZjJjMjU4MjBjZjE0N2MyYmExM2UzNWI3NjhhMzUyNTgwM2Q2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGVlODM4ODUxMzRkOGEwZGFhZTlhOTIzZWU4MzQ3NGE3MDc5NzVmN2EwYWRhMmY3YjBlODFjZmQxNzg4NjUxYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_9075d92be9b74850a832e8c244bd7754",
+      "statement": "The report grades four categories: Capability inventory, Context-window hygiene, Prefix stability and Cache efficiency.",
+      "evidence": [
+        {
+          "resource": "repo://docs/scan.md#L24-L31",
+          "version": "repo-lines-v1:sha256:c44a4b0296fe4008ebaa905f1b96d28c68441874a14c096a65d205ad23f1dd11:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmZjNWI1NzIxOTBlMzYxM2I1ZGM2ZmNhMzM1ZTM1MDA5NGFjNGU0ZGI4MzkyMWFlZTMxZGQyMDY2MGMzM2E3ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjNlNDE2Y2EyMmVkOWQzZDZlN2ZlMDIwODg2MDRlMzU4MDU3OTI1OWZjMDUyOGE5NGExODMyYmVhMzU1NzgzZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzY2MGE0ZGU1NTNjNmQ3MzYzZGYzNGY4NmFlYjRmNzNmZmJkOTIwZjU4ODUzNGM0ZTAzNTIyMGM5YzgzZmNjMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzU2YzA5OGNkYzgwNzNkOWVjNjJkOWVlNjFiOWE5MjhjZGFmODM5OWQ5NGRkZjgyMmQ1ZDdhZTA4NWExZGVkZCJ9"
+        },
+        {
+          "resource": "repo://scripts/lib/report.mjs#L44-L52",
+          "version": "repo-lines-v1:sha256:5e2c3173c9d886e3cd8bdcec0c928a33968fedcaedcc2bbaa7c91243a3e4e30e:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWI0MGFkYjc1N2I4ZjcxNDcwZWU1ZWZlYjliM2QyZWJkNzE3MDI1ZGY4NGRhYTQ4YmY3ODg1ODY5ZDdiZWVkZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjhhODMyZmUwNzM4ZTFhOTNlOTY2YjE1NmUzMWU0NTNlNzZlOGQ4NzlkMGIwN2JiNjNhZDQ4YjdmNTliMzY0ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODJiOTRmMWQ2NzRlYjk5MmNiOGIxYzhjZTVkZjAyMTNiYmM1YzVmOTE4NWRmM2UwOTQ1NzFjMDJkNjdlMmJmYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTIwNDBlMDk1YTk0ZTJhZGE3NGU0MjFmMzcxODc1MWE5MWE4MTBiZmQ2NmY0OGY0ZTkzOWM3Yjc0ODBlYjY3MCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_3371b98ef618407cb46d48a7c9c519aa",
+      "statement": "inferProfile returns a gated, renormalized distribution over dev, devops, architect and testing, and lists seo, po and designer as not inferrable from coding-agent logs.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/lib/profile.mjs#L1-L30",
+          "version": "repo-lines-v1:sha256:9894d33177bb8140580b6cb6211b199e4fcbe0008c2e91df11d397f041ff3be8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVmZmY3ODVmNmEwMzU5NzJhYzY2MGZlOGQyZjEzNTcyYjU3NDI1YzRlMWQzNzRjNjBjMjc2Y2FkOTE4OTFkNWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3ZDU3YzczMzM0N2RiNmU0MTU2ZDI5YmY5MzkyZjQ1YjJiODg1ZDgzZTYwNTYwNDFlNDI4MzkxMTNmYjFjMjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE3NmRiNWEwZjhlYjJmMjQzYTE2NDZlOGE5ODhmMTBlMTE4OTRhYWNlMWYxNGUyNTdiNTU3YjI4MDcxZGRhNTgifQ"
+        },
+        {
+          "resource": "repo://scripts/lib/profile.mjs#L120-L150",
+          "version": "repo-lines-v1:sha256:f9fbe755a3efd8f4fe296deda85bb90f406c68f45acffc266b4832eae4c8025a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiNzllOWQyOGE3MzcwNjBlM2E5OTVmNWI5YWJjOGViODhhMDk2Yzk5MzNlMGM5MjliMTBlMmFjMzdiMWJiMGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkZDVlMTM0YzY0ZmUxYjMzZmY0NDc4ZmZiZTJlM2MzOWZmNTI5NzBhOWY2ZGQ0Y2YzOWM1Zjk1NGM2YzVmYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA1ODM4OWQwNDFjYTNmMmU5ZDhiNjkxYmQ1ODk1MTViNDkxZjE0MTNjYjZmOWU4YjI0M2Y4NmRhMmNkMGViZDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVhMWQ5Y2IyZDIyYzg5OGUyZjUxMzkwYWY2MjhhNjJjZTU0ZTEwYTE3ZWU0NmNkYWVlODU2MTFkMTM5NzM0MWMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_887fc570b26f45c6a3d0715861a87598",
+      "statement": "Recommendations are never summed across overlapping tools, always model the cost of the recommended tool, and can be NOT YET or AVOID.",
+      "evidence": [
+        {
+          "resource": "repo://docs/scan.md#L121-L142",
+          "version": "repo-lines-v1:sha256:d7ae23748e57862837df0e06c4efb937f05e0453630db376d7ff3577c0a24d50:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwMWU2YjZmODBlZWJiOWMzY2ZiMjc0ZjI5N2M3ZjI1MmJjYmRkYzk3NzIzMTNmNDYwZjY5MDBiN2ZmYzg1ZDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5MWM4YzcwODUyNDA1MzEyOGQ3ODM2ZTA4ZGEzOGE5NTFhODUxMTJkNThlY2UwMDI2ZTc4YTEwYzUwYzMzMWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQzYmM3ODY0Y2IwOTVlYzVjZWE0NTgwNzUzMDQyODIxYWQwYTJlYjNhZjRkZTEzYzliZDdmZDc0MGU2NDcwOGMifQ"
+        },
+        {
+          "resource": "repo://scripts/lib/recommend.mjs",
+          "version": "repo-file-v1:sha256:ff8104edc51c840f0d7fe056680914a0485ce9e7623fee52ccf78b4ae04996ac"
+        }
+      ]
+    },
+    {
+      "id": "claim_89958f281b4945d4b6c66bebde8cd9e2",
+      "statement": "--summary-json emits a sanitized, versioned aggregate without paths, prompts or arguments, and --history records and compares *.snapshot.json files.",
+      "evidence": [
+        {
+          "resource": "repo://docs/scan.md#L200-L215",
+          "version": "repo-lines-v1:sha256:e69590a6347966af26888cfc8d3c5315adb442e2fa014cf622b9f1d4f8171e76:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkMDM1NWQ2NzMxNzRlZGMwYmUzYzRhZDY3MzFkYWViYmE0ZjQzZGI4Y2I2NGY3OTg4MmJmM2M2MjAzZTc3MzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4ZmYwMDgxMzA2ZTZmMzhkNzYwMTRlODBmOTU4YTAzNmNjYmU3MmYwYjcxYTNmMTllMDZhOTRlNDAzODRlYWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ0M2RiZWQ0NThiYzM0OTNlYmNhMGQ1NDEwMTQxZjU2OWU2MGI0MDVjOGNkOWVlYWFlODYyMWFiZmIyZGQ4NmMifQ"
+        },
+        {
+          "resource": "repo://scripts/lib/history.mjs#L90-L105",
+          "version": "repo-lines-v1:sha256:a9f4a4e727b3ae3b83524c131f71ec7f16a5c3981a56a3078bba84626439439d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlMDM1ODJhM2MwNTU4NTFmOTkyNzgzYWRlNTYxMzEzMjZmOTA1ZDc1NGEwNjM0N2ZiZWJhMzE4ZGVlYmEzMzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://scripts/scan.mjs#L370-L385",
+          "version": "repo-lines-v1:sha256:005375dd821bbe09e7ef3ebf1697ce2eea26f0068214c56e747e2d2afd77a5b9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmMGNkYjk3MmE3YmZiN2VkMjQ2ZjlmZjY3MjM4NWU1NWY0OTY4ZmMxMTA0M2RjNWI2ODRkNTFkZmEzMWRiY2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3ZWFhNDM0YmE3Y2I2ZDc5OWRlMjY2MTFmNGVjM2E0MTllMmM1NTE3ZjA4ODUzNDNlYWMxYzg3NGZlMzI2OWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNkZWEzYjI3ZWQ5Y2Q3Y2VjZGE0YzY3YzlmYjM1MDIyYTAxZjUyOGMyYjRkZThlNDk3OTkyNGFmZDhmMjMxMTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5ec3ad9601904179b536afa8aacc5e73",
+      "statement": "Copilot and opencode are detected but have no adapter and report format unsupported; Gemini is excluded from cost figures.",
+      "evidence": [
+        {
+          "resource": "repo://docs/scan.md#L184-L199",
+          "version": "repo-lines-v1:sha256:dec69963b4c5ea5f522dc8dfd64d50f13f08bedcab82e63aa4a285cb98f0b0ce:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmNjZkYWFmZmE3NTg5ZGM2YzI1ZTQ0OWFjNDk1N2I0MTJkNzkyMjc2OWMzMWQ3MjIyYzZmMGIyODllZWJkNjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIzMDFlZDA0MjgwZDE2MzMyMzM1ZmUyZmZkZWU2MTMyY2M5YTlhYjJhZGFiMTM2MTM1Mjk1MTQ2Mzg0YjAyYzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg1NmQ1YTU3MTU1MzU4N2E3NjkyMTgxMDdiZmQzZmYyZjExOWZhZDE4MTQ1MmNiMWNlYjViMGU1Yjc4Mjc2YTEifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.0",
+    "at": "2026-10-05T04:01:37.525Z"
+  }
+}
