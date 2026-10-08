@@ -314,8 +314,17 @@ done
     if [[ " ${needing[*]} " == *" tokenwar "* ]]; then upgrade_tokenwar || rc=1; fi
     # Re-check so the cache (and the statusline arrow) reflect the new versions
     # now, not after its 24h expiry.
-    bash "$CHECK_UPDATES" --force --quiet >/dev/null 2>&1 || true
+    # check-updates exits 2 while any tool is still behind its latest: an
+    # upgrade that "succeeded" but left something outdated is a miss, so say so
+    # and fail instead of printing "complete".
+    recheck_rc=0
+    bash "$CHECK_UPDATES" --force --quiet >/dev/null 2>&1 || recheck_rc=$?
     echo ""
+    if (( rc == 0 && recheck_rc == 2 )); then
+        warn "Still outdated after the upgrade — run \`tokenwar updates\` to see which:"
+        bash "$CHECK_UPDATES" 2>/dev/null | grep 'update-available' >&2 || true
+        rc=1
+    fi
     if (( rc == 0 )); then
         say "Upgrade complete. ${COL_DIM}Restart your CLI for plugin changes to load.${COL_RESET}"
     else

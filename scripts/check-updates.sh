@@ -131,6 +131,18 @@ refresh_marketplaces() {
 # update. The short git SHA is the last resort, for a plugin versioned by
 # commit alone.
 readonly MARKETPLACE_GIT_SHA_LEN=12
+
+# `git show <ref>:<path>` with MSYS argument conversion switched off. Under Git
+# Bash, "origin/main:.claude-plugin/plugin.json" looks like a POSIX path list
+# and is rewritten into garbage, so git fails — and every caller here falls back
+# to the on-disk file, i.e. a clone that is behind upstream reports its own
+# stale version as "latest" (ponytail sat on 4.9.0 while 5.0.0 was out).
+# MSYS2_ARG_CONV_EXCL='*' exempts the call regardless of MSYS_NO_PATHCONV.
+git_show_ref() {
+    local dir="$1" spec="$2"
+    MSYS2_ARG_CONV_EXCL='*' MSYS_NO_PATHCONV=1 git -C "$dir" show "$spec" 2>/dev/null
+}
+
 marketplace_version() {
     local marketplace="$1" plugin_name="$2"
     local marketplace_dir
@@ -140,10 +152,13 @@ marketplace_version() {
     if [[ -d "${marketplace_dir}/.git" ]]; then
         upstream=$(git -C "$marketplace_dir" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo "")
         if [[ -n "$upstream" ]]; then
-            manifest_json=$(git -C "$marketplace_dir" show "${upstream}:${MARKETPLACE_MANIFEST_REL}" 2>/dev/null || echo "")
+            manifest_json=$(git_show_ref "$marketplace_dir" "${upstream}:${MARKETPLACE_MANIFEST_REL}" || echo "")
         fi
     fi
-    if [[ -z "$manifest_json" && -f "${marketplace_dir}/${MARKETPLACE_MANIFEST_REL}" ]]; then
+    # The on-disk manifest is only a fallback for a clone with no upstream. When
+    # an upstream exists but cannot be read, answer "unknown" instead of
+    # silently reporting the (possibly stale) working-tree version as latest.
+    if [[ -z "$manifest_json" && -z "$upstream" && -f "${marketplace_dir}/${MARKETPLACE_MANIFEST_REL}" ]]; then
         manifest_json=$(cat "${marketplace_dir}/${MARKETPLACE_MANIFEST_REL}" 2>/dev/null || echo "")
     fi
     if [[ -n "$manifest_json" ]]; then
@@ -164,9 +179,9 @@ marketplace_version() {
 
     local plugin_rel="${src:+${src}/}${PLUGIN_MANIFEST_REL}" plugin_json=""
     if [[ -n "$upstream" ]]; then
-        plugin_json=$(git -C "$marketplace_dir" show "${upstream}:${plugin_rel}" 2>/dev/null || echo "")
+        plugin_json=$(git_show_ref "$marketplace_dir" "${upstream}:${plugin_rel}" || echo "")
     fi
-    if [[ -z "$plugin_json" && -f "${marketplace_dir}/${plugin_rel}" ]]; then
+    if [[ -z "$plugin_json" && -z "$upstream" && -f "${marketplace_dir}/${plugin_rel}" ]]; then
         plugin_json=$(cat "${marketplace_dir}/${plugin_rel}" 2>/dev/null || echo "")
     fi
     if [[ -n "$plugin_json" ]]; then
@@ -288,7 +303,7 @@ rtk_latest_version() {
             local branch ref
             branch=$(git -C "$repo_path" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo "")
             ref="${branch:-HEAD}"
-            git -C "$repo_path" show "${ref}:Cargo.toml" 2>/dev/null \
+            git_show_ref "$repo_path" "${ref}:Cargo.toml" \
                 | awk -F'"' '/^version[[:space:]]*=/ {print $2; exit}'
             return
         fi

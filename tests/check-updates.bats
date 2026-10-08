@@ -105,6 +105,27 @@ make_caveman_marketplace() {
     [[ "$output" == *"caveman"*"→ $sha"* ]]
 }
 
+@test "a marketplace clone behind upstream still reports upstream's version" {
+    # Regression: under Git Bash `git show origin/main:<path>` was rewritten by
+    # MSYS and failed silently, so the stale on-disk plugin.json was reported as
+    # "latest" and a new release (ponytail 4.9.0 -> 5.0.0) was never flagged.
+    # Must hold with MSYS path conversion on AND off.
+    mock_claude_caveman "3.1.0"
+    make_caveman_marketplace "./" "3.1.0"
+    local work
+    work="$(winpath "$HOME/caveman-work")"
+    printf '{"name":"caveman","version":"3.2.0"}\n' > "$work/.claude-plugin/plugin.json"
+    git -C "$work" commit -qam bump
+    git -C "$work" push -q origin main
+    # The clone still holds 3.1.0 on disk; only origin has 3.2.0.
+    run bash "$SCRIPT" --force
+    [[ "$output" =~ caveman\ +3\.1\.0\ +→\ 3\.2\.0\ +update-available ]]
+    unset MSYS_NO_PATHCONV
+    run bash "$SCRIPT" --force
+    [[ "$output" =~ caveman\ +3\.1\.0\ +→\ 3\.2\.0\ +update-available ]]
+}
+
+
 # ── latest versions come from the live registries ────────────────
 
 # file:// URL for a fixture. curl is a native binary on Windows and needs the

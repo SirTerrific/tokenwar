@@ -160,6 +160,26 @@ EOF
     grep -q "plugin update ponytail@ponytail" "$CLAUDE_LOG"
 }
 
+@test "an upgrade that leaves a tool outdated fails instead of reporting complete" {
+    # A tool still behind its latest after the apply is a miss: the re-check
+    # exits 2, and the upgrade must say so (and exit non-zero) rather than
+    # print "Upgrade complete".
+    mock_claude_scoped
+    write_cache <<'EOF'
+{"tools":{"ponytail":{"state":"update-available"}}}
+EOF
+    cat > "$TW_CHECK_UPDATES" <<'EOF'
+#!/usr/bin/env bash
+echo "  ponytail       4.9.0            → 5.0.0            update-available"
+exit 2
+EOF
+    run bash "$SCRIPT" --yes </dev/null
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Still outdated"* ]]
+    [[ "$output" == *"ponytail"*"update-available"* ]]
+    [[ "$output" != *"Upgrade complete"* ]]
+}
+
 @test "tokenwar updates its own clone by fast-forward" {
     # A copy of the scripts inside a clone that is one commit behind.
     winpath() { cygpath -m "$1" 2>/dev/null || printf '%s' "$1"; }
