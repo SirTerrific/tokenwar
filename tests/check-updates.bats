@@ -103,6 +103,8 @@ make_caveman_marketplace() {
     sha="$(git -C "$(winpath "$HOME/.claude/plugins/marketplaces/caveman")" rev-parse --short=12 HEAD)"
     run bash "$SCRIPT" --force
     [[ "$output" == *"caveman"*"→ $sha"* ]]
+    # A semver install cannot be ordered against a SHA: unknown, not an update.
+    [[ "$output" != *"caveman"*"update-available"* ]]
 }
 
 @test "a marketplace clone behind upstream still reports upstream's version" {

@@ -180,6 +180,30 @@ EOF
     [[ "$output" != *"Upgrade complete"* ]]
 }
 
+@test "a provider CLI left behind does not fail an otherwise complete upgrade" {
+    mock_claude_scoped
+    write_cache <<'EOF'
+{"tools":{"ponytail":{"state":"update-available"}}}
+EOF
+    # 1st call (pre-apply refresh): cache untouched. 2nd call (re-check): ponytail
+    # is current, codex (a provider, never upgraded here) is still behind, so it
+    # exits 2.
+    cat > "$TW_CHECK_UPDATES" <<'EOF'
+#!/usr/bin/env bash
+n="$HOME/recheck-n"
+if [[ -f "$n" ]]; then
+    echo '{"tools":{"ponytail":{"state":"up-to-date"}},"providers":{"codex":{"state":"update-available"}}}' > "$HOME/.claude/tokenwar/upgrade-check.json"
+    exit 2
+fi
+: > "$n"
+exit 0
+EOF
+    run bash "$SCRIPT" --yes </dev/null
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Upgrade complete"* ]]
+    [[ "$output" != *"Still outdated"* ]]
+}
+
 @test "tokenwar updates its own clone by fast-forward" {
     # A copy of the scripts inside a clone that is one commit behind.
     winpath() { cygpath -m "$1" 2>/dev/null || printf '%s' "$1"; }

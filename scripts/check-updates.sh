@@ -315,6 +315,7 @@ rtk_latest_version() {
 #   - Equal → up-to-date
 #   - Both parseable semver and installed < latest → update-available
 #   - Both parseable semver and installed > latest → ahead (dev build)
+#   - Installed semver, latest not semver (SHA fallback) → unknown
 #   - Otherwise (SHA, missing field) → up-to-date if equal, else update-available
 classify() {
     local installed="$1" latest="$2"
@@ -334,6 +335,11 @@ classify() {
             echo "$STATUS_AHEAD"
         fi
         return
+    fi
+    # A semver install against a non-semver latest (a git SHA fallback) cannot be
+    # ordered: unknown, not a permanent false "update-available".
+    if [[ "$installed" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "$STATUS_UNKNOWN"; return
     fi
     # non-semver (git SHA, etc.) — different strings means update assumed
     echo "$STATUS_UPDATE"

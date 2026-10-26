@@ -314,15 +314,18 @@ done
     if [[ " ${needing[*]} " == *" tokenwar "* ]]; then upgrade_tokenwar || rc=1; fi
     # Re-check so the cache (and the statusline arrow) reflect the new versions
     # now, not after its 24h expiry.
-    # check-updates exits 2 while any tool is still behind its latest: an
-    # upgrade that "succeeded" but left something outdated is a miss, so say so
-    # and fail instead of printing "complete".
+    # An upgrade that "succeeded" but left a tool outdated is a miss, so say so
+    # and fail instead of printing "complete". Only tools count: the exit code of
+    # check-updates also counts provider CLIs, which this script never upgrades.
     recheck_rc=0
     bash "$CHECK_UPDATES" --force --quiet >/dev/null 2>&1 || recheck_rc=$?
+    still=""
+    (( recheck_rc == 2 )) && still="$(force_all=false tools_needing_update)"
     echo ""
-    if (( rc == 0 && recheck_rc == 2 )); then
+    if (( rc == 0 )) && [[ -n "${still// /}" ]]; then
         warn "Still outdated after the upgrade — run \`tokenwar updates\` to see which:"
-        bash "$CHECK_UPDATES" 2>/dev/null | grep 'update-available' >&2 || true
+        # Tool block only: it ends at the first blank line, before the providers.
+        bash "$CHECK_UPDATES" 2>/dev/null | awk 'NF==0{exit} /update-available/' >&2 || true
         rc=1
     fi
     if (( rc == 0 )); then
