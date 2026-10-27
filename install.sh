@@ -280,6 +280,16 @@ writeFileSync(path, JSON.stringify(cfg, null, 2) + "\n");
 console.log(`    patched (backup at ${path}.bak-${stamp})`);
 ' || warn "statusLine skipped — fix $SETTINGS_JSON and re-run install.sh"
 
+# tw_strip_block <file> <begin> <end> — print <file> without the block between the
+# two marker lines. Callers check first that a BEGIN marker has its END.
+tw_strip_block() {
+    TW_BEGIN="$2" TW_END="$3" awk '
+        $0 == ENVIRON["TW_BEGIN"] { skip = 1 }
+        skip != 1 { print }
+        $0 == ENVIRON["TW_END"]   { skip = 0 }
+    ' "$1"
+}
+
 # 4. wire shell integration (tokenwar + provider functions) into shell rc.
 #
 # Claude Code shows the native statusLine; Codex, Gemini, Kimi, opencode, and
@@ -298,11 +308,7 @@ wire_shell_rc() {
     fi
     local tmp
     tmp="$(mktemp "${rc_file}.tokenwar.XXXXXX")" || { warn "mktemp failed for $rc_file"; return 1; }
-    TW_BEGIN="$TW_RC_BEGIN" TW_END="$TW_RC_END" awk '
-        $0 == ENVIRON["TW_BEGIN"] { skip = 1 }
-        skip != 1 { print }
-        $0 == ENVIRON["TW_END"]   { skip = 0 }
-    ' "$rc_file" > "$tmp" || { warn "could not rewrite $rc_file"; rm -f "$tmp"; return 1; }
+    tw_strip_block "$rc_file" "$TW_RC_BEGIN" "$TW_RC_END" > "$tmp" || { warn "could not rewrite $rc_file"; rm -f "$tmp"; return 1; }
 
     # Append a fresh block. ~/.local/bin is where --with-rtk and --with-pxpipe
     # drop their binaries; on many systems (notably macOS) it is not on PATH by
@@ -349,11 +355,7 @@ wire_claude_md() {
     fi
     local tmp
     tmp="$(mktemp "${CLAUDE_MD}.tokenwar.XXXXXX")" || { warn "mktemp failed for $CLAUDE_MD"; return 1; }
-    TW_BEGIN="$TW_MD_BEGIN" TW_END="$TW_MD_END" awk '
-        $0 == ENVIRON["TW_BEGIN"] { skip = 1 }
-        skip != 1 { print }
-        $0 == ENVIRON["TW_END"]   { skip = 0 }
-    ' "$CLAUDE_MD" > "$tmp" || { warn "could not rewrite $CLAUDE_MD"; rm -f "$tmp"; return 1; }
+    tw_strip_block "$CLAUDE_MD" "$TW_MD_BEGIN" "$TW_MD_END" > "$tmp" || { warn "could not rewrite $CLAUDE_MD"; rm -f "$tmp"; return 1; }
     {
         printf '%s\n' "$TW_MD_BEGIN"
         printf '%s\n' '# context-mode — large output goes to the sandbox'

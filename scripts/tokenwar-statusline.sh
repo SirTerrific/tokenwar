@@ -202,21 +202,23 @@ plugin_list_json="${plugin_list_json:-[]}"
 # a still-loaded plugin red.
 enabled_plugins_json=$(tw_enabled_plugins_json)
 
-# Returns "version|enabled" e.g. "1.0.107|true". version="-" if not installed.
-plugin_lookup() {
-    local slug="$1"
-    PLUGIN_QUERY="$slug" PLUGIN_LIST_JSON="$plugin_list_json" ENABLED_JSON="$enabled_plugins_json" node --input-type=module -e '
-        const arr = JSON.parse(process.env.PLUGIN_LIST_JSON || "[]");
-        const enabled = JSON.parse(process.env.ENABLED_JSON || "{}");
-        const slug = process.env.PLUGIN_QUERY;
-        const e = arr.find(p => p.id === slug);
-        if (!e) { console.log("-|false"); process.exit(0); }
-        const v = String(e.version || "?");
+# plugin_lookups <slug>... — one node process for all slugs; prints one
+# "version|enabled" line per slug, e.g. "1.0.107|true". version="-" if not installed.
+plugin_lookups() {
+    PLUGIN_QUERY="$*" PLUGIN_LIST_JSON="$plugin_list_json" ENABLED_JSON="$enabled_plugins_json" node --input-type=module -e '
+        let arr = [], enabled = {};
+        try { arr = JSON.parse(process.env.PLUGIN_LIST_JSON || "[]"); } catch {}
+        try { enabled = JSON.parse(process.env.ENABLED_JSON || "{}"); } catch {}
         const HASH_RE = /^[0-9a-f]{12,}$/;
-        const short = HASH_RE.test(v) ? v.slice(0, '"$VERSION_HASH_TRIM_LEN"') : v;
-        const isEnabled = e.enabled || enabled[slug] === true;
-        console.log(short + "|" + (isEnabled ? "true" : "false"));
-    ' 2>/dev/null || echo "-|false"
+        for (const slug of process.env.PLUGIN_QUERY.split(" ")) {
+            const e = arr.find(p => p.id === slug);
+            if (!e) { console.log("-|false"); continue; }
+            const v = String(e.version || "?");
+            const short = HASH_RE.test(v) ? v.slice(0, '"$VERSION_HASH_TRIM_LEN"') : v;
+            console.log(short + "|" + ((e.enabled || enabled[slug] === true) ? "true" : "false"));
+        }
+    ' 2>/dev/null || printf '%s
+' "-|false" "-|false" "-|false" "-|false"
 }
 
 badge() {
@@ -228,9 +230,12 @@ badge() {
     printf "%s[%s %s%s]%s" "$color" "$label" "$value" "$marker" "$COL_RESET"
 }
 
-IFS='|' read -r ctx_ver ctx_enabled <<<"$(plugin_lookup "$SLUG_CTX")"
-IFS='|' read -r mem_ver mem_enabled <<<"$(plugin_lookup "$SLUG_MEM")"
-IFS='|' read -r cave_ver cave_enabled <<<"$(plugin_lookup "$SLUG_CAVE")"
+{
+    IFS='|' read -r ctx_ver ctx_enabled
+    IFS='|' read -r mem_ver mem_enabled
+    IFS='|' read -r cave_ver cave_enabled
+    IFS='|' read -r _pony_ver pony_enabled
+} <<<"$(plugin_lookups "$SLUG_CTX" "$SLUG_MEM" "$SLUG_CAVE" "$SLUG_PONY")"
 
 # rtk: CLI present AND hook wired in settings.json OR settings.local.json
 rtk_saved="-"
@@ -271,7 +276,6 @@ fi
 # ponytail: real runtime state from the plugin. Green with the active intensity
 # iff the plugin is enabled AND the flag reports a live mode (full renders as a
 # plain "on"); red "off" when the plugin is disabled or toggled off.
-IFS='|' read -r _pony_ver pony_enabled <<<"$(plugin_lookup "$SLUG_PONY")"
 ponytail_active="false"
 ponytail_val="$PONYTAIL_OFF_VALUE"
 if [[ "$pony_enabled" == "true" && -f "$PONYTAIL_FLAG" ]]; then
