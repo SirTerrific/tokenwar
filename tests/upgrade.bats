@@ -180,6 +180,25 @@ EOF
     [[ "$output" != *"Upgrade complete"* ]]
 }
 
+@test "an upgrade whose re-check itself fails does not report complete" {
+    mock_claude_scoped
+    write_cache <<'EOF'
+{"tools":{"ponytail":{"state":"update-available"}}}
+EOF
+    # 1st call (pre-apply refresh) works; the 2nd (re-check) fails with exit 1.
+    cat > "$TW_CHECK_UPDATES" <<'EOF'
+#!/usr/bin/env bash
+n="$HOME/recheck-n"
+[[ -f "$n" ]] && exit 1
+: > "$n"
+exit 0
+EOF
+    run bash "$SCRIPT" --yes </dev/null
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Could not re-check"* ]]
+    [[ "$output" != *"Upgrade complete"* ]]
+}
+
 @test "a provider CLI left behind does not fail an otherwise complete upgrade" {
     mock_claude_scoped
     write_cache <<'EOF'

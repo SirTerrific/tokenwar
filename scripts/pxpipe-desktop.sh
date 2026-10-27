@@ -61,20 +61,35 @@ launch_hidden() {
 mintty_path() { cygpath -w /usr/bin/mintty.exe; }
 
 # Set or clear our three keys in settings.json's env block. Only touches keys
-# we own: HTTPS_PROXY is removed only while it still points at our proxy.
+# we own: HTTPS_PROXY is removed only while it still points at our proxy. Values
+# the user had before "on" are kept in a sidecar file and put back by "off".
+# Returns non-zero (file untouched) when settings.json is not valid JSON.
 settings_env() {
     local mode="$1" ca="${2:-}"
     mkdir -p "$(dirname "$SETTINGS")"
     [[ -f "$SETTINGS" ]] || echo '{}' > "$SETTINGS"
     [[ "$mode" == on && ! -f "${SETTINGS}.tokenwar-pxpipe.bak" ]] && cp "$SETTINGS" "${SETTINGS}.tokenwar-pxpipe.bak"
-    MODE="$mode" FILE="$(tw_node_path "$SETTINGS")" URL="$PROXY_URL" CA="$ca" NOPROXY="$NO_PROXY_HOSTS" node -e '
-        const fs = require("fs"), e = process.env;
-        const s = JSON.parse(fs.readFileSync(e.FILE, "utf8") || "{}");
+    MODE="$mode" FILE="$(tw_node_path "$SETTINGS")" PREV="$(tw_node_path "${SETTINGS}.tokenwar-pxpipe.prev")" \
+    URL="$PROXY_URL" CA="$ca" NOPROXY="$NO_PROXY_HOSTS" node -e '
+        const fs = require("fs"), e = process.env, KEYS = ["HTTPS_PROXY", "NO_PROXY", "NODE_EXTRA_CA_CERTS"];
+        let s;
+        try { s = JSON.parse(fs.readFileSync(e.FILE, "utf8") || "{}"); }
+        catch (err) { console.error("settings.json is not valid JSON: " + err.message); process.exit(1); }
         const env = s.env && typeof s.env === "object" ? s.env : {};
         if (e.MODE === "on") {
+            // Not ours yet: remember what the user had, once.
+            if (env.HTTPS_PROXY !== e.URL && !fs.existsSync(e.PREV)) {
+                const prev = {};
+                for (const k of KEYS) if (k in env) prev[k] = env[k];
+                fs.writeFileSync(e.PREV, JSON.stringify(prev));
+            }
             env.HTTPS_PROXY = e.URL; env.NO_PROXY = e.NOPROXY; env.NODE_EXTRA_CA_CERTS = e.CA;
         } else if (env.HTTPS_PROXY === e.URL) {
-            delete env.HTTPS_PROXY; delete env.NO_PROXY; delete env.NODE_EXTRA_CA_CERTS;
+            for (const k of KEYS) delete env[k];
+            if (fs.existsSync(e.PREV)) {
+                try { Object.assign(env, JSON.parse(fs.readFileSync(e.PREV, "utf8"))); } catch {}
+                fs.unlinkSync(e.PREV);
+            }
         }
         if (Object.keys(env).length) s.env = env; else delete s.env;
         fs.writeFileSync(e.FILE, JSON.stringify(s, null, 2) + "\n");
@@ -137,6 +152,8 @@ cmd_on() {
         warn "the proxy did not come up (see $LOG) — settings.json left unchanged"; return 1
     fi
 
+    settings_env on "$ca" || { warn "could not update $SETTINGS — fix it (valid JSON?) and re-run: tokenwar pxpipe desktop on"; return 1; }
+
     if tw_is_windows; then
         if install_startup_shortcut; then
             say "Autostart at logon: $(startup_shortcut)"
@@ -147,14 +164,16 @@ cmd_on() {
         warn "no autostart off Windows — run \`tokenwar pxpipe desktop run\` under your own supervisor"
     fi
 
-    settings_env on "$ca"
     say "Wired $SETTINGS (HTTPS_PROXY=$PROXY_URL, NODE_EXTRA_CA_CERTS=$ca)"
     say "Quit the Claude desktop app from the tray and reopen it. Undo with: tokenwar pxpipe desktop off"
 }
 
 cmd_off() {
-    settings_env off
-    say "Removed the proxy settings from $SETTINGS"
+    if settings_env off; then
+        say "Removed the proxy settings from $SETTINGS"
+    else
+        warn "could not update $SETTINGS (valid JSON?) — proxy settings left as they were"
+    fi
     if task_registered; then
         rm -f "$(startup_shortcut)" && say "Removed the Startup shortcut"
     fi

@@ -322,6 +322,11 @@ done
     still=""
     (( recheck_rc == 2 )) && still="$(force_all=false tools_needing_update)"
     echo ""
+    # Exit 1 = the re-check itself failed: the result is unknown, not "complete".
+    if (( rc == 0 && recheck_rc == 1 )); then
+        warn "Could not re-check versions after the upgrade — run \`tokenwar updates\` to verify."
+        rc=1
+    fi
     if (( rc == 0 )) && [[ -n "${still// /}" ]]; then
         warn "Still outdated after the upgrade — run \`tokenwar updates\` to see which:"
         # Tool block only: it ends at the first blank line, before the providers.

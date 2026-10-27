@@ -91,6 +91,34 @@ env_of() {
     [ "$(env_of)" = '{"HTTPS_PROXY":"http://corp:3128","NO_PROXY":".corp"}' ]
 }
 
+@test "on then off puts back the proxy settings the user already had" {
+    echo '{"env":{"NO_PROXY":"corp.local","NODE_EXTRA_CA_CERTS":"C:/corp-ca.pem","FOO":"1"}}' > "$SETTINGS"
+    run bash "$SCRIPT" on
+    [ "$status" -eq 0 ]
+    run bash "$SCRIPT" off
+    [ "$status" -eq 0 ]
+    [ "$(env_of)" = '{"FOO":"1","NO_PROXY":"corp.local","NODE_EXTRA_CA_CERTS":"C:/corp-ca.pem"}' ]
+    [ ! -e "$SETTINGS.tokenwar-pxpipe.prev" ]
+}
+
+@test "on fails and says so when settings.json is not valid JSON" {
+    printf '{"env":{"FOO":"1",}}\n' > "$SETTINGS"
+    run bash "$SCRIPT" on
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"could not update"* ]]
+    [[ "$output" != *"Wired"* ]]
+    [ "$(cat "$SETTINGS")" = '{"env":{"FOO":"1",}}' ]
+    # No autostart for a proxy that settings.json does not point at.
+    [ ! -e "$HOME/Startup/tokenwar-pxpipe-desktop.lnk" ]
+}
+
+@test "off does not claim success when settings.json is not valid JSON" {
+    printf '{"env":{"FOO":"1",}}\n' > "$SETTINGS"
+    run bash "$SCRIPT" off
+    [[ "$output" == *"could not update"* ]]
+    [[ "$output" != *"Removed the proxy settings"* ]]
+}
+
 @test "status flags settings wired to a proxy that is down" {
     touch "$HOME/up"
     bash "$SCRIPT" on >/dev/null 2>&1
