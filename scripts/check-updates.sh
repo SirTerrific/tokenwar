@@ -199,10 +199,12 @@ marketplace_version() {
 
 # claude runs from bash, not from node's execSync: on Windows node spawns
 # through cmd.exe, which resolves a different `claude` than this shell's PATH.
+# The list is fetched once into CU_PLUGIN_LIST (below) — each `claude plugin list`
+# spawn costs seconds on Windows, and this function runs once per plugin.
+CU_PLUGIN_LIST=""
 installed_plugin_version() {
-    local slug="$1" list
-    list=$(claude plugin list --json 2>/dev/null) || list=""
-    PLUGIN_LIST_JSON="$list" PLUGIN_QUERY="$slug" node --input-type=module -e "
+    local slug="$1"
+    PLUGIN_LIST_JSON="$CU_PLUGIN_LIST" PLUGIN_QUERY="$slug" node --input-type=module -e "
         const arr = JSON.parse(process.env.PLUGIN_LIST_JSON || '[]');
         const entry = arr.find(p => p.id === process.env.PLUGIN_QUERY);
         process.stdout.write(entry?.version || '');
@@ -296,8 +298,7 @@ tokenwar_versions() {
 rtk_latest_version() {
     if command -v cargo >/dev/null 2>&1; then
         local repo_path
-        repo_path=$(cargo install --list 2>/dev/null \
-            | awk '/^rtk v.* \(.*\):$/ { match($0, /\(([^)]+)\)/, m); print m[1]; exit }' || true)
+        repo_path=$(tw_rtk_dev_path cargo)
         if [[ -n "$repo_path" && -d "$repo_path/.git" ]]; then
             git -C "$repo_path" fetch --quiet 2>/dev/null || true
             local branch ref
@@ -349,6 +350,7 @@ if $force_refresh || ! cache_is_fresh; then
     refresh_ok=true
     refresh_marketplaces || refresh_ok=false
 
+    CU_PLUGIN_LIST=$(claude plugin list --json 2>/dev/null) || CU_PLUGIN_LIST=""
     ctx_installed=$(installed_plugin_version "$SLUG_CTX")
     mem_installed=$(installed_plugin_version "$SLUG_MEM")
     cave_installed=$(installed_plugin_version "$SLUG_CAVE")

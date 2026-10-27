@@ -572,3 +572,45 @@ EOF
     [ "$output" = "0" ]
     grep -q '"KEEP"' "$HOME/.claude/settings.json"
 }
+
+@test "a CLAUDE.md block with BEGIN but no END is left untouched, not truncated" {
+    mock_claude_empty
+    mkdir -p "$HOME/.claude"
+    printf '%s\n' '# mine' '<!-- >>> tokenwar context-mode routing >>> -->' 'user text after' > "$HOME/.claude/CLAUDE.md"
+    cp "$HOME/.claude/CLAUDE.md" "$HOME/before.md"
+    run bash "$SCRIPT" --with-plugins
+    [[ "$output" == *"no END marker"* ]]
+    cmp -s "$HOME/before.md" "$HOME/.claude/CLAUDE.md"
+    run bash "$BATS_TEST_DIRNAME/../uninstall.sh"
+    cmp -s "$HOME/before.md" "$HOME/.claude/CLAUDE.md"
+}
+
+@test "uninstall.sh keeps a symlinked .bashrc a symlink" {
+    is_windows && skip "symlinks need privileges on Windows"
+    mock_claude_empty
+    mkdir -p "$HOME/dotfiles"
+    printf '%s\n' '# my bashrc' > "$HOME/dotfiles/bashrc"
+    ln -s "$HOME/dotfiles/bashrc" "$HOME/.bashrc"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ -L "$HOME/.bashrc" ]
+    grep -q 'tokenwar shell integration' "$HOME/dotfiles/bashrc"
+    run bash "$BATS_TEST_DIRNAME/../uninstall.sh"
+    [ -L "$HOME/.bashrc" ]
+    grep -qx '# my bashrc' "$HOME/dotfiles/bashrc"
+}
+
+@test "a custom TOKENWAR_DIR is used by the rc functions and the statusLine" {
+    mock_claude_empty
+    export TOKENWAR_DIR="$HOME/opt/tw"
+    mkdir -p "$TOKENWAR_DIR/.git" "$TOKENWAR_DIR/scripts"
+    printf '#!/usr/bin/env bash
+' > "$TOKENWAR_DIR/scripts/dummy.sh"
+    printf '# rc\n' > "$HOME/.bashrc"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    grep -qF "$TOKENWAR_DIR/scripts/tokenwar.sh" "$HOME/.bashrc"
+    run grep -c '.claude/skills/tokenwar' "$HOME/.bashrc"
+    [ "$output" = "0" ]
+    grep -qF "$TOKENWAR_DIR/scripts/tokenwar-statusline.sh" "$HOME/.claude/settings.json"
+}

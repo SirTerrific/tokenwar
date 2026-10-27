@@ -282,9 +282,9 @@ context-mode session memory (`ctx_search(source: "compaction"|"user-prompt"|...)
 
 caveman compresses Claude's responses; RTK compresses tool outputs. They operate on different buffers and are complementary — no conflict expected. Verify by listing each tool's compression target. Flag if they ever overlap (e.g., if RTK ever rewrites the LLM response stream).
 
-### Rule R4 — version drift
+### Rule R4 — tools installed
 
-If any tracked tool is more than one minor version behind its latest, report as `WARN`. Old context-mode (< 1.0.107) lacks the `ctx_search` source filter; old RTK (< 0.29) double-counted some commands; etc.
+Report `WARN` if a core plugin, `rtk`, `pxpipe` or `graphify` is not installed. Version freshness is not checked here (it needs the network): use `/tokenwar upgrade`.
 
 ### Rule R5 — provider overlap
 
@@ -304,7 +304,7 @@ Output format:
 R1 bash double-hook       : <PASS|WARN|FAIL>  <evidence>
 R2 memory source overlap  : <PASS|WARN|FAIL>  <evidence>
 R3 output compression     : <PASS|WARN|FAIL>  <evidence>
-R4 version drift          : <PASS|WARN|FAIL>  <evidence>
+R4 tools installed        : <PASS|WARN|FAIL>  <evidence>
 R5 provider overlap       : <PASS|WARN|FAIL>  <evidence>
 
 Verdict: <COMPLEMENTARY|DEGRADED|CONFLICT>

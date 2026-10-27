@@ -227,3 +227,14 @@ tw_data_dir() {
     done
     printf '%s' "${candidates[0]}"
 }
+
+# Path of a dev-built rtk (`cargo install --path <dir>`), empty when rtk is a
+# released binary. Parses `cargo install --list`; sed, not awk: 3-arg match()
+# is gawk-only and fails on mawk (Debian/Ubuntu) and BSD awk (macOS).
+# Usage: tw_rtk_dev_path <cargo-bin>
+tw_rtk_dev_path() {
+    local cargo_bin="${1:-cargo}"
+    command -v "$cargo_bin" >/dev/null 2>&1 || return 0
+    "$cargo_bin" install --list 2>/dev/null \
+        | sed -n 's/^rtk v[^ ]* (\(.*\)):$/\1/p' | head -n 1 || true
+}

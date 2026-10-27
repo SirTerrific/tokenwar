@@ -60,3 +60,46 @@ tw_load_plugin_list() {
         console.log(JSON.stringify(out));
     ' 2>/dev/null || printf '[]'
 }
+
+# Claude Code merges settings.json and settings.local.json at runtime, so every
+# script must read both — otherwise a plugin or hook set only in the local file
+# shows green in one place and missing in another.
+
+# tw_enabled_plugins_json — {"<slug>": true, ...} for every plugin enabled in
+# either settings file. Echoes {} on any failure.
+tw_enabled_plugins_json() {
+    local config_dir="${CLAUDE_CONFIG_DIR:-${HOME}/.claude}"
+    SETTINGS="$(tw_node_path "${config_dir}/settings.json")" \
+    SETTINGS_LOCAL="$(tw_node_path "${config_dir}/settings.local.json")" \
+    node --input-type=module -e '
+        import { readFileSync } from "node:fs";
+        const read = (p) => { try { return JSON.parse(readFileSync(p, "utf8")).enabledPlugins || {}; } catch { return {}; } };
+        const merged = { ...read(process.env.SETTINGS), ...read(process.env.SETTINGS_LOCAL) };
+        const out = {};
+        for (const [k, v] of Object.entries(merged)) if (v) out[k] = true;
+        console.log(JSON.stringify(out));
+    ' 2>/dev/null || echo "{}"
+}
+
+# tw_rtk_hook_wired — "true" when a PreToolUse Bash hook running rtk is
+# registered in either settings file, else "false".
+tw_rtk_hook_wired() {
+    local config_dir="${CLAUDE_CONFIG_DIR:-${HOME}/.claude}"
+    SETTINGS="$(tw_node_path "${config_dir}/settings.json")" \
+    SETTINGS_LOCAL="$(tw_node_path "${config_dir}/settings.local.json")" \
+    node --input-type=module -e '
+        import { readFileSync } from "node:fs";
+        const wiredIn = (path) => {
+            try {
+                const cfg = JSON.parse(readFileSync(path, "utf8"));
+                const pre = (cfg.hooks && cfg.hooks.PreToolUse) || [];
+                return pre.some(h => (h.matcher || "") === "Bash"
+                    && (h.hooks || []).some(x => {
+                        const command = x.command || "";
+                        return command.includes("rtk hook") || command.includes("rtk-rewrite.sh");
+                    }));
+            } catch { return false; }
+        };
+        console.log(wiredIn(process.env.SETTINGS) || wiredIn(process.env.SETTINGS_LOCAL) ? "true" : "false");
+    ' 2>/dev/null || echo "false"
+}

@@ -112,3 +112,12 @@ EOF
     [ "$status" -eq 0 ]
     [[ "$output" == *"was not installed into"* ]]
 }
+
+@test "Linux/macOS: a failed installer download is never executed" {
+    is_windows && skip "Linux/macOS installer path"
+    export TW_RTK_INSTALL_URL="$(file_url "$HOME/missing-installer.sh")"
+    run bash "$SCRIPT"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"could not download"* ]]
+    [ ! -e "$HOME/installer.log" ]
+}

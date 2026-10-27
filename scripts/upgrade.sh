@@ -178,10 +178,7 @@ upgrade_plugin() {
 # belongs to a different project).
 upgrade_rtk() {
     local repo_path=""
-    if command -v "$CARGO_BIN" >/dev/null 2>&1; then
-        repo_path=$("$CARGO_BIN" install --list 2>/dev/null \
-            | awk '/^rtk v.* \(.*\):$/ { match($0, /\(([^)]+)\)/, m); print m[1]; exit }')
-    fi
+    repo_path=$(tw_rtk_dev_path "$CARGO_BIN")
     if [[ -n "$repo_path" && -d "$repo_path/.git" ]]; then
         say "Updating RTK from $repo_path"
         git -C "$repo_path" pull --ff-only && "$CARGO_BIN" install --path "$repo_path" --force

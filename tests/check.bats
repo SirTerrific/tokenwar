@@ -109,7 +109,7 @@ EOF
     PATH="$HOME/bin:/usr/bin:/bin"
 
     run bash "$SCRIPT"
-    [[ "$output" == *"R4 version drift"*WARN* ]]
+    [[ "$output" == *"R4 tools installed"*WARN* ]]
     [[ "$output" == *"not installed: graphify"* ]]
     [ "$status" -eq 1 ]
 }

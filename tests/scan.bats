@@ -380,3 +380,12 @@ JSONL
         if(j.metrics.freshInputTokens!==null || j.metrics.inputTokensPerTurn!==null) throw new Error("missing telemetry must be null");
       })'
 }
+
+@test "pricingFor flags a model with no list price instead of passing it off as Claude" {
+    run node --input-type=module -e '
+        import { pricingFor } from "./scripts/lib/economics.mjs";
+        const p = pricingFor("gpt-5-codex"), q = pricingFor("claude-opus-5");
+        console.log(p.assumedFor, q.assumedFor === undefined ? "known" : "wrong");'
+    [ "$status" -eq 0 ]
+    [ "$output" = "gpt-5-codex known" ]
+}

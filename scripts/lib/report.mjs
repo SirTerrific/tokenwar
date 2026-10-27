@@ -65,6 +65,9 @@ export function renderTerminal(report) {
   out.push("");
   out.push(c(BOLD, "  TOKENWAR SCAN") + c(DIM, `  ${meta.sessions} sessions · ${meta.turns.toLocaleString()} turns · ${meta.window}`));
   out.push(c(DIM, "  " + "─".repeat(72)));
+  if (meta.priceAssumedFor) {
+    out.push(c(DIM, `  Note: no list price for "${meta.priceAssumedFor}"; $ figures assume ${meta.model} rates.`));
+  }
   out.push("");
 
   // Always state which clients the numbers cover. A client that was detected

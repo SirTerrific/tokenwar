@@ -46,8 +46,16 @@ mkdir -p "$RTK_LOCAL_BIN" || { warn "cannot create $RTK_LOCAL_BIN"; exit 1; }
 
 if ! tw_is_windows; then
     say "Installing the latest RTK via its official installer"
-    curl -fsSL --max-time "$RTK_HTTP_TIMEOUT_SECS" "$RTK_INSTALL_URL" \
-        | RTK_INSTALL_DIR="$RTK_LOCAL_BIN" sh || { warn "rtk installer failed — see https://github.com/rtk-ai/rtk"; exit 1; }
+    # Download to a file first: `curl | sh` would run a truncated script if the
+    # transfer is cut. The script still comes from rtk's branch (no published
+    # checksum for it); only the Windows path below is sha256-checked.
+    installer="$(mktemp)" || { warn "mktemp failed"; exit 1; }
+    trap 'rm -f "$installer"' EXIT
+    curl -fsSL --max-time "$RTK_HTTP_TIMEOUT_SECS" -o "$installer" "$RTK_INSTALL_URL" \
+        && [[ -s "$installer" ]] \
+        || { warn "could not download the rtk installer — see https://github.com/rtk-ai/rtk"; exit 1; }
+    RTK_INSTALL_DIR="$RTK_LOCAL_BIN" sh "$installer" \
+        || { warn "rtk installer failed — see https://github.com/rtk-ai/rtk"; exit 1; }
     exit 0
 fi
 

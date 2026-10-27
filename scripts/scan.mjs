@@ -353,6 +353,7 @@ function main() {
       turns: aggregate.turns,
       window: `${args.days}d`,
       model: price.id,
+      priceAssumedFor: price.assumedFor || null,
       clients: perClient,
       generatedAt: new Date().toISOString(),
     },

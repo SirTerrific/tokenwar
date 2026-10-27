@@ -241,3 +241,13 @@ seed_all_sources() {
     run bash "$BATS_TEST_DIRNAME/../scripts/tokenwar.sh" copilot check
     [[ "$output" == *"# /tokenwar copilot"* ]]
 }
+
+@test "a skill left stale by a plugin upgrade is reported as not wired" {
+    mock_copilot
+    seed_all_sources
+    run bash "$SCRIPT" wire --yes
+    [ "$status" -eq 0 ]
+    printf 'new rules\n' >> "$CLAUDE_CONFIG_DIR/plugins/cache/caveman/caveman/766dce6b1394/skills/caveman/SKILL.md"
+    run bash "$SCRIPT" check
+    [ "$status" -eq 1 ]
+}

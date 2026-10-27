@@ -79,7 +79,8 @@ readonly GRAPHIFY_BENCHMARK_TIMEOUT_SECS=30
 # These value the tool-level monthly section, which is Claude-specific: input
 # list price from anthropic.com/pricing, checked 2026-10-04. Prices move with
 # each model generation — re-check before trusting the $ column.
-readonly CLAUDE_INPUT_USD_PER_MTOK="4.00"
+# Index 0 of the provider registry is Claude: one price, one place.
+readonly CLAUDE_INPUT_USD_PER_MTOK="$(provider_input_usd_per_mtok 0)"
 readonly CLAUDE_LABEL="Claude Opus 5.5"
 readonly MONTH_ROW_RE='^[0-9]{4}-[0-9]{2}[[:space:]]'
 
@@ -658,6 +659,12 @@ if $has_any_monthly; then
     fi
 
     # ── Per-provider monthly (Codex, Gemini, Kimi, opencode, ...) ──
+    # These rows are tokens CONSUMED (input+output+reasoning) valued at the
+    # input rate: spend-equivalent usage, not a saving. Say so in its own heading.
+    if (( ${#monthly_providers[@]} > 0 )); then
+        echo "${COL_BOLD}Provider usage — API-equivalent \$ of tokens consumed (not a saving)${COL_RESET}"
+        echo ""
+    fi
     for pi in "${monthly_providers[@]}"; do
         pid=$(provider_id "$pi")
         pname=$(provider_name "$pi")
@@ -666,7 +673,7 @@ if $has_any_monthly; then
         monthly_raw=$(provider_telemetry_monthly "$pi")
 
         printf "  ${COL_DIM}%s · input \$%s/M${COL_RESET}\n" "$plabel" "$pprice"
-        printf "  %-9s  %-10s  %s\n" "month" "tokens" "${pid} \$"
+        printf "  %-9s  %-10s  %s\n" "month" "tokens" "${pid} \$ used"
         echo   "  ─────────────────────────────────────────────────────────────"
 
         PROVIDER_MONTHLY="$monthly_raw" \
@@ -695,7 +702,12 @@ if $has_any_monthly; then
         echo ""
     done
 
-    printf "  ${COL_DIM}Savings are input-side (context offload), so output price is not applied.${COL_RESET}\n"
+    if [[ -n "$tools_monthly_raw" ]]; then
+        printf "  ${COL_DIM}Savings are input-side (context offload), so output price is not applied.${COL_RESET}\n"
+    fi
+    if (( ${#monthly_providers[@]} > 0 )); then
+        printf "  ${COL_DIM}Provider rows are usage, not savings: all tokens (incl. output) at the input rate.${COL_RESET}\n"
+    fi
     printf "  ${COL_DIM}Provider prices should be verified against official pricing pages.${COL_RESET}\n"
 fi
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # tokenwar check — verify core tool lanes are complementary, not conflicting.
 #
-# Four rules:
+# Five rules:
 #   R1 bash double-hook   — RTK and context-mode both want to wrap bash
 #   R2 memory overlap     — claude-mem and context-mode both store recall
 #   R3 output compression — caveman vs RTK target overlap
-#   R4 version drift      — any tool more than one minor behind
+#   R4 tools installed    — every core tool is present (versions: see /tokenwar upgrade)
 #   R5 provider overlap   — active provider CLIs must use disjoint config dirs
 #
 # Exit 0 if all PASS, 1 if any WARN or FAIL.
@@ -68,12 +68,15 @@ check_r1() {
         echo "$RES_WARN|settings.json missing"; return
     fi
     local result
-    result=$(SETTINGS="$(tw_node_path "$SETTINGS_FILE")" node --input-type=module -e '
+    # Hooks from settings.json AND settings.local.json: Claude Code merges both.
+    result=$(SETTINGS="$(tw_node_path "$SETTINGS_FILE")" SETTINGS_LOCAL="$(tw_node_path "${SETTINGS_FILE%.json}.local.json")" node --input-type=module -e '
         import { readFileSync } from "fs";
         let cfg;
         try { cfg = JSON.parse(readFileSync(process.env.SETTINGS,"utf8")); }
         catch { console.log("FAIL|cannot parse settings.json"); process.exit(0); }
-        const pre = (cfg.hooks && cfg.hooks.PreToolUse) || [];
+        let local = {};
+        try { local = JSON.parse(readFileSync(process.env.SETTINGS_LOCAL,"utf8")); } catch {}
+        const pre = [...((cfg.hooks && cfg.hooks.PreToolUse) || []), ...((local.hooks && local.hooks.PreToolUse) || [])];
         const bashHooks = pre.filter(h => (h.matcher||"") === "Bash")
                              .flatMap(h => h.hooks || []);
         if (bashHooks.length === 0) {
@@ -143,13 +146,17 @@ check_r5() {
         echo "$RES_PASS|only ${#active_providers[@]} active provider(s) (${active_providers[*]:-none}) — no overlap possible"
         return
     fi
-    # Multiple active providers — verify config dirs are disjoint (all providers
-    # use separate dirs by convention, so this is a sanity check).
+    # Multiple active providers: two of them sharing one config dir is a collision.
+    local shared
+    shared=$(printf '%s\n' "${active_dirs[@]}" | sort | uniq -d | head -n 1)
+    if [[ -n "$shared" ]]; then
+        echo "$RES_WARN|${#active_providers[@]} active providers (${active_providers[*]}) share the config dir $shared"
+        return
+    fi
     echo "$RES_PASS|${#active_providers[@]} active providers (${active_providers[*]}), disjoint config dirs — no tool overlap"
 }
-# Heuristic: read installed versions; flag if any tool is missing entirely.
-# Real "latest" comparison requires network; we only flag installed-but-old
-# or not-installed cases here.
+# Flag any core tool that is not installed. Versions are not compared here
+# (a "latest" lookup needs the network): see /tokenwar upgrade.
 check_r4() {
     if [[ ! -f "$INSTALLED_PLUGINS" ]]; then
         echo "$RES_FAIL|installed_plugins.json missing"
@@ -181,7 +188,7 @@ for rule_id in R1 R2 R3 R4 R5; do
         R1) raw=$(check_r1); label="R1 bash double-hook" ;;
         R2) raw=$(check_r2); label="R2 memory source overlap" ;;
         R3) raw=$(check_r3); label="R3 output compression" ;;
-        R4) raw=$(check_r4); label="R4 version drift" ;;
+        R4) raw=$(check_r4); label="R4 tools installed" ;;
         R5) raw=$(check_r5); label="R5 provider overlap" ;;
     esac
     result="${raw%%|*}"

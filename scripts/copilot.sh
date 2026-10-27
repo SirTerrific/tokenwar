@@ -125,6 +125,10 @@ claude_mem_mcp_source() { local d; d=$(newest_plugin_dir "$CLAUDE_MEM_CACHE_REL"
 
 skill_installed() { [[ -f "${COPILOT_SKILLS_DIR}/$1/${SKILL_MANIFEST}" ]]; }
 
+# Installed AND identical to the plugin's current skill: after a plugin upgrade
+# the old copy would otherwise still read as wired while Copilot uses stale rules.
+skill_current() { skill_installed "$1" && cmp -s "$2" "${COPILOT_SKILLS_DIR}/$1/${SKILL_MANIFEST}"; }
+
 # Is <name> already a server in Copilot's user MCP config? Read the file rather
 # than shelling out to `copilot mcp list`: the check must work with the CLI
 # absent, and the file is the documented user-scope source.
@@ -152,12 +156,12 @@ state_graphify() {
 
 state_caveman() {
     [[ -n "$(caveman_skill_source)" && -f "$(caveman_skill_source)" ]] || { echo "$STATE_SOURCE_MISSING"; return; }
-    skill_installed caveman && echo "$STATE_OK" || echo "$STATE_NOT_WIRED"
+    skill_current caveman "$(caveman_skill_source)" && echo "$STATE_OK" || echo "$STATE_NOT_WIRED"
 }
 
 state_ponytail() {
     [[ -n "$(ponytail_skill_source)" && -f "$(ponytail_skill_source)" ]] || { echo "$STATE_SOURCE_MISSING"; return; }
-    skill_installed ponytail && echo "$STATE_OK" || echo "$STATE_NOT_WIRED"
+    skill_current ponytail "$(ponytail_skill_source)" && echo "$STATE_OK" || echo "$STATE_NOT_WIRED"
 }
 
 state_claude_mem() {

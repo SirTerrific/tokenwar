@@ -35,7 +35,18 @@ set -euo pipefail
 REPO_URL="${TOKENWAR_REPO_URL:-https://github.com/SirTerrific/tokenwar}"
 INSTALL_DIR="${TOKENWAR_DIR:-$HOME/.claude/skills/tokenwar}"
 SETTINGS_JSON="$HOME/.claude/settings.json"
-STATUSLINE_CMD='bash ~/.claude/skills/tokenwar/scripts/tokenwar-statusline.sh'
+# How the statusLine and the rc functions spell the install dir. The default keeps
+# the portable ~ / $HOME form; a custom TOKENWAR_DIR is written out in full so
+# every command points at the checkout that was actually cloned.
+if [[ "$INSTALL_DIR" == "$HOME/.claude/skills/tokenwar" ]]; then
+    TW_STATUS_DIR='~/.claude/skills/tokenwar'
+    TW_RC_DIR='$HOME/.claude/skills/tokenwar'
+    STATUSLINE_CMD='bash ~/.claude/skills/tokenwar/scripts/tokenwar-statusline.sh'
+else
+    TW_STATUS_DIR="$INSTALL_DIR"
+    TW_RC_DIR="$INSTALL_DIR"
+    STATUSLINE_CMD="bash '$INSTALL_DIR/scripts/tokenwar-statusline.sh'"
+fi
 
 readonly CLAUDE_BIN="claude"
 # The 4 Claude Code plugins of the stack, paired with the upstream marketplace
@@ -235,7 +246,7 @@ chmod +x "$INSTALL_DIR"/scripts/*.sh
 if tw_is_windows; then
     win_bash="$(tw_win_bash_path || printf '')"
     if [[ -n "$win_bash" ]]; then
-        STATUSLINE_CMD="\"${win_bash}\" -c '~/.claude/skills/tokenwar/scripts/tokenwar-statusline.sh'"
+        STATUSLINE_CMD="\"${win_bash}\" -c '${TW_STATUS_DIR}/scripts/tokenwar-statusline.sh'"
     else
         warn "could not locate a Windows bash.exe — leaving the POSIX statusLine command; install Git for Windows and re-run"
     fi
@@ -280,6 +291,10 @@ wire_shell_rc() {
     [[ -f "$rc_file" ]] || return 0
 
     # Strip any previous tokenwar block (between markers) to a temp copy.
+    # A BEGIN marker with no END would make awk drop the rest of the file.
+    if grep -qxF "$TW_RC_BEGIN" "$rc_file" && ! grep -qxF "$TW_RC_END" "$rc_file"; then
+        warn "$rc_file: tokenwar block has no END marker - not touching it"; return 1
+    fi
     local tmp
     tmp="$(mktemp "${rc_file}.tokenwar.XXXXXX")" || { warn "mktemp failed for $rc_file"; return 1; }
     TW_BEGIN="$TW_RC_BEGIN" TW_END="$TW_RC_END" awk '
@@ -295,20 +310,22 @@ wire_shell_rc() {
     {
         printf '%s\n' "$TW_RC_BEGIN"
         printf '%s\n' 'case ":$PATH:" in *":'"$USER_LOCAL_BIN"':"*) : ;; *) export PATH="'"$USER_LOCAL_BIN"':$PATH" ;; esac'
-        printf '%s\n' "tokenwar() { command bash \"\$HOME/.claude/skills/tokenwar/scripts/tokenwar.sh\" \"\$@\"; }"
+        printf '%s\n' "tokenwar() { command bash \"${TW_RC_DIR}/scripts/tokenwar.sh\" \"\$@\"; }"
         # Claude Code behind pxpipe (pxpipe-claude.sh starts the proxy, or falls
         # back to plain claude). Shell-only: the desktop app never reads this.
-        printf '%s\n' "claude() { command bash \"\$HOME/.claude/skills/tokenwar/scripts/pxpipe-claude.sh\" \"\$@\"; }"
+        printf '%s\n' "claude() { command bash \"${TW_RC_DIR}/scripts/pxpipe-claude.sh\" \"\$@\"; }"
         local provider_cli
         for provider_cli in "${WRAPPED_PROVIDER_CLIS[@]}"; do
-            printf '%s\n' "${provider_cli}() { command bash \"\$HOME/.claude/skills/tokenwar/scripts/tokenwar-launch.sh\" ${provider_cli} \"\$@\"; command ${provider_cli} \"\$@\"; }"
+            printf '%s\n' "${provider_cli}() { command bash \"${TW_RC_DIR}/scripts/tokenwar-launch.sh\" ${provider_cli} \"\$@\"; command ${provider_cli} \"\$@\"; }"
         done
         printf '%s\n' "$TW_RC_END"
     } >> "$tmp"
 
-    if ! mv -f "$tmp" "$rc_file"; then
+    # cat > keeps a symlinked dotfile a symlink and keeps its mode (mv would not).
+    if ! cat "$tmp" > "$rc_file"; then
         warn "could not write $rc_file"; rm -f "$tmp"; return 1
     fi
+    rm -f "$tmp"
     say "Wired tokenwar/claude/codex/gemini/kimi/opencode/copilot shell functions in $rc_file"
 }
 
@@ -325,6 +342,10 @@ wire_shell_rc() {
 wire_claude_md() {
     mkdir -p "$(dirname "$CLAUDE_MD")" && touch "$CLAUDE_MD" \
         || { warn "could not create $CLAUDE_MD"; return 1; }
+    # A BEGIN marker with no END would make awk drop the rest of the file.
+    if grep -qxF "$TW_MD_BEGIN" "$CLAUDE_MD" && ! grep -qxF "$TW_MD_END" "$CLAUDE_MD"; then
+        warn "$CLAUDE_MD: tokenwar block has no END marker - not touching it"; return 1
+    fi
     local tmp
     tmp="$(mktemp "${CLAUDE_MD}.tokenwar.XXXXXX")" || { warn "mktemp failed for $CLAUDE_MD"; return 1; }
     TW_BEGIN="$TW_MD_BEGIN" TW_END="$TW_MD_END" awk '
@@ -339,9 +360,10 @@ wire_claude_md() {
         printf '%s\n' 'Keep Bash for short output and for commands that change state (git commit/push, mkdir, mv). RTK still compresses every Bash call; the two do not conflict.'
         printf '%s\n' "$TW_MD_END"
     } >> "$tmp"
-    if ! mv -f "$tmp" "$CLAUDE_MD"; then
+    if ! cat "$tmp" > "$CLAUDE_MD"; then
         warn "could not write $CLAUDE_MD"; rm -f "$tmp"; return 1
     fi
+    rm -f "$tmp"
     say "Wired context-mode routing into $CLAUDE_MD"
 }
 

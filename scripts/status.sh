@@ -69,12 +69,14 @@ done
 plugin_state() {
     local slug="$1"
     load_plugin_list
-    PLUGIN_QUERY="$slug" PLUGIN_LIST_JSON="$PLUGIN_LIST_JSON" node --input-type=module -e "
+    # Enabled in either settings file counts, same rule as the statusline.
+    PLUGIN_QUERY="$slug" PLUGIN_LIST_JSON="$PLUGIN_LIST_JSON" ENABLED_JSON="$(tw_enabled_plugins_json)" node --input-type=module -e "
         const arr = JSON.parse(process.env.PLUGIN_LIST_JSON || '[]');
+        const enabled = JSON.parse(process.env.ENABLED_JSON || '{}');
         const slug = process.env.PLUGIN_QUERY;
         const entry = arr.find(p => p.id === slug);
         if (!entry)         { console.log('$STATUS_MISSING'); process.exit(0); }
-        if (!entry.enabled) { console.log('$STATUS_DISABLED'); process.exit(0); }
+        if (!entry.enabled && enabled[slug] !== true) { console.log('$STATUS_DISABLED'); process.exit(0); }
         console.log('$STATUS_OK');
     " 2>/dev/null || echo "$STATUS_UNKNOWN"
 }

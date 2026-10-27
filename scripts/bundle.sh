@@ -124,20 +124,22 @@ fi
 }
 
 status=0
+# toggle.sh exits 3 for rtk/pxpipe/graphify: standalone tools, not plugins, so
+# it cannot switch them. That means "do it by hand", not failure.
+apply_tool() {
+    local action="$1" past="$2" tool="$3" rc=0 out
+    out="$(bash "$TOGGLE" "$action" "$tool" 2>&1)" || rc=$?
+    case "$rc" in
+        0) printf '  %-9s %s\n' "$past" "$tool" ;;
+        3) printf '  manual    %s (not a plugin: %s)\n' "$tool" "$(printf '%s' "$out" | tail -n 1)" ;;
+        *) printf '  skipped   %s (not installed)\n' "$tool"; return 1 ;;
+    esac
+}
 for tool in $enable_list; do
-    if bash "$TOGGLE" enable "$tool" >/dev/null 2>&1; then
-        printf '  enabled   %s\n' "$tool"
-    else
-        printf '  skipped   %s (not installed)\n' "$tool"
-        status=1
-    fi
+    apply_tool enable enabled "$tool" || status=1
 done
 for tool in $disable_list; do
-    if bash "$TOGGLE" disable "$tool" >/dev/null 2>&1; then
-        printf '  disabled  %s\n' "$tool"
-    else
-        printf '  skipped   %s (not installed)\n' "$tool"
-    fi
+    apply_tool disable disabled "$tool" || true
 done
 
 printf '\n  Bundle %s applied. Start a new session for a clean cache prefix.\n\n' "$name"

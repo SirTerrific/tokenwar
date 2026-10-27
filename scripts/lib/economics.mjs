@@ -40,7 +40,9 @@ export function pricingFor(model) {
       if (model.includes(key.replace("claude-", ""))) return { id: key, ...PRICING[key] };
     }
   }
-  return { id: DEFAULT_MODEL, ...PRICING[DEFAULT_MODEL] };
+  // Unknown model (e.g. a Codex gpt-* id): borrow the default Claude price so
+  // the maths still runs, but flag it. Callers must say the $ figures are assumed.
+  return { id: DEFAULT_MODEL, ...PRICING[DEFAULT_MODEL], assumedFor: model || null };
 }
 
 export function dollars(tokens, perMillion) {

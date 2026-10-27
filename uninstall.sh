@@ -92,6 +92,9 @@ unwire_block() {
     local rc_file="$1" begin="${2:-$TW_RC_BEGIN}" end="${3:-$TW_RC_END}" label="${4:-shell integration}"
     [[ -f "$rc_file" ]] || return 0
     grep -qF "$begin" "$rc_file" 2>/dev/null || return 0
+    if ! grep -qxF "$end" "$rc_file" 2>/dev/null; then
+        warn "$rc_file: tokenwar block has no END marker - not touching it"; return 1
+    fi
     local tmp
     tmp="$(mktemp "${rc_file}.tokenwar.XXXXXX")" || { warn "mktemp failed for $rc_file"; return 1; }
     TW_BEGIN="$begin" TW_END="$end" awk '
@@ -99,7 +102,9 @@ unwire_block() {
         skip != 1 { print }
         $0 == ENVIRON["TW_END"]   { skip = 0 }
     ' "$rc_file" > "$tmp" || { warn "could not rewrite $rc_file"; rm -f "$tmp"; return 1; }
-    if mv -f "$tmp" "$rc_file"; then
+    # cat > keeps a symlinked dotfile a symlink and keeps its mode.
+    if cat "$tmp" > "$rc_file"; then
+        rm -f "$tmp"
         say "Removed tokenwar ${label} from $rc_file"
     else
         warn "could not write $rc_file"; rm -f "$tmp"; return 1

@@ -17,8 +17,8 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
 
-# shellcheck source=lib/osdetect.sh
-source "${SCRIPT_DIR}/lib/osdetect.sh"
+# shellcheck source=lib/plugins.sh
+source "${SCRIPT_DIR}/lib/plugins.sh"
 
 # On Windows this script is spawned by Claude Code, a native Windows process, so
 # it inherits the Windows PATH and not a Git Bash login environment. rtk installs
@@ -40,6 +40,8 @@ TW_USER="$(tw_user)"
 readonly TW_USER
 readonly PLUGIN_CACHE="${CACHE_DIR}/tokenwar-plugins-${TW_USER}.json"
 readonly RTK_GAIN_CACHE="${CACHE_DIR}/tokenwar-rtk-gain-${TW_USER}.txt"
+readonly PXPIPE_VER_CACHE="${CACHE_DIR}/tokenwar-pxpipe-ver-${TW_USER}.txt"
+readonly GRAPHIFY_VER_CACHE="${CACHE_DIR}/tokenwar-graphify-ver-${TW_USER}.txt"
 mkdir -p "$CACHE_DIR" 2>/dev/null || true
 readonly RTK_BIN="rtk"
 readonly PXPIPE_BIN="pxpipe"
@@ -141,7 +143,10 @@ cache_or_run() {
         printf '%s' "$fresh"
         return 0
     fi
-    # Degraded: fall back to stale cache rather than empty result
+    # Degraded: fall back to stale cache rather than empty result. Touch the file
+    # (creating an empty one if none) so a failing command is retried once per TTL,
+    # not on every render — each retry can cost the whole timeout.
+    touch "$cache_file" 2>/dev/null || true
     if [[ -f "$cache_file" ]]; then
         cat "$cache_file"
     fi
@@ -154,11 +159,11 @@ maybe_refresh_updates() {
     local now cache_age lock_age
     now=$(date +%s)
     if [[ -f "$UPDATE_CACHE" ]]; then
-        cache_age=$(( now - $(stat -c %Y "$UPDATE_CACHE" 2>/dev/null || echo 0) ))
+        cache_age=$(( now - $(stat -c %Y "$UPDATE_CACHE" 2>/dev/null || stat -f %m "$UPDATE_CACHE" 2>/dev/null || echo 0) ))
         (( cache_age < UPDATE_CACHE_TTL_SECS )) && return 0
     fi
     if [[ -f "$UPDATE_REFRESH_LOCK" ]]; then
-        lock_age=$(( now - $(stat -c %Y "$UPDATE_REFRESH_LOCK" 2>/dev/null || echo 0) ))
+        lock_age=$(( now - $(stat -c %Y "$UPDATE_REFRESH_LOCK" 2>/dev/null || stat -f %m "$UPDATE_REFRESH_LOCK" 2>/dev/null || echo 0) ))
         (( lock_age < UPDATE_REFRESH_LOCK_TTL_SECS )) && return 0
     fi
     [[ -f "$UPDATE_CHECK_SCRIPT" ]] || return 0
@@ -197,14 +202,7 @@ plugin_list_json="${plugin_list_json:-[]}"
 # CC's `plugin list` only reads settings.json — but CC actually merges both
 # at runtime, so a wipe of settings.json's enabledPlugins shouldn't paint
 # a still-loaded plugin red.
-enabled_plugins_json=$(SETTINGS="$(tw_node_path "$SETTINGS_JSON")" SETTINGS_LOCAL="$(tw_node_path "$SETTINGS_LOCAL_JSON")" node --input-type=module -e '
-    import { readFileSync } from "fs";
-    const read = (p) => { try { return JSON.parse(readFileSync(p,"utf8")).enabledPlugins || {}; } catch { return {}; } };
-    const merged = { ...read(process.env.SETTINGS), ...read(process.env.SETTINGS_LOCAL) };
-    const out = {};
-    for (const [k,v] of Object.entries(merged)) if (v) out[k] = true;
-    console.log(JSON.stringify(out));
-' 2>/dev/null || echo "{}")
+enabled_plugins_json=$(tw_enabled_plugins_json)
 
 # Returns "version|enabled" e.g. "1.0.107|true". version="-" if not installed.
 plugin_lookup() {
@@ -240,23 +238,7 @@ IFS='|' read -r cave_ver cave_enabled <<<"$(plugin_lookup "$SLUG_CAVE")"
 rtk_saved="-"
 rtk_active="false"
 if command -v "$RTK_BIN" >/dev/null 2>&1; then
-    rtk_hook_wired=$(SETTINGS="$(tw_node_path "$SETTINGS_JSON")" SETTINGS_LOCAL="$(tw_node_path "$SETTINGS_LOCAL_JSON")" node --input-type=module -e '
-        import { readFileSync } from "fs";
-        const wiredIn = (path) => {
-            try {
-                const cfg = JSON.parse(readFileSync(path, "utf8"));
-                const pre = (cfg.hooks && cfg.hooks.PreToolUse) || [];
-                return pre.some(h => (h.matcher||"") === "Bash"
-                    && (h.hooks||[]).some(x => {
-                        const command = x.command || "";
-                        return command.includes("rtk hook")
-                            || command.includes("rtk-rewrite.sh");
-                    }));
-            } catch { return false; }
-        };
-        const wired = wiredIn(process.env.SETTINGS) || wiredIn(process.env.SETTINGS_LOCAL);
-        console.log(wired ? "true" : "false");
-    ' 2>/dev/null || echo "false")
+    rtk_hook_wired=$(tw_rtk_hook_wired)
     if [[ "$rtk_hook_wired" == "true" ]]; then
         rtk_out=$(cache_or_run "$RTK_GAIN_CACHE" "$CACHE_TTL_SECS" "$LOOKUP_TIMEOUT_SECS" "$RTK_BIN" gain)
         rtk_saved=$(echo "$rtk_out" | awk '/Tokens saved:/ {print $3; exit}')
@@ -270,7 +252,7 @@ fi
 pxpipe_ver="-"
 pxpipe_active="false"
 if command -v "$PXPIPE_BIN" >/dev/null 2>&1; then
-    pxpipe_ver=$("$PXPIPE_BIN" --version 2>/dev/null | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}')
+    pxpipe_ver=$(cache_or_run "$PXPIPE_VER_CACHE" "$CACHE_TTL_SECS" "$LOOKUP_TIMEOUT_SECS" "$PXPIPE_BIN" --version | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}')
     pxpipe_ver="${pxpipe_ver//$'\r'/}"
     pxpipe_ver="${pxpipe_ver:--}"
     pxpipe_active="true"
@@ -281,7 +263,7 @@ fi
 graphify_ver="-"
 graphify_active="false"
 if command -v "$GRAPHIFY_BIN" >/dev/null 2>&1; then
-    graphify_ver=$("$GRAPHIFY_BIN" --version 2>/dev/null | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}')
+    graphify_ver=$(cache_or_run "$GRAPHIFY_VER_CACHE" "$CACHE_TTL_SECS" "$LOOKUP_TIMEOUT_SECS" "$GRAPHIFY_BIN" --version | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}')
     # graphify is a Python CLI: on Windows its stdout ends lines with \r\n.
     graphify_ver="${graphify_ver//$'\r'/}"
     graphify_ver="${graphify_ver:--}"
