@@ -4,8 +4,8 @@ title: Savings accounting
 description: How `tokenwar gain` measures per-tool savings from each tool's own telemetry, reads per-provider usage, values savings in dollars month by month, and prices cached prompt blocks with the cache-aware cost model.
 tags: [gain, telemetry, pricing, economics, providers]
 verified:
-  - by: openwiki/0.7.0
-    at: 2026-10-05T04:01:37.525Z
+  - by: openwiki/0.7.2
+    at: 2026-10-27T17:51:57.686Z
 sources:
   - id: openwiki-source-d58dc385f90d98331b19009a
     resource: repo://scripts/gain.sh
@@ -15,7 +15,7 @@ sources:
     resource: repo://scripts/lib/providers.sh
   - id: openwiki-source-393eb6db4d0e8f351ac6d2ad
     resource: repo://tests/gain.bats
-generated: { by: "claude-code", at: "2026-10-05T04:01:37.525Z" }
+generated: { by: "claude-code", at: "2026-10-27T17:51:57.686Z" }
 ---
 
 # Savings accounting
@@ -53,7 +53,7 @@ All three SQLite stores are read through `tw_sqlite_rows`. That function **runs*
 After the tables, `gain` shows a **Monthly value** section:
 
 1. **Claude Code tools.** `tools_monthly` returns one `YYYY-MM <tool> <tokens>` line per month for RTK (from `rtk gain --monthly`), context-mode (from event `created_at` and source `indexed_at`), and claude-mem (from observation `created_at`). It uses the same stores and formulas as the table above, so the months add up to the table's figures. Each month is priced at `CLAUDE_INPUT_USD_PER_MTOK` (Claude Opus 5.5, $4.00/M input list price, checked 2026-10-04). The section is omitted when no tool has monthly data.
-2. **Providers.** Providers with dated telemetry are priced at `provider_input_usd_per_mtok`. Every rate except Claude's is marked `VERIFY` in the source. Copilot's dollar figure is an API-equivalent valuation, never an invoice: Copilot is billed per seat plus AI credits, not per token.
+2. **Providers.** Providers with dated telemetry are priced at `provider_input_usd_per_mtok`. Every rate except Claude's is marked `VERIFY` in the source. These rows count **tokens consumed** (input + output, plus reasoning for Codex and opencode), valued at the input rate, so they are usage, not savings. `gain.sh` prints them under their own "API-equivalent $ used" heading with the column header `$ used` and a note saying so. Copilot's dollar figure is an API-equivalent valuation, never an invoice: Copilot is billed per seat plus AI credits, not per token.
 
 The dollar figure is the **API-equivalent value** of the saved tokens, meaning what they would have cost at the input list price. It does not reflect a subscription bill. Output is not priced because the savings are on the input side.
 
@@ -63,7 +63,7 @@ The dollar figure is the **API-equivalent value** of the saved tokens, meaning w
 
 - Multipliers relative to base input price: cache read `0.1` (default), 5-minute write `1.25`, 1-hour write `2.0`.
 - `PRICING` (checked 2026-10-04) lists Fable 5.1 ($10/$50), Opus 5.5 ($4/$20), Sonnet 5.5 ($2/$10), and Haiku 4.5 ($1/$5). Fable and Opus have their own discounted cache-read rates ($0.025/M and $0.05/M), so `cacheReadRate(price)` uses a model's own rate when it has one and otherwise the default multiplier.
-- `pricingFor(model)` maps a full model id to its family. Unknown ids default to `claude-sonnet`.
+- `pricingFor(model)` maps a full model id to its family. Unknown ids (for example a Codex `gpt-*` id) borrow the `claude-sonnet` price so the maths still runs, but the result carries `assumedFor: <model>`. `scan` prints a note when this happens, because those dollar figures are assumed, not real rates.
 - `observedCost` prices the usage the provider reported; `uncachedCost` shows what the same traffic would cost with no caching. `prefixBlockCost` and `invalidationCost` value a static block and the cost of changing it (rewritten at 1.25× instead of read at the cache rate). `windowOccupancy` gives the share of the context window a block takes up, which is a separate fact from its cost.
 
 ## Keeping prices honest

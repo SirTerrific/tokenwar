@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:666410954628776f38907a133458add3971ac04e48db734041eb9484c18e3b3c",
+  "pageVersion": "sha256:3ae7368d93225ce7cbf9374d94a35e02601a41aca86972c88bbd698138b76357",
   "claims": [
     {
       "id": "claim_ad9d4503fd35437193c0f70ed3d28cd6",
@@ -21,7 +21,7 @@
       "statement": "Latest versions come from each component's own registry (npm, PyPI, GitHub releases, marketplace manifests) with a 10 second timeout and overridable URLs, and a failed lookup yields unknown.",
       "evidence": [
         {
-          "resource": "repo://scripts/check-updates.sh#L214-L241",
+          "resource": "repo://scripts/check-updates.sh#L231-L258",
           "version": "repo-lines-v1:sha256:c095bc2ff41f88ae35c9564b5ec8b57d9910161cf1d82b7f87dfcd970f527663:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdkY2ExMGIyNGM4ZjQxYmMxNDQ2NjlhZThjNWUwNzdjYzIwODQyMjI0ZjY4ZGE2NjA4YTg0YjA4MTg1NTZlOTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3ODBkYzgwOTk4NmExMGU2NTNmZTUwOWM0M2NlMjExYzFiNjBmZjliZDViNzczMGQwMjY1MjEyN2VjNzhiM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdlZWM2YzY2ZTMzOGU2ZGEwNTIwNTY3ZDIyOGE5YjI1YmVmOGMzYjgyMjZjODA0ZWJkZGEyZDFjYzc2MzJiM2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ0OWQyOTM0NGE3NjRjOWUzNmRlZGZmNTY4MzQ1N2RkZGIzYjQ0MDc1N2NhY2M1MDRmYzIwYTQwODJiM2RjNGQifQ"
         },
         {
@@ -45,18 +45,22 @@
       "statement": "classify compares plain semver with sort -V, treats equal as up-to-date, and assumes update-available for differing non-semver strings such as git SHAs.",
       "evidence": [
         {
-          "resource": "repo://scripts/check-updates.sh#L298-L326",
-          "version": "repo-lines-v1:sha256:4cbe4164e6eaa79ad78e054d68f5cb6ef448d7e3748aec2773a3bb11e4670521:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYxMmJkN2Q2ZjdlYzM3YzM2YWViYTgwMDEwNTU3YjNmY2U1NWEzMWFkOWY3MzI2OWRmMzE2ZDc5N2JmMjI1N2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQzYTEyMjg2ZGVjMTIwN2MzM2Q3Y2JjNDY5Yzc1NjM3YjBhMWFiMjk5ZmMxNGNmNDI1OWM5NWI3MmNkODI0YjkifQ"
+          "resource": "repo://scripts/check-updates.sh#L314-L348",
+          "version": "repo-lines-v1:sha256:2843910351a3283ab06654381f7998a325ffaefc488f2988afa206fb56f4d334:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYxMmJkN2Q2ZjdlYzM3YzM2YWViYTgwMDEwNTU3YjNmY2U1NWEzMWFkOWY3MzI2OWRmMzE2ZDc5N2JmMjI1N2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQzYTEyMjg2ZGVjMTIwN2MzM2Q3Y2JjNDY5Yzc1NjM3YjBhMWFiMjk5ZmMxNGNmNDI1OWM5NWI3MmNkODI0YjkifQ"
         }
       ]
     },
     {
       "id": "claim_a50b27f86e21492b8f4477d2860454b4",
-      "statement": "RTK's latest version is the Cargo.toml version on the upstream branch for a cargo --path dev build, otherwise the latest GitHub release tag.",
+      "statement": "RTK's latest version is the Cargo.toml version on the upstream branch of the clone found by tw_rtk_dev_path for a cargo --path dev build, otherwise the latest GitHub release tag.",
       "evidence": [
         {
-          "resource": "repo://scripts/check-updates.sh#L268-L296",
-          "version": "repo-lines-v1:sha256:63373c8947f5b7192589178989199f863af6701d46bdd9e4636c3ab0bf29eb57:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlYWZiY2E4OWYwM2M4ZDdiNjUxM2Y2MzcxMjNiZDAyYzdkNzcxYmI5ZDIyNjYwYmVlZmQyYmQ5MmIyN2NiMzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU4MGVmMmU3YTMwNjYwZDBmNmNiOGEyZWE1ZDIwY2Q3YzczMjY1NGQzOTUwZTMxNDM2MWJjMTdhM2UyYThkMWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmNmIzYzc5OWE1ZDFmZjBkNjMyZGVjOGNlMTg5ZGM2ZDI1ZTQzNTI5MmQ1YzFkMGFjN2U3OTgwYWMxYTFkNTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3YzNhOWE2N2Q1Yjc0NjEzOWZkNGMwMmJlZDdjOTdjY2VhMmYxMDYyZDgyNmNiM2E3NWNmY2E3YmMyNWI2YTMifQ"
+          "resource": "repo://scripts/check-updates.sh#L295-L330",
+          "version": "repo-lines-v1:sha256:bcef52eb31ecf1bda97ed9cd891584e1443d3ce642a03a2ca25a0f9103e74ff2:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2MTlkZTRhMGNkYmY1ZDhmNmM1N2Q4NWJhN2Y4NWM1Y2JhNTgyN2UzZjYwOGE4MWY2MjliZTM5Nzk4NTVhN2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFjNDg3NWRhMWQyNDJmNGM5ZmIyZGRmNTAwYzkxNDNhMDA4NDQ5NTU5MmYwZDZjOTM4ZmJhMDFhMDgwOTVkYTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5MWZlZGQyOWQ1NjAyYjhiYTdhYWJiM2IwMmYzMjkwZWVmOGNiNzQ5NThhNjNkOTY0ZjgxMmM3ZmM3ZmZkM2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY1MjJlNTRlMDQ0MmQ1NmJlZWM2YTQ0NjlhODliZDBiNmM4YTA4MGNiNGFhYjY3MzU1Nzg0MmY3MWU4ZjQ1ZjcifQ"
+        },
+        {
+          "resource": "repo://scripts/lib/osdetect.sh#L228-L240",
+          "version": "repo-lines-v1:sha256:e45f5f8e6a88ad3dfb09cdfae2acd8cd71143a4c34c2dabf7dd37f18fb96014c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2NjcxN2Q4YjFmMzU3MGE5NTEzYTdmZTc0NWZlYjExMGE1ODYwMzA0MzZlZTM4ZWEwMzRiZGIxNzU0NTJmNmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk3OWI1ZDIwZTVlMjYxZmNjZWM1YzBlMzk4ZGY1NDYxOThjODkyMjk1ODI0MmU0YWY0ZjM4MjY0ZjEyZGY5ZmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
     },
@@ -65,7 +69,7 @@
       "statement": "upgrade.sh re-runs check-updates with --force first, then asks Upgrade now? [y/N] on /dev/tty unless --yes is given, and skips when no terminal is available.",
       "evidence": [
         {
-          "resource": "repo://scripts/upgrade.sh#L250-L295",
+          "resource": "repo://scripts/upgrade.sh#L247-L292",
           "version": "repo-lines-v1:sha256:4e76fccfea7b0cf72a4e323ea090e06eb3728986de807324160fe97b8b475efe:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmNDRjNmJlZWI4NDdiM2M2MjA0NzE0MDg5ZDgzYmVhNjM3Yjk2NDVmYzQzMWYxOTc2Yjc4YWVhYjJmOWJjNDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMyNDUwNzhhYWU3ODY3NzZlMDI0ZWNmMzZmZTFhYWQ5ZjZhZjM3NTkwZWVmMWM3MWExNWFmN2FlNDQyMWE5NmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhM2Y5ODFkMDhjNTY0NGQxMzIyZmY1ZDc5ZTZjMTRiZGQ3NmNjMmRmNWM0N2Q3NmEyMDNkYmU4ZDY0MjhmMGQifQ"
         }
       ]
@@ -82,35 +86,35 @@
     },
     {
       "id": "claim_5c4aaae6605e430a90165a3c14392e0d",
-      "statement": "pxpipe and OpenWiki are upgraded with npm install -g at @latest, graphify through the owning uv tool, pipx or pip followed by graphify install, and tokenwar itself last with git pull --ff-only.",
+      "statement": "pxpipe and OpenWiki are upgraded with npm install -g at @latest, graphify through the owning uv tool, pipx or pip followed by graphify install, and tokenwar itself last with git pull --ff-only; if the final re-check fails, upgrade.sh warns and exits non-zero instead of printing Upgrade complete.",
       "evidence": [
         {
-          "resource": "repo://scripts/upgrade.sh#L193-L248",
-          "version": "repo-lines-v1:sha256:c1f78409dc6902436689daf0dd59cc67ba61a3da468b96c832a4106bea314492:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjNGNjZjVhZTFkNTNhNDBlNDI1ODhjM2JiMDRkMWU3M2U2NTIwODNmZTUwMDU3ZmRmYTJlNWRkNTFkYThhMzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE3N2Q2Y2YxNzhmNTE3MDk0ZjQxNjRmYzM5MmVhMmQ3Mzk4ZThhZmI2ODFlMTMwYWJhYTQzMzE0ZjJiMmVkMzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc3ZjM3YzkxNmU2ZmYxZmQ4MGI0YmU2YjE1NWFjMzgxOGNhYWJhNGZkZGY4OGU1OGZiNGY1ODBjYWI4ZTIzMzIifQ"
+          "resource": "repo://scripts/upgrade.sh#L193-L250",
+          "version": "repo-lines-v1:sha256:e7447510acdf91a23234f84e101bae57c6048a967328a836784dd706ff8070fa:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwNDdkYzZjNGJhZmRjZDU3MzE4MDI3OWUxMmQ2ZTE1ZTc4YTEzYmNmMWM0ZGZmMWJlMWJjN2VmMTRjMzdiZmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyMWZhOGRlN2IyOWRjYWFjMjNjZjhiYmVmZTcyNWNmNzdjYWY1M2Q5ZWM0YjIwMzU0ZGNmYmYyM2MwMWIwYTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZmMmExYWJhMzQxYWJiNmU1Yjk1NTU1ODFlMDE5YWUwOTI5ZTcyNjM1NWNkNDg2ODhkYWQ5M2NiMTY3ZDc5YjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEyY2E1ZTc5Mzk3N2U2ZTU3NWNkY2E5ZWYxMzUxOWUxOGM3ZTYzMWQ3Y2E3NjI4ZDk4OGQyZDM3ODEzYTlmMTIifQ"
         },
         {
-          "resource": "repo://scripts/upgrade.sh#L296-L325",
-          "version": "repo-lines-v1:sha256:35a958a48a476970aa075b404e1ee3f61074001e7e08e713423147563abb448c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkYTg2NmMwZTEwYjAwMzY1YWJlYTYzZjc5ZWEzODhiYThiMGZlMzZlODllYzkwN2U4ZjVjMjhhYTgzYmVlMjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3NWVlMDczZmI2ZGRjNmZhOWVlYTg3MmY2YTEyMzE1Mzk3M2I2ODY4MzAxMWMxZjA1Mzg3MzUzOTIyOTE5MjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "resource": "repo://scripts/upgrade.sh#L296-L339",
+          "version": "repo-lines-v1:sha256:43ed81f945b42f12022f805e36102bdb19d89c4286aa00d197067e581496dfbe:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIyYjdhOTc1OWFlNzk1NjFkMTliZjQ1MWYzYWFhMTA0YjM4NTkxNmE3NWM1ODhiYzdhMDM0ODE0MzFiY2VhMzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJhM2Y5ODFkMDhjNTY0NGQxMzIyZmY1ZDc5ZTZjMTRiZGQ3NmNjMmRmNWM0N2Q3NmEyMDNkYmU4ZDY0MjhmMGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
     },
     {
       "id": "claim_1c5b64e9889f4582aea56c2dee82a808",
-      "statement": "rtk-update.sh only manages an rtk in ~/.local/bin, uses RTK's official installer on Linux and macOS, and on Windows downloads the windows-msvc zip, verifies the published sha256 digest, scans for unsafe paths, and swaps rtk.exe via a .old rename.",
+      "statement": "rtk-update.sh only manages an rtk in ~/.local/bin; on Linux and macOS it downloads RTK's official installer to a file and runs it only if the download succeeded (no checksum), and on Windows downloads the windows-msvc zip, verifies the published sha256 digest, scans for unsafe paths, and swaps rtk.exe via a .old rename.",
       "evidence": [
         {
-          "resource": "repo://scripts/rtk-update.sh#L28-L50",
-          "version": "repo-lines-v1:sha256:5c676014bcaf57505400fb46b8f4c66ac2fc07843d83fbdf5e7a2879745c4595:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyNTRiZjk0MWQ2OWY3ZDUwZjI2N2E1YWQ4NDQwM2E2Zjg2NDAwMDNjYTAxNDE5ZmFkNGYzYmU3N2Y0OTI2ZjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3ODExNTZiYjAzZmY0MTdiYjk1MzZmNzkzZjdlYWJjZGVmMmJkYjA3NzgyMjA3OWJmZjNkNzUzMmFkM2VjYjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM2ZjZkZTkwNzdiNzJhZTk4MjQ3ZDFjNjM2NGEwOTEzMmVlNzkyOWJmMjBiZmRkODUwNjhlNDJkYTZiMDgzZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ3MGQxN2Q0OWI4NjEwNzdjYjc3MTQ3Yjc1MTYwODA3OGNjNWRiNzQ1NzI1MTE5MTg4YTZlOWExZDExOGVjNzEifQ"
+          "resource": "repo://scripts/rtk-update.sh#L28-L70",
+          "version": "repo-lines-v1:sha256:e1d711fabc89f9170349b4129309b9bed69de04a750a9e3a05355e08103fffba:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyNTRiZjk0MWQ2OWY3ZDUwZjI2N2E1YWQ4NDQwM2E2Zjg2NDAwMDNjYTAxNDE5ZmFkNGYzYmU3N2Y0OTI2ZjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmY2E3MTQyYTJjZDliNWE2NmJkZGM3ZmYwMTcwMTJiMDAyNjZkNTM0MmU4NjIxNWUzYThlYWI5NjYyZmFjMDUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM2ZjZkZTkwNzdiNzJhZTk4MjQ3ZDFjNjM2NGEwOTEzMmVlNzkyOWJmMjBiZmRkODUwNjhlNDJkYTZiMDgzZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFiNzQ3Yjk5MzY2NDdlMjY4YzUwMmVkYWM0M2JiMzE0OGIwMGRhM2YwNThlN2FlNjEyZmVlMmMwOWNkYWVhMDQifQ"
         },
         {
-          "resource": "repo://scripts/rtk-update.sh#L51-L116",
-          "version": "repo-lines-v1:sha256:4bf53596a97dc897d67f0eccbd0e9bfdfcc7cc05bdb55fa271cc5844767a9642:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3ZTAwYWFlODYwMzEwZTg0OWY5M2Q0ZGE3ZWMwYTM1NmU1OGRjMWUwZTA4MTA0ZGFmMjgyYzYyZWY0OWI2ZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1OWZiODcyMDI3NzE3OGZkODMyMjY1NzcyN2EwOThiZTdhZTZmMWQzYWE0MzNmYmJkYTA1ZWY5MGJjNjJlMTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM4MDgzZWFjY2E1Yzk3ZGY1Y2Q2MWYyNGZmZWIwOWY1ZTEwZjc3Mzc1Zjc4OGEzZGUyZjY4ZTNiYTAyMWM2ODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "resource": "repo://scripts/rtk-update.sh#L70-L124",
+          "version": "repo-lines-v1:sha256:d40abbca246ee8039dcd7e559397f80723d01e2d017ea501d824c42d07ce0f17:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmY2E3MTQyYTJjZDliNWE2NmJkZGM3ZmYwMTcwMTJiMDAyNjZkNTM0MmU4NjIxNWUzYThlYWI5NjYyZmFjMDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1OWZiODcyMDI3NzE3OGZkODMyMjY1NzcyN2EwOThiZTdhZTZmMWQzYWE0MzNmYmJkYTA1ZWY5MGJjNjJlMTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImExZTgxOTJiYTAzZmU0YTIyMzRmZWM2MTFiMGQwODNlZWUxMGY2Y2YwOTQ3ZDIyZGUyZGE0ZDM3NzA2MzNmMTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
     }
   ],
   "verification": {
-    "by": "openwiki/0.7.0",
-    "at": "2026-10-05T04:01:37.525Z"
+    "by": "openwiki/0.7.2",
+    "at": "2026-10-27T17:51:57.686Z"
   }
 }

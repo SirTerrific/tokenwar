@@ -3,14 +3,13 @@ type: workflow
 title: Status, check, toggle and maintenance commands
 description: What tokenwar status, check, enable/disable, restore-settings, prune, bundle and the statusline do, their exit codes, and which of them change anything.
 tags: [status, check, toggle, bundle, prune, statusline, openwiki]
-verified:
-  - by: openwiki/0.7.0
-    at: 2026-10-05T04:01:37.525Z
 sources:
   - id: openwiki-source-cb0f48698229910e3c22e879
     resource: repo://scripts/bundle.sh
   - id: openwiki-source-f9fafda300b014057921ac73
     resource: repo://scripts/check.sh
+  - id: openwiki-source-210f372b904621a86172ec77
+    resource: repo://scripts/lib/plugins.sh
   - id: openwiki-source-b0329cd9819e2b2b767ff0eb
     resource: repo://scripts/prune.sh
   - id: openwiki-source-19ba93f011d39c1fdd2d03c4
@@ -21,7 +20,12 @@ sources:
     resource: repo://scripts/toggle.sh
   - id: openwiki-source-0a1aa7f7da78cd1afee847b5
     resource: repo://scripts/tokenwar-statusline.sh
-generated: { by: "claude-code", at: "2026-10-05T04:01:37.525Z" }
+  - id: openwiki-source-1b30304570f2c48e398108f5
+    resource: repo://tests/bundle.bats
+generated: { by: "claude-code", at: "2026-10-27T17:51:57.686Z" }
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-27T17:51:57.686Z
 ---
 
 # Status, check, toggle and maintenance commands
@@ -54,8 +58,8 @@ rules, despite the "four rules" header comment:
 | R1 | bash double-hook: counts PreToolUse hooks with matcher `Bash` in `settings.json` (0 = WARN, 1 = PASS, more = FAIL) |
 | R2 | memory overlap: claude-mem writes to `~/.claude-mem`, context-mode to `~/.claude/projects/<slug>/memory`; disjoint sinks pass |
 | R3 | output compression: always PASS, RTK compresses tool output and caveman the model response |
-| R4 | install drift: WARN if a plugin, `rtk`, `pxpipe` or `graphify` is missing; it does not compare versions (no network) |
-| R5 | provider overlap: needs the CLI on PATH **and** its config dir to exist; always PASS today |
+| R4 | tools installed (formerly "version drift"): WARN if a plugin, `rtk`, `pxpipe` or `graphify` is missing; it does not compare versions (no network) |
+| R5 | provider overlap: needs the CLI on PATH **and** its config dir to exist; WARN when two active providers share one config dir, PASS otherwise |
 
 The verdict is `COMPLEMENTARY` (all PASS, exit 0), `DEGRADED` (any WARN, exit 1)
 or `CONFLICT` (any FAIL, exit 1). `--json` emits the rules, verdict and an `ok`
@@ -84,7 +88,7 @@ It asks for confirmation unless `--yes` is given (and refuses without a
 terminal), supports `--dry-run`, and warns to apply bundles at the **start** of a
 session: changing the tool inventory invalidates the prompt-cache prefix, which
 is rebilled at 1.25x instead of read at 0.1x. Enabling a tool that is not
-installed is reported as skipped and makes the exit status 1.
+installed is reported as skipped and makes the exit status 1. `toggle.sh` exits 3 for the standalone tools `rtk`, `pxpipe` and `graphify` (they are not plugins); `bundle.sh` prints those as `manual` and does not count them as a failure.
 
 ## restore-settings
 
@@ -108,8 +112,12 @@ prints one badge per tool: green when active, red when not. A yellow `⬆` marks
 tool with an update available, and `⬆ N updates · /tokenwar upgrade` ends the
 bar. It must never block or turn red because of a slow lookup:
 
-- `claude plugin list --json` and `rtk gain` are cached for 30 seconds and fall
-  back to the stale cache on a timeout.
+- `claude plugin list --json`, `rtk gain` and the `pxpipe --version` and
+  `graphify --version` lookups are cached for 30 seconds and fall back to the
+  stale cache on a timeout. Enabled plugins and the rtk hook are read through the
+  shared helpers `tw_enabled_plugins_json` and `tw_rtk_hook_wired` in
+  `scripts/lib/plugins.sh`, so the statusline, `status` and `check` all look at
+  both `settings.json` and `settings.local.json`.
 - Update state is read from the `check-updates.sh` cache (24 hour TTL); a stale
   cache triggers a background refresh instead of a blocking call.
 - ponytail is green only when the plugin is enabled and

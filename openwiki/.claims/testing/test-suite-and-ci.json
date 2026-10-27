@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:3a6bad578d2f41e6d1ff3c14c283cfaecd73c83952054d97c3f5bc553c304e2f",
+  "pageVersion": "sha256:a33bfb0eaafffbd21c2746125a261ae78bba1ae38ee2a69d2419b5c86ab80f44",
   "claims": [
     {
       "id": "claim_3de95f66a13446eaaec6c3795e1bbb57",
@@ -54,17 +54,31 @@
     },
     {
       "id": "claim_0ec4a3b315aa4e6c837b4e24ac8d256b",
-      "statement": "openwiki-update.yml runs daily at 08:00 UTC or on dispatch, installs openwiki@0.7.0, runs openwiki code --update --print, opens a PR via create-pull-request, and propagates OpenWiki failure after the PR step.",
+      "statement": "openwiki-update.yml runs daily at 08:00 UTC or on dispatch, installs openwiki@0.7.2, runs openwiki code --update --print, opens a PR via create-pull-request, and propagates OpenWiki failure after the PR step.",
       "evidence": [
         {
           "resource": "repo://.github/workflows/openwiki-update.yml",
-          "version": "repo-file-v1:sha256:e61d74c7f49c6496d566cfebe10152127269cdad6f56e9f31f5db7b0f2b1c631"
+          "version": "repo-file-v1:sha256:c31005f16763845e6dcd826d671cf11890a4c8e12498fd2b59428be80e3b585a"
+        }
+      ]
+    },
+    {
+      "id": "claim_d503ab624ce149fbb06293c50be3e8fe",
+      "statement": "tests/bundle.bats replaces toggle.sh with a fake through TOKENWAR_TOGGLE_SCRIPT and checks that a standalone tool (toggle.sh exit 3) is reported as manual, not as a failure.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/bundle.sh",
+          "version": "repo-file-v1:sha256:e14ee7d6340cc7ddd058bbafbda9ea69d5adfe8bf20c585e28b7721eefcbf98c"
+        },
+        {
+          "resource": "repo://tests/bundle.bats",
+          "version": "repo-file-v1:sha256:1863a32f10af7a763e5beacbe5aa758c95a7794a8e3b31a7d41a8e9f4d938a4b"
         }
       ]
     }
   ],
   "verification": {
-    "by": "openwiki/0.7.0",
-    "at": "2026-10-05T04:01:37.525Z"
+    "by": "openwiki/0.7.2",
+    "at": "2026-10-27T17:51:57.686Z"
   }
 }

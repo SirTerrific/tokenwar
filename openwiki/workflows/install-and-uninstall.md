@@ -3,9 +3,6 @@ type: workflow
 title: Install and uninstall
 description: How install.sh and install.ps1 install the stack, which flags do what, how shell and settings wiring stays idempotent, and what uninstall removes and leaves.
 tags: [install, uninstall, windows, shell-integration, openwiki]
-verified:
-  - by: openwiki/0.7.0
-    at: 2026-10-05T04:01:37.525Z
 sources:
   - id: openwiki-source-4e57a4160b61e0d1b0509927
     resource: repo://install.ps1
@@ -15,7 +12,10 @@ sources:
     resource: repo://uninstall.ps1
   - id: openwiki-source-4ccef873414d626ff66115e6
     resource: repo://uninstall.sh
-generated: { by: "claude-code", at: "2026-10-05T04:01:37.525Z" }
+generated: { by: "claude-code", at: "2026-10-27T17:51:57.686Z" }
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-27T17:51:57.686Z
 ---
 
 # Install and uninstall
@@ -45,9 +45,14 @@ Order of work:
 2. `chmod +x scripts/*.sh`.
 3. Patch `~/.claude/settings.json` `statusLine` (timestamped backup first; no-op
    if already wired). On Windows the command names `bash.exe` by full path and
-   uses `-c`, because Claude Code spawns it outside Git Bash.
+   uses `-c`, because Claude Code spawns it outside Git Bash. If `settings.json`
+   is not valid JSON, the script prints an error and leaves the file untouched
+   instead of rewriting it with only the `statusLine`, which would drop every
+   hook, permission and env key.
 4. Write the shell-integration block into `~/.bashrc` and `~/.zshrc` (create
-   `~/.bashrc` if neither exists). The block exports `~/.local/bin`, defines
+   `~/.bashrc` if neither exists). The install directory is `TOKENWAR_DIR`
+   (default `~/.claude/skills/tokenwar`); a custom value is written out in full
+   in the statusLine command and in the rc functions. The block exports `~/.local/bin`, defines
    `tokenwar()` and `claude()` (via `pxpipe-claude.sh`), and wraps
    `codex`, `gemini`, `kimi`, `opencode` and `copilot` with the launch banner.
 5. Opt-in installs run in this order: plugins, RTK, pxpipe, graphify, OpenWiki.
@@ -64,6 +69,11 @@ Marked blocks are stripped with awk and rewritten, never appended twice:
 the shell block (`# >>> tokenwar shell integration >>>`) and the CLAUDE.md block
 (`<!-- >>> tokenwar context-mode routing >>> -->`). Installs of existing tools
 are skipped when the binary is already on PATH.
+
+The rewrite is safe for dotfile repos: the stripped copy is written back with
+`cat "$tmp" > "$file"`, so a symlinked `~/.bashrc` stays a symlink and keeps its
+mode. If a file has a BEGIN marker but no END marker, install and uninstall warn
+and do not touch it, because awk would otherwise drop the rest of the file.
 
 Plugin enabling has an anti-clobber step: the first `claude plugin enable` can
 flip implicitly enabled plugins to disabled, so the enabled set is snapshotted
@@ -102,6 +112,9 @@ sourcing them):
   caught), after a timestamped backup;
 - strips the shell block from `~/.bashrc` / `~/.zshrc` and the routing block
   from `~/.claude/CLAUDE.md`;
+- runs `pxpipe-desktop.sh off` first (it warns if that fails), so `HTTPS_PROXY`
+  in `settings.json` does not keep pointing at a proxy whose script is about to
+  be deleted;
 - deletes the install directory.
 
 It leaves the managed tools themselves (plugins, RTK, pxpipe, graphify, OpenWiki)

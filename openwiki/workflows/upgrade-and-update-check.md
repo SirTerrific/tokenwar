@@ -3,17 +3,19 @@ type: workflow
 title: Upgrade and update check
 description: How check-updates.sh decides what is out of date and caches the answer, how upgrade.sh confirms and applies updates, and how rtk-update.sh installs RTK with sha256 verification.
 tags: [upgrade, updates, registry, rtk, cache, openwiki]
-verified:
-  - by: openwiki/0.7.0
-    at: 2026-10-05T04:01:37.525Z
 sources:
   - id: openwiki-source-f8ae26e7f20dd71dcdc9b79d
     resource: repo://scripts/check-updates.sh
+  - id: openwiki-source-25ec849fb675ff56e872b106
+    resource: repo://scripts/lib/osdetect.sh
   - id: openwiki-source-e723d58fa32bab22d135b3e5
     resource: repo://scripts/rtk-update.sh
   - id: openwiki-source-e79504490bc0e4483076e0f8
     resource: repo://scripts/upgrade.sh
-generated: { by: "claude-code", at: "2026-10-05T04:01:37.525Z" }
+generated: { by: "claude-code", at: "2026-10-27T17:51:57.686Z" }
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-27T17:51:57.686Z
 ---
 
 # Upgrade and update check
@@ -42,7 +44,7 @@ had shipped):
 | plugins | `marketplace.json` `version` on the fetched upstream ref; if absent, the plugin's own `.claude-plugin/plugin.json` |
 | pxpipe, OpenWiki | npm registry `/latest` (`pxpipe-proxy`, `openwiki`) |
 | graphify | PyPI JSON for `graphifyy` (not the unrelated `graphify` project) |
-| RTK | GitHub releases `tag_name`; for a `cargo install --path` dev build, the `Cargo.toml` version on the clone's upstream branch |
+| RTK | GitHub releases `tag_name`; for a `cargo install --path` dev build, the `Cargo.toml` version on the clone's upstream branch (the clone is found by the helper `tw_rtk_dev_path` in `lib/osdetect.sh`, which uses `sed` and so works with BSD and mawk, not only gawk) |
 | tokenwar | local `HEAD` against the fetched upstream tip |
 | Codex, Gemini, Kimi, opencode, Copilot | provider-specific lookups |
 
@@ -88,7 +90,7 @@ Flow:
    - tokenwar itself last, with `git pull --ff-only`, inside one compound command
      so bash has parsed it before the pull rewrites the running script.
 4. Re-run the check with `--force` so the cache and the status-line arrow update
-   immediately.
+   immediately. If that re-check itself fails (exit 1), the script warns "Could not re-check versions" and exits non-zero; it does not print "Upgrade complete" on an answer it could not verify.
 
 The marketplace fast-forward closes a loop: `check-updates.sh` reads
 `origin/<branch>`, but `claude plugin update` installs the clone's local HEAD,
@@ -101,8 +103,10 @@ Exit 0 when updated, already current, or skipped on purpose; 1 on failure.
 
 - Only an `rtk` in `~/.local/bin` is managed. One installed elsewhere (Homebrew,
   cargo) is left to its package manager.
-- Linux and macOS: pipe RTK's official installer into `sh` with
-  `RTK_INSTALL_DIR=~/.local/bin`.
+- Linux and macOS: download RTK's official installer to a temporary file and
+  run it with `RTK_INSTALL_DIR=~/.local/bin` only if the download succeeded, so a
+  cut transfer never runs a truncated script. This path is not checksum-verified:
+  the script comes from rtk's `master` branch and no checksum is published for it.
 - Windows: that installer refuses Windows, so the script downloads
   `rtk-<arch>-pc-windows-msvc.zip` from the latest GitHub release and checks the
   sha256 digest GitHub publishes for the asset. A release with no digest, or a

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:829daec029068305a9fde75bda1a5fa0fa9a36280a8212f11ca6d51280b0f5ae",
+  "pageVersion": "sha256:c07c19ce037322b281b6ba3d7bd82e4c573a19515b81fcb25a74c99da1b41a9c",
   "claims": [
     {
       "id": "claim_92cd29475a094a378c4f6e3fe3a5287f",
@@ -17,7 +17,7 @@
       "statement": "context-mode savings count bytes_avoided from session_events plus indexed chunk content, divided by CHARS_PER_TOKEN=4; bytes_sandboxed is shown in the note but not counted.",
       "evidence": [
         {
-          "resource": "repo://scripts/gain.sh#L130-L190",
+          "resource": "repo://scripts/gain.sh#L131-L191",
           "version": "repo-lines-v1:sha256:8c695ac4779b7dba3c17b2f0735fa7af0b974de77b4c3ff9a8c26ba5b43f3ec9:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhiNjY2ODBjNmQ3ODBkYTEwN2M2NTQxMjZmNmMwODhhMTE4M2U0NjBiM2NkZDBjZmJlZWE4ZTkxM2I0NWRhN2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQzNGJiMjI3YWE1YzU0NzViN2YzNjVjMzQ4ZDkyOTBiNmY2NjBmNGNkMWQzZDM5ZTRkYTk2ZTUyNGM1MTE4YjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRjOWJiYjViNzI1MTg0OTYzMGQ0YmM4MGQ1M2ViMzYzNTdmNjM0YTVmYjA3ZWEwOTE0NWRlZTNmNjFhMjg2ZmQifQ"
         }
       ]
@@ -27,7 +27,7 @@
       "statement": "claude-mem savings are discovery_tokens minus the read-back cost (title + subtitle + narrative + facts chars / 4), with chroma-sync-state.json counts times MEM_EST_TOKENS_PER_ITEM=40 as the legacy fallback.",
       "evidence": [
         {
-          "resource": "repo://scripts/gain.sh#L191-L223",
+          "resource": "repo://scripts/gain.sh#L192-L224",
           "version": "repo-lines-v1:sha256:38281c20fbd65d57af9c2eb4b60ee259231ae0e18b20814f5efe517c4a3f27a3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhZjYxM2Y3ZTJjN2JlMjk0NzdlZTUyZDAzMTljMzY1MmJiMTUwMmQyYjhkZTAzNDM5ZTE3YjRiNGE1YThhOTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc4YTljZDBiMDI5MTg1OTQ2OTkzZWRlYjZlOTFkNzFlMjg4ZWY1ZGM5NTBiYzI5OGQ0Njg2ZTlhYWVmM2IxMmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM2YjIwZTQ5MmNmYTM2NGIyOTMwMDVmNTQ0NzE4YjdiOWFhYmJjMGU5NWIxODhkMjNlMDlkOGYzNjRlNmM5ZTUifQ"
         },
         {
@@ -41,7 +41,7 @@
       "statement": "caveman is always reported N/A because it transforms no buffer.",
       "evidence": [
         {
-          "resource": "repo://scripts/gain.sh#L266-L273",
+          "resource": "repo://scripts/gain.sh#L267-L274",
           "version": "repo-lines-v1:sha256:2b13997e665d5ec2a3acfd573e25176c2a4a44edd9c590ad8b1803c707bc9ef9:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWMzOTkxZGQxNmU4YTg4ZThlNjBiNjkzOGFkYTAwZjJmNWM0NzU5YTA4NmUxMDM5OTk3YzI3MDUzMDE2NjFlNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzI0NTA3OGFhZTc4Njc3NmUwMjRlY2YzNmZlMWFhZDlmNmFmMzc1OTBlZWYxYzcxYTE1YWY3YWU0NDIxYTk2ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTkzYjY3OGVmODRiNjgxNzAxMGRjMTI5Zjc0OWZmODgyNTM5NWEyY2VkMTc5MTJkNjkyYjZiNDQxODBkNjBkZCJ9"
         }
       ]
@@ -51,7 +51,7 @@
       "statement": "pxpipe savings come from pxpipe stats --json savedTokensTotal when the CLI is present, otherwise from parsing ~/.pxpipe/events.jsonl.",
       "evidence": [
         {
-          "resource": "repo://scripts/gain.sh#L274-L339",
+          "resource": "repo://scripts/gain.sh#L275-L340",
           "version": "repo-lines-v1:sha256:d6cb0775a3cb1f832b9aa1bde1464e5d2e4b162291ec62fe57bc3382e8098710:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk0OTdlNGQ2ZDFlNGVjMWVkNjY5YzAyOTY3YmZkMjk4ZTAxZDliMWQyZDRhODRmYWM5NDZkYTBkNzdmYjAyNjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI0ZTI5M2MwMGYwZTA1MTk2ZWQ1NDQwOWMwM2UzYmEyZjI1YjVhZmMyYTNmNmQ2YTVjMzRkMDRmZjQ5YzE4ZTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE3MmU4ZGJkNjhkZGRmZWIzMGQ3YWU2NmIwN2Y2YmM4ZGZkZjk3OWM5ZGU1MjJhNzgzZWQzZDljZWE5ZTE0OTIifQ"
         }
       ]
@@ -61,7 +61,7 @@
       "statement": "graphify's benchmark reduction ratio goes in the note and is never summed into TOTAL.",
       "evidence": [
         {
-          "resource": "repo://scripts/gain.sh#L340-L373",
+          "resource": "repo://scripts/gain.sh#L341-L374",
           "version": "repo-lines-v1:sha256:2778e1f145b64835f6abc12fbc47cd2b0586253dd33e69a722b6dd9f58bc8b8f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjOTczNzEwMTliZDExNjAyMzQ1MDI0YWVjNTg0YWE2MmE0Yjc2ZTBhMWQwZGI5MGFmNzllMTAwM2ViZmUwYmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxODJhNDA0NmIxZWJhYjQzZTkyODU0MDlkMTFmOTQyMzRlYTFhNmQ5NGM5YTY5ZWQwZGU2OGNiOTY2OGJhYmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2MzE2OTBkZWFmNTU4ZGY4MDllNTg2ODVlYzM5OTBjNzk0NTg3MGY2MjE1Y2M5ZWRjMGM2MDdkYzg1ZjdiODYifQ"
         },
         {
@@ -75,8 +75,8 @@
       "statement": "providers.sh registers six providers (PROVIDER_COUNT=6) and reads Codex, opencode and Copilot usage from SQLite through tw_sqlite_rows, which probes python3 or node:sqlite by running them.",
       "evidence": [
         {
-          "resource": "repo://scripts/lib/providers.sh#L1-L90",
-          "version": "repo-lines-v1:sha256:5541d8b7b0de73adab36c8f32287dc1758f2c9b923b2a12e5c2d62cabed25218:eyJzZWxlY3RlZExpbmVDb3VudCI6OTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5Y2VmZjMzMmY1MWVhZjEyNWUwNjA4YjhiMWQ1YzYwMmUyYTg5MDk3Yjk5YmQ0YzkwMzZmYjM2NmI0NDBkYTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM1NjQ0ZTNlNGRkNGQyNzZlNjY1MjI0ZjMxNjIyYWU0YzIwNjdlODc0NWIzZjgwNGY4YzZmNzUyZTNmNTdlY2YifQ"
+          "resource": "repo://scripts/lib/providers.sh#L1-L89",
+          "version": "repo-lines-v1:sha256:c670c2cd06e4edc46a6cc52c5c8b8cae772ace6472061368f5e6ee707a3ceff7:eyJzZWxlY3RlZExpbmVDb3VudCI6ODksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5Y2VmZjMzMmY1MWVhZjEyNWUwNjA4YjhiMWQ1YzYwMmUyYTg5MDk3Yjk5YmQ0YzkwMzZmYjM2NmI0NDBkYTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM1NjQ0ZTNlNGRkNGQyNzZlNjY1MjI0ZjMxNjIyYWU0YzIwNjdlODc0NWIzZjgwNGY4YzZmNzUyZTNmNTdlY2YifQ"
         }
       ]
     },
@@ -85,32 +85,42 @@
       "statement": "The monthly tool section values RTK, context-mode and claude-mem savings at CLAUDE_INPUT_USD_PER_MTOK=4.00 (Claude Opus 5.5), and provider rates other than Claude's are marked VERIFY.",
       "evidence": [
         {
-          "resource": "repo://scripts/gain.sh#L224-L265",
+          "resource": "repo://scripts/gain.sh#L225-L266",
           "version": "repo-lines-v1:sha256:4e667e070e1daf33eec25c2c93150701fefd5706858d2cb75df6da141c839516:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg3M2ViMTUzODRiYWMxNjljN2Y1Y2ZhMDNhNDZiOTMyODcwMjE1NGMyNWQ3NjBkY2JhZDI2MDVkZDYwMmYyNzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkxMGNiZDc0MGFiOTE5NGRhYTVhZjRkODU0YjdjMjEwZDdiMjU1MWU2YTY3ZGYxY2EyYjQxNjEwY2VlZmU1MDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc4N2FmZDZlNjFiZjJkYTE4YThkMzlkM2I2NmE1NTBlNGY1MDY1NmNhOWE4YWVhOGExY2E2ZTNhNDc3NWIyNTgifQ"
         },
         {
-          "resource": "repo://scripts/gain.sh#L78-L84",
-          "version": "repo-lines-v1:sha256:8b05d8a639c0443a96f75f32bf162ee361c74025b925cd5f27844b6eddfbf5c9:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWFkNTExMTIwZTU1NzliM2ZhMjExY2I4MDg5MzE5NmE4NjE2ZGJhY2Q2YWFkNDAxZmQzZjM4OWQ1YTI5N2FlZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmQ5NDRkNjQzZTk0NGYxZTZkZGZiMWIyNjhlNjBkYmRjM2I5NDFlZjgyYThhYWRiNzFjMjQ3M2UzODRiN2FmNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmM4MzVjMTlhOWI0ZmQzNDUxNjg5ZTcxOTk1MzQ4MWY0YmI0MjVmZDNiMjEzMzg5ZDYwNDkzMmNmNGJkNjM1MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTc3MzQxMDY0NGYyN2VmODhjYjc2MmU0NjdmNDZjYWU4YTdiOTg2NTZmMmRhY2U3NGRkZjkyYzUzZTM2ZmYxNyJ9"
+          "resource": "repo://scripts/gain.sh#L78-L85",
+          "version": "repo-lines-v1:sha256:3ac0d0540be5357de1d1fbf8a5437981af42855d29327ec9fe269f427b0533f3:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWFkNTExMTIwZTU1NzliM2ZhMjExY2I4MDg5MzE5NmE4NjE2ZGJhY2Q2YWFkNDAxZmQzZjM4OWQ1YTI5N2FlZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmQ5NDRkNjQzZTk0NGYxZTZkZGZiMWIyNjhlNjBkYmRjM2I5NDFlZjgyYThhYWRiNzFjMjQ3M2UzODRiN2FmNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmM4MzVjMTlhOWI0ZmQzNDUxNjg5ZTcxOTk1MzQ4MWY0YmI0MjVmZDNiMjEzMzg5ZDYwNDkzMmNmNGJkNjM1MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTc3MzQxMDY0NGYyN2VmODhjYjc2MmU0NjdmNDZjYWU4YTdiOTg2NTZmMmRhY2U3NGRkZjkyYzUzZTM2ZmYxNyJ9"
         },
         {
-          "resource": "repo://scripts/lib/providers.sh#L195-L220",
+          "resource": "repo://scripts/lib/providers.sh#L194-L219",
           "version": "repo-lines-v1:sha256:e8b6f293a553b5c4d1ebcc43f37fad93ab8c25724551fe3319af86b042a5203b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyMDVlZWI1YjdiNzEyZjg4YjczNDc4ZDZmZjNhYjM0YWMxYzY3ZGNmNGI3NzQzZjFkNmZkY2Y2ZDU2MDhkMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyZDVkZTI3MWU1ODNjNjVkNzcxYzk3MTZkYjJjOWY2YjdjNmY5NjNhMDU0MTQwOGRmMjJjMTQ1Y2Q5ODA2ZTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzYjg1NDBmZmQwMTkyOTMzZjA1ZTkxMjFiNmM2NjI5ZDI4NDZmOGQ2ZWRlZDg2ZTJhNGQ4MmMwOTg2ZDNlNjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjYzZjMmEyOGQ0YzllZDVhNmE2NzVjM2Y5NGI2ZWVhYjZiYzJiMmFmYjQ2MmJlOGUwNTg2ZGM5OWMyYzI5ZTkifQ"
         }
       ]
     },
     {
       "id": "claim_123ba8dc4e01466fad8160b6235f9b37",
-      "statement": "economics.mjs prices cached prefix blocks as cache reads (default multiplier 0.1, 5m write 1.25, 1h write 2.0) and carries per-model cache-read rates for Fable and Opus.",
+      "statement": "economics.mjs prices cached prefix blocks as cache reads (default multiplier 0.1, 5m write 1.25, 1h write 2.0), carries per-model cache-read rates for Fable and Opus, and for an unknown model borrows the claude-sonnet price while flagging it with assumedFor.",
       "evidence": [
         {
-          "resource": "repo://scripts/lib/economics.mjs#L1-L45",
-          "version": "repo-lines-v1:sha256:26d2f16538b1071ada4bbc21a0f5b18fd51f327717ed9320d3beddf0a1f65023:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0ZTUwOTJlMzYzY2U2NzkzZGRmYTMwNzQxZjU5ZGM5NDcwOTBiZjdhODY1MjRiNGQ4Y2YzODhiMGM1YzRmMWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE5YjM5ZmEyMzI4ZjA2OWY3YTM0YzMxNGZhNGFhMjAxY2Q3MWU4ODVmOTcwMDRkZTBlOTlmYWVjMDNhNDRhMTkifQ"
+          "resource": "repo://scripts/lib/economics.mjs#L1-L46",
+          "version": "repo-lines-v1:sha256:1b395411efa19f34df502eeac5e09c4031269f44bebc9405c5056b0729254d05:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0ZTUwOTJlMzYzY2U2NzkzZGRmYTMwNzQxZjU5ZGM5NDcwOTBiZjdhODY1MjRiNGQ4Y2YzODhiMGM1YzRmMWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg1NGU3ZDRhZTUwNGNjZjFiYjgwYzY1OTNhNTZmYjcxZGI4MGVkMGE1NTM2ZjZkZTA1NWMzMmM5YTMyYWFjYmYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_360e3cde82d741afbc507fa4e7cdb3d0",
+      "statement": "gain.sh prints provider monthly rows under their own usage heading ('$ used'), because provider token counts include output and reasoning tokens valued at the input rate, so they are usage and not savings.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/gain.sh#L660-L712",
+          "version": "repo-lines-v1:sha256:18763ed290cf41901764fd3137903b5543bd9cd542e7ee9c8a9c03f44cd540bd:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3NjlkMjM3Y2Q0MjBiOWQzOGI5ODFhMGE0ZjY3NzAxOTBhNGE4M2RjYTFmZTU2YzRmNWJhMWUyY2JjMGVmNzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY0OGJkZjI5NWE2OGJhYTNhOTc2MzFjYjMyNWYzYTBjN2Y5NmE2ZjQyMjI4OGI3MjEzZGRiZTY4NzdmYTNiYzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVhYTc3Y2QwMWY1NjYxNTlmNWEwMjU4ZTcwMTczOWQ5ZTA4YTQxNDliMDljNDJiNDM1Njk5YWM3ZTE0NWQ1ZjEifQ"
         }
       ]
     }
   ],
   "verification": {
-    "by": "openwiki/0.7.0",
-    "at": "2026-10-05T04:01:37.525Z"
+    "by": "openwiki/0.7.2",
+    "at": "2026-10-27T17:51:57.686Z"
   }
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:ddd7ccdfbcdec888e4ab76c8b40364e17ed0e36bdd6061acf3fefe1b9ddb8765",
+  "pageVersion": "sha256:273ffaed0ccdd8eed8d4d32485fcae2d7e5de9a4c0e56a337379f091db7a5a7c",
   "claims": [
     {
       "id": "claim_901eb9ab4be5440fab127d7382313e94",
@@ -27,11 +27,11 @@
       "statement": "install.sh --with-openwiki installs openwiki@latest and never initializes a repository, because initialization writes generated docs and invokes an LLM.",
       "evidence": [
         {
-          "resource": "repo://install.sh#L548-L567",
+          "resource": "repo://install.sh#L575-L594",
           "version": "repo-lines-v1:sha256:9ebdaad409c510b1cfed4c1aedc69b0882803bcadab1f8c4a43ee114cee19615:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViNjQ4ZWQ1MzVhMzBiM2Y5ZWJhMTYzZjMyNjM1ZGYzMzMzOTIwMTJkOWJmZTY3YjM0NGIxM2U1OTFiNDNhY2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyMGUwNjU3MTEzZDYyYTk4OGNhYzNiZDEzMzI4NDdkYWUzY2M4ZjQ2OGI0M2JiMWJmMDM2NTBkZWRjYjZhY2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMyNDUwNzhhYWU3ODY3NzZlMDI0ZWNmMzZmZTFhYWQ5ZjZhZjM3NTkwZWVmMWM3MWExNWFmN2FlNDQyMWE5NmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3NWJkYWQ5ZThiNTIzNjZiYzEyNWU0MTRkZDE5MDEwYzU0OGIyZWI0YzVkOGNlMWI3YjkyOTI5ZDI4NDE3MGMifQ"
         },
         {
-          "resource": "repo://install.sh#L91-L92",
+          "resource": "repo://install.sh#L102-L103",
           "version": "repo-lines-v1:sha256:ccbc7621adb805f0b928404affba27396c46a3904016b0856b3ee915c7f698a0:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODlmMDU4ZjMyNmE0MDY3NjUyOGQzYWJmNjBlNTdmNWI5MzIxOTA5ZTg1NGRiYmY2NDk5Nzc1M2Y0NTVjZGNiZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZWU3ZTgzZmY0YmY2OWM3YTBiYThkZjgwNmY2MTJjYWM3NjdjYzY0NjMxZDQwOTc3YmExNGIxMTA0ZjYxMGEyNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDhjOTFmODRkNjg2NTFlZTRiYzY2NjA1NDdkODg5MmJhOWE0MWZhNmIxM2Y4YjhhODIwMTNmNzk4ZWIyZTgyOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGZkZDExYzYwMzliNmI2NGM4ZGY2ZGU1MzVjY2JhMmM5ZGJhOGUzYTIyNzJhMWQwMzJiZWE4NWMyOTFiMjhmNSJ9"
         }
       ]
@@ -41,7 +41,7 @@
       "statement": "graphify is installed from the graphifyy PyPI package as the graphify CLI.",
       "evidence": [
         {
-          "resource": "repo://install.sh#L86-L87",
+          "resource": "repo://install.sh#L97-L98",
           "version": "repo-lines-v1:sha256:70075b4628f3c5134284919b996a36c58239dae6ea3d0532fc6542d0c183c35e:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWI0NmFhNGU3ZmIzMjVkMDNmYjkwMzRiMDg4MjZmOTk0M2FmMTNhYzI1YTFmMGNhNjU3Mjk1MTliZDQzY2NlMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODI2NmZjNmE3Mzc3M2EwY2YzY2EyMjhhNzQwMWU2MmY0YzAxOWZjNDMxNjUxYWQ2MDgwNThlYjkyNjZhMDZiMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjYyYjBjNDM4MmU5ZTY3ZTIxODY1NzQxODJlYTQxODQ2ZmRiZGEzODIzMzliN2Y5NjgyNzliYzBkYTA0Y2VjMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDhjOTFmODRkNjg2NTFlZTRiYzY2NjA1NDdkODg5MmJhOWE0MWZhNmIxM2Y4YjhhODIwMTNmNzk4ZWIyZTgyOSJ9"
         }
       ]
@@ -78,11 +78,11 @@
     },
     {
       "id": "claim_facda5f5c64e460280d089ce5d2863fa",
-      "statement": "The workflow installs openwiki@0.7.0 with mermaid and jsdom and runs openwiki code --update --print with the openai provider, continuing on error.",
+      "statement": "The workflow installs openwiki@0.7.2 with mermaid and jsdom and runs openwiki code --update --print with the openai provider, continuing on error.",
       "evidence": [
         {
           "resource": "repo://.github/workflows/openwiki-update.yml#L29-L48",
-          "version": "repo-lines-v1:sha256:59ac85a69b325775b88b30d4d28ada36977763ceb974347a6ca316d75349d665:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg2Y2UwYjBkM2IzODEyMmJjMjc1MTVhOGQ5Njk2MTVkOWUxMGUyODA2NDRmNzYxMjIxZDA0NDc5YWQyNTM5M2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4ZjhiODAyNzQxYWZjN2ZiMzg0MGZlY2RjNDNkN2Y4ZTQwMjNiYmZjYjViN2VjNjVlZTA4ODc5OGQ4NTE3MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIzZjNiODgwMmIzMTBmZjJhZGQwMDI2YjgyZWUyZTllNTcxNTkxMmVhZjA4MWFmODZjZTExMGRkNjQyZmMxYTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0ZTc5NGRkZjMyYTNlMmRhYWFkODgyNjMxM2MyNGY0ZTRjZGE2ZjYxYWJmNDE3ZTQ4OWJlMzlkNWI5OGE1NTkifQ"
+          "version": "repo-lines-v1:sha256:8c26e7a819aef8814ce1d66d65d348dd96dde5fe5b81cae72335847a0e392943:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg2Y2UwYjBkM2IzODEyMmJjMjc1MTVhOGQ5Njk2MTVkOWUxMGUyODA2NDRmNzYxMjIxZDA0NDc5YWQyNTM5M2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4ZjhiODAyNzQxYWZjN2ZiMzg0MGZlY2RjNDNkN2Y4ZTQwMjNiYmZjYjViN2VjNjVlZTA4ODc5OGQ4NTE3MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIzZjNiODgwMmIzMTBmZjJhZGQwMDI2YjgyZWUyZTllNTcxNTkxMmVhZjA4MWFmODZjZTExMGRkNjQyZmMxYTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0ZTc5NGRkZjMyYTNlMmRhYWFkODgyNjMxM2MyNGY0ZTRjZGE2ZjYxYWJmNDE3ZTQ4OWJlMzlkNWI5OGE1NTkifQ"
         }
       ]
     },
@@ -108,7 +108,7 @@
     }
   ],
   "verification": {
-    "by": "openwiki/0.7.0",
-    "at": "2026-10-05T04:01:37.525Z"
+    "by": "openwiki/0.7.2",
+    "at": "2026-10-27T17:51:57.686Z"
   }
 }

@@ -3,9 +3,6 @@ type: operations
 title: "Project memory: graphify and OpenWiki"
 description: The two shared project-memory layers TokenWar installs — graphify (structural graph) and OpenWiki (grounded Markdown wiki) — how they are installed and upgraded, and the scheduled openwiki-update workflow.
 tags: [graphify, openwiki, project-memory, ci]
-verified:
-  - by: openwiki/0.7.0
-    at: 2026-10-05T04:01:37.525Z
 sources:
   - id: openwiki-source-6d4b4e707b8d60b6ccfa3425
     resource: repo://.github/workflows/openwiki-update.yml
@@ -15,7 +12,10 @@ sources:
     resource: repo://install.sh
   - id: openwiki-source-1e2898c546292dad2bfa5898
     resource: repo://tests/graphify.bats
-generated: { by: "claude-code", at: "2026-10-05T04:01:37.525Z" }
+generated: { by: "claude-code", at: "2026-10-27T17:51:57.686Z" }
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-27T17:51:57.686Z
 ---
 
 # Project memory: graphify and OpenWiki
@@ -61,7 +61,7 @@ OpenWiki is upgraded by `tokenwar upgrade` via `npm install -g openwiki@latest`;
 |---|---|
 | Triggers | `workflow_dispatch` and daily cron `0 8 * * *` |
 | Checkout | `fetch-depth: 0`, so `openwiki code --update` can diff HEAD against the last documented commit |
-| Toolchain | Node 22; `npm install --global openwiki@0.7.0 mermaid@11.16.0 jsdom@29.1.1` (mermaid/jsdom only validate Mermaid diagrams) |
+| Toolchain | Node 22; `npm install --global openwiki@0.7.2 mermaid@11.16.0 jsdom@29.1.1` (mermaid/jsdom only validate Mermaid diagrams) |
 | Run | `openwiki code --update --print`, provider `openai`, model `gpt-5.6-terra`, `continue-on-error: true`; secrets `OPENAI_API_KEY`, `OPENWIKI_LANGSMITH_API_KEY`, optional `LANGSMITH_API_KEY` tracing |
 | Output | removes `openwiki/.run.json`, then opens a PR on branch `openwiki/update` (`docs: update OpenWiki`) staging `openwiki`, `AGENTS.md`, the workflow, and `CLAUDE.md` only if present |
 | Failure | the PR still carries pages completed before the failure (merge it to keep that progress as the baseline); a final step re-fails the job |

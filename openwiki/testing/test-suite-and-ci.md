@@ -3,27 +3,31 @@ type: testing
 title: Test suite and CI
 description: bats test layout, mocking conventions, SQLite fixtures, running the suite on Windows in both MSYS modes, act, and the GitHub workflows.
 tags: [tests, bats, ci, github-actions, windows, act, openwiki]
-verified:
-  - by: openwiki/0.7.0
-    at: 2026-10-05T04:01:37.525Z
 sources:
   - id: openwiki-source-164e2da859b5277df81c7d94
     resource: repo://.github/workflows/ci.yml
   - id: openwiki-source-6d4b4e707b8d60b6ccfa3425
     resource: repo://.github/workflows/openwiki-update.yml
+  - id: openwiki-source-cb0f48698229910e3c22e879
+    resource: repo://scripts/bundle.sh
+  - id: openwiki-source-1b30304570f2c48e398108f5
+    resource: repo://tests/bundle.bats
   - id: openwiki-source-393eb6db4d0e8f351ac6d2ad
     resource: repo://tests/gain.bats
   - id: openwiki-source-9666ee7208c6e3243cdfb1e6
     resource: repo://tests/history.bats
   - id: openwiki-source-44ae2da287d0f1976ea724ce
     resource: repo://tests/sqlite_helper.bash
-generated: { by: "claude-code", at: "2026-10-05T04:01:37.525Z" }
+generated: { by: "claude-code", at: "2026-10-27T17:51:57.686Z" }
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-27T17:51:57.686Z
 ---
 
 # Test suite and CI
 
 tokenwar is tested with [bats](https://github.com/bats-core/bats-core). The
-suite has **24 `.bats` files and 287 tests** in `tests/`, plus one Node test
+suite has **25 `.bats` files and 306 tests** in `tests/`, plus one Node test
 (`tests/history.test.mjs`) that `tests/history.bats` runs with `node --test`.
 
 ## Layout
@@ -31,7 +35,14 @@ suite has **24 `.bats` files and 287 tests** in `tests/`, plus one Node test
 Each script has its own test file: `gain.bats`, `status.bats`,
 `check-updates.bats`, `upgrade.bats`, `rtk-update.bats`, `install.bats`,
 `pxpipe-claude.bats`, `pxpipe-desktop.bats`, `scan.bats`, `parse.bats`,
-`providers.bats`, `windows.bats`, and so on. Cross-cutting behaviour has its own
+`providers.bats`, `windows.bats`, and so on. `bundle.bats` replaces `toggle.sh`
+with a fake through `TOKENWAR_TOGGLE_SCRIPT` and checks that a standalone tool
+(`toggle.sh` exit 3) is reported as "manual", not as a failure. User-visible
+changes are listed in `CHANGELOG.md` at the repo root.
+
+On Windows, bats can print `Executed N instead of expected M tests` and exit 1
+with no `not ok` line: tests whose names contain non-ASCII characters (for example an em dash) are not
+counted by the runner. Read the `not ok` lines, not the exit code alone. Cross-cutting behaviour has its own
 files as well, for example `upgrade-answers.bats` (interactive prompt handling),
 `status-fallback.bats` and `opencode-functional.bats`.
 
@@ -124,7 +135,7 @@ also be started manually (`workflow_dispatch`). It needs
 
 1. Check out the full history and set up Node. All actions are pinned by commit
    SHA.
-2. Install `openwiki@0.7.0` together with the Mermaid tooling it needs to
+2. Install `openwiki@0.7.2` together with the Mermaid tooling it needs to
    validate diagrams.
 3. Run `openwiki code --update --print`, using the provider and model set in
    the workflow (`OPENWIKI_PROVIDER`, `OPENWIKI_MODEL_ID`). API keys come from

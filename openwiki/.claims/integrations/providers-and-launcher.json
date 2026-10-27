@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:7483979b38b0c881d17a4c6f007e83a582a01273c3c9e4ea0c8903fe031409a0",
+  "pageVersion": "sha256:b3c7e3c8466548d7d047de61f6fea9b8f0a7f8fbb5d7f22515dafe9185b7e105",
   "claims": [
     {
       "id": "claim_2c4dbae0f4b34eb2bbf98cc58e98055b",
       "statement": "providers.sh is the single registry of six AI coding providers indexed 0..PROVIDER_COUNT-1, consumed by gain.sh, status.sh, check.sh, check-updates.sh and the statusline.",
       "evidence": [
         {
-          "resource": "repo://scripts/lib/providers.sh#L1-L39",
-          "version": "repo-lines-v1:sha256:24e9eb9efed9c1a5c959e7ed3417b5d8ecb9a5904f4aa3f71e2602f7bb50bbe8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZGRiNjg3NWY1MWViZTY2ZjA1NmZmMjI2OTQ1MjdjZjM3MGI0OGQ0M2U5ZDlmMDI2MTI0Y2ZmODk0ZDE0OGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1MDc4N2RiYWU0OTViYTkwZDQ0ZmJmM2VjMjNmN2YxYmQ0NTgxOWQ3NDIxMGVhZDIyNDk0ZDJlMDI1NDU5MzEifQ"
+          "resource": "repo://scripts/lib/providers.sh#L1-L38",
+          "version": "repo-lines-v1:sha256:8396c44a6adb352cf34d2614cd1670e8f472c4856d47fa19fa13a61b674367c0:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZGRiNjg3NWY1MWViZTY2ZjA1NmZmMjI2OTQ1MjdjZjM3MGI0OGQ0M2U5ZDlmMDI2MTI0Y2ZmODk0ZDE0OGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1MDc4N2RiYWU0OTViYTkwZDQ0ZmJmM2VjMjNmN2YxYmQ0NTgxOWQ3NDIxMGVhZDIyNDk0ZDJlMDI1NDU5MzEifQ"
         }
       ]
     },
@@ -31,7 +31,7 @@
           "version": "repo-lines-v1:sha256:26d6c8c5620cb548776f93e46d3b34ae71506155850a86ee6a92bd4359904c73:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWRkYzQ3MDkwNTE5YTIwYTc0ZGEyNDE0ODMyYzAyMjNiYjRmYzRlNDNhYmNkZGY4MDRmMjVjMzViNGJlMTdmOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjZmNTNmZGY0M2ZhMzUyMjQ3ODM5OGJlMDdkMjZiODAyZDRmNDdlMmQzNDIzNWJhYzI4MDZkNjc0N2I5ZTZmZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGYyMTVjMjE0YjdjMjFhODNiYzk0ZTcyNDgyM2M4ZTk4NTM1Y2YxZTQyOTIyMzJjMTRjNTEyYzllNjBhZmUzYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTE5ODRmMjg1ODg3OGMzNDAyMmNjNTQ0NDQ2NWM0ZjU2NzNhMTRkZWE0YTU3YTU2ZGJlN2Y5MDYzYTY4NDBjOCJ9"
         },
         {
-          "resource": "repo://scripts/lib/providers.sh#L83-L85",
+          "resource": "repo://scripts/lib/providers.sh#L82-L84",
           "version": "repo-lines-v1:sha256:7f6a570d042a9d0be6333b554230018c0b9a1b7a313f71b9ade0f786e34b3221:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTVmZTVmMzYwMDI5YjMzMjk4YmY5MTgwYzMyNGNlN2IyODViN2Y1NWVkY2FjZWExNmNmMjI2NGQxMTY1M2VmZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODgyMTVmZTM4MjFlYmQzYzNhMGYxMmExZTliMGZjNDhhODYyMDcxZWRkNDJlY2Q2M2FmOTUwMGQ4YjFhNDE4OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzI5NTFlODJkZDNkNGZmZGFiZmQ4YjVjZjRkYTdiMWQwNmJjYmIzMjRhYmQ0ZjM1MzdjNzJiN2M5MDc3NDk0YSJ9"
         }
       ]
@@ -41,26 +41,26 @@
       "statement": "Copilot AI credits are read from total_nano_aiu at 1e9 nano-AIU per credit, and Copilot's dollar column is an API-equivalent valuation, not an invoice.",
       "evidence": [
         {
-          "resource": "repo://scripts/lib/providers.sh#L195-L210",
+          "resource": "repo://scripts/lib/providers.sh#L194-L209",
           "version": "repo-lines-v1:sha256:9e9c52098a5c09d01c58b2f614d23c208b599c3e045d7498bdd94caf4dc2a8c5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyMDVlZWI1YjdiNzEyZjg4YjczNDc4ZDZmZjNhYjM0YWMxYzY3ZGNmNGI3NzQzZjFkNmZkY2Y2ZDU2MDhkMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzYjg1NDBmZmQwMTkyOTMzZjA1ZTkxMjFiNmM2NjI5ZDI4NDZmOGQ2ZWRlZDg2ZTJhNGQ4MmMwOTg2ZDNlNjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4Yzk3OTk4MzZhYjRlNTIzMjFjZGQzMzkyZjViY2ZiOTk4MTAyNjhjYTRjY2EzMTk2NmM4ZWUxZTEyYWE4MzcifQ"
         },
         {
-          "resource": "repo://scripts/lib/providers.sh#L52-L54",
+          "resource": "repo://scripts/lib/providers.sh#L51-L53",
           "version": "repo-lines-v1:sha256:53bbac85ceacd22558fce034c5291742a5a732e3f8363122699726e7e996a5d6:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTI2MGI0MzhhOTM2ZGI5ZDI0NGFjZmRkYjFlMmY5YTAyZTkxOWNlYmU2NTUxMjE4YWVhNzQwMTM0MGVjNWNiNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTU0NzAyYzY2ZDQ2NDJiNTM1NmI0ZTZjNzRlYzA2NmViMGE0NjYwMDVhZjhkNjk1MzkwNGNiY2ZiN2Y0NWVkOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzk3OTM4NGM5YzFiZjVmY2I1NGM0YTY0YzUyYWYzZTQ1YjM2ZGNlZTM1ZjU1MTc2NGIyZGQzMWYwYjljZjVmZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjc0YWY2NjY0MGRmMGE0YTIzZjJhNDZjMGJlNjFiOTEwZmIwOTcxMTg4ZmQ5NzNkYWJiM2MyMDM1YWM4NjZiMSJ9"
         }
       ]
     },
     {
       "id": "claim_436bf811393f41bd9253f53dfdcca8ca",
-      "statement": "install.sh wraps codex, gemini, kimi, opencode and copilot in shell functions that run tokenwar-launch.sh before the real CLI, and routes claude through pxpipe-claude.sh.",
+      "statement": "install.sh wraps codex, gemini, kimi, opencode and copilot in shell functions that run tokenwar-launch.sh before the real CLI, routes claude through pxpipe-claude.sh, and writes the functions against TOKENWAR_DIR (written out in full when custom).",
       "evidence": [
         {
-          "resource": "repo://install.sh#L111-L118",
-          "version": "repo-lines-v1:sha256:be0f5c4fd5aa3ee6d5ba1f00dd3313e527b92d956ca5461dc8bc3733f2c3a591:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTk2OTMwY2FkMzQ2NTJkYWQ2MjllODVjNjFhMzI0ZGI1OGRjYjRlOGZjOTg3MWM5ZDNlZmU2NzI5ZGEzMjNlMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDI1MjRjNzcyYWU2ODMxOTA1M2FjNGJkMjMzMjJlYzRiOGQzOWRiZmFlMTY2Nzk2ODEyMzkwOTMwMjI3YWY5MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGUyZmNkZmJhOTYzYjc0NmEwOGRhOWFmMWZjOWM1MWUxNjNlMDg3MmJiMWUxMzliYjRjMDM5MmU3YTJkYzAyYSJ9"
+          "resource": "repo://install.sh#L285-L330",
+          "version": "repo-lines-v1:sha256:e67dd908dba98d54e702ac4c239da34eebd63b0883605874aec4b081c1105255:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdkNDgxODdhOWU1NDExNDE4MjY2ZmEyZTQzNGE4Y2E4NzhlNWIwZGEzMWEyNTFkN2ZhMDBkNTFjMTIxMmJhNjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRlODNmYjhiMjA2NTAzN2RiNjg0ZmQ3OGZhZjg4NTNmNTE4NjVkOTc3ZTQzMGI2ZGRkNzJhMDQ5YzQ0NWRlNzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImViYTU0ODJkYjFkZWQ0YmFlNmU0M2M2OGM3YjM2MzM3M2Q3ZmVlMjljZmI1NTZiNDI3MDcxZTc2MDRkYWRkNzgifQ"
         },
         {
-          "resource": "repo://install.sh#L285-L307",
-          "version": "repo-lines-v1:sha256:47dd72251e750d85b30951a5847947271e2d06886d17274393b0fd9ae81b7986:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2OWZlOTk4NTI3MjBlZmFhM2IzMWI1ZTNlNTE1ZjRmNjExMmNiY2MxMjhhNWJhZmU2NTg2M2QyZjVmZDU0ZDUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmNTNiOTMyZDUzNzgwYmMyMzg5OWY3YTIxYTM3OTA1MDQyNjA3N2VmMmNjMTYyNTFjMDhkYjYwNDZjZDk3ZDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1MmZlZjdlNTJhNzZlYzc5YTcyYzRjMzcyZDU4NDUzNjVjNjc1YTdlMDljOGJhNDk2YTM1MDljMWQ2YmE5MzMifQ"
+          "resource": "repo://install.sh#L36-L48",
+          "version": "repo-lines-v1:sha256:29279918f84699ac8e1bbdd3bdfa139344b24f75e7c5327f5572da955cc9e10c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3ZGRjYjE2ZWZhYWRhNGZlOGEzMjkxNTM4OWVkNGViZjhlMjg4YjFjYjgyODk5ZDY5ZmZjN2IwODM0YWRhZmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2NTU5OWM1MjlkZTQ5NWFiZDYyNDhlODE3NTlhYjZjOTJiYWVkNmFkODdmZjM0ZTYzNDRiMTY5ZTcwNzkxOWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiODdmMjlkNzg5NzI2ZjEzNWQ1YmY0NTkxNmRiYzFjYzRmN2JmZWUxMmI5NDAxOWVmYjY4YmJkODhkZDFhZTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIwN2FlYjNjMTYzYmZhMDEwNjYzMDlkOTg5MzM0ODc3MWY3MzY0ZTVjZjlhNGQxMGY4YTA0MDVmZGNiNzc2MjQifQ"
         }
       ]
     },
@@ -93,7 +93,7 @@
       "statement": "copilot.sh check is read-only, wire applies missing wiring after confirmation, wire --yes skips the prompt, and install.sh --with-copilot delegates to it.",
       "evidence": [
         {
-          "resource": "repo://install.sh#L572-L580",
+          "resource": "repo://install.sh#L599-L607",
           "version": "repo-lines-v1:sha256:3a74744c6ba33a8260712e51091e70f66b542139a873c94a87001913349b7eab:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDY5MDRjZjMyYWI5NGRlMDVjNzU0MjVhNjE1MzU2YjUxMTMwN2NmM2E0ZWNkYjk5ZTk2OGUwNzZkOTE4MDg3NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTgzNjBhYjJjNGU5NTYyOWUxNTdiMTI2MjViNmJjNmI1YmEwMTc4NWQ3YzA5OTViMmNiY2M1ZTYyZWJjMDY2OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzVmYzQ4ZGU2Yzk3ZTk2M2VkZTVkYzU3ZDZlNmVkMzI0MzMzMzU1YmM2NTk3YzY2ZTQwZjk5MzMyZWUwOGUzYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2VjMDRjZmVjYTgwZmMxMmNjZTI2N2E0YTM5Y2Y0NGNiZDQyMGZiNGU2ODE2MDg2MTU3ODg2NGE3NjNjOGEwOSJ9"
         },
         {
@@ -111,10 +111,24 @@
           "version": "repo-lines-v1:sha256:d0c4be03ed48a3eab4c3aab59c8a769fb476cbc9991fc2c4df357637b6a923cb:eyJzZWxlY3RlZExpbmVDb3VudCI6NzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAwNzIyZTA4YTBkYjExZmRhMzcwOGY1NDM5Nzg2MTVmZTUwYzhjMjMzNmJjYmNiMDhlZWNlN2JiMzEzNGM3MjEifQ"
         }
       ]
+    },
+    {
+      "id": "claim_2b59977414204ef190de669a2e530273",
+      "statement": "copilot.sh reports a skill as wired only when the installed SKILL.md is identical to the plugin copy (cmp -s), so a plugin update makes it not-wired until rewired.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/copilot.sh",
+          "version": "repo-file-v1:sha256:8e02f15467276bc73bce9417b0e6c28bbafb533d115435faec99d5e277d20492"
+        },
+        {
+          "resource": "repo://tests/copilot.bats",
+          "version": "repo-file-v1:sha256:0a5cb87fefef816963eec2dda0eb848a1d7d6c93bd896ec4bc28ad4cb7a1b00b"
+        }
+      ]
     }
   ],
   "verification": {
-    "by": "openwiki/0.7.0",
-    "at": "2026-10-05T04:01:37.525Z"
+    "by": "openwiki/0.7.2",
+    "at": "2026-10-27T17:51:57.686Z"
   }
 }

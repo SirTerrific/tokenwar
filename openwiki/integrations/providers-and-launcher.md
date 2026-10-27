@@ -3,9 +3,6 @@ type: integration
 title: Other providers, launcher and Copilot
 description: How tokenwar treats the non-Claude coding agents — the provider registry and its native telemetry sources, the launch banner shell functions for Codex, Gemini, Kimi, opencode and Copilot, the Copilot wiring of hooks, skills and MCP, and the functional RTK/opencode proof.
 tags: [providers, launcher, copilot, opencode, codex, telemetry]
-verified:
-  - by: openwiki/0.7.0
-    at: 2026-10-05T04:01:37.525Z
 sources:
   - id: openwiki-source-03ffc32a0ca502ab67c54b25
     resource: repo://install.sh
@@ -17,7 +14,12 @@ sources:
     resource: repo://scripts/opencode-functional-test.sh
   - id: openwiki-source-a53d9dd5f6f7f244ccfbec7e
     resource: repo://scripts/tokenwar-launch.sh
-generated: { by: "claude-code", at: "2026-10-05T04:01:37.525Z" }
+  - id: openwiki-source-087e77a87dbe66de1154301a
+    resource: repo://tests/copilot.bats
+generated: { by: "claude-code", at: "2026-10-27T17:51:57.686Z" }
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-27T17:51:57.686Z
 ---
 
 # Other providers, launcher and Copilot
@@ -45,7 +47,7 @@ Copilot's AI credits come from `total_nano_aiu` (1 credit = 1e9 nano-AIU). Copil
 ## Launch banner
 
 <!-- openwiki: broken internal link [/openwiki/integrations/pxpipe.md] link "/openwiki/integrations/pxpipe.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-`install.sh` writes a shell-integration block into the user's rc file. For each CLI in `WRAPPED_PROVIDER_CLIS` (codex, gemini, kimi, opencode, copilot) it defines a function that first runs `scripts/tokenwar-launch.sh <cli>` and then the real CLI. The same block defines `tokenwar()` and routes `claude()` through `pxpipe-claude.sh` (see [pxpipe](/openwiki/integrations/pxpipe.md)).
+`install.sh` writes a shell-integration block into the user's rc file. For each CLI in `WRAPPED_PROVIDER_CLIS` (codex, gemini, kimi, opencode, copilot) it defines a function that first runs `scripts/tokenwar-launch.sh <cli>` and then the real CLI. The block resolves the install directory from `TOKENWAR_DIR` (default `~/.claude/skills/tokenwar`); a custom directory is written out in full so the functions still point at the checkout that was actually cloned. The same block defines `tokenwar()` and routes `claude()` through `pxpipe-claude.sh` (see [pxpipe](/openwiki/integrations/pxpipe.md)).
 
 None of these CLIs exposes a persistent status bar, so `tokenwar-launch.sh` prints the stack once at launch — the same renderer as the Claude statusline — plus a one-line hint to run `tokenwar status` and `tokenwar gain`. It stays silent for subcommands that must not get a banner (`exec`, `completion`, `mcp`, `--version`, `--help`, ...), when stdout is not a terminal, and for non-interactive runs such as `-p` or `--output-format`, so scripted output is never polluted. It always exits 0, so a banner failure never blocks the CLI.
 
@@ -63,7 +65,7 @@ None of these CLIs exposes a persistent status bar, so `tokenwar-launch.sh` prin
 | context-mode | — | not wired: its manifest pins an absolute, version-specific interpreter path that would break on upgrade |
 | pxpipe | — | not wired: it proxies the Anthropic API path, and Copilot talks to GitHub's endpoint |
 
-`copilot.sh` (or `check`) is read-only and exits 0 when every installed tool is wired. `copilot.sh wire` applies missing wiring after confirmation; `wire --yes` skips the prompt. `install.sh --with-copilot` delegates to this script, so the wiring has one implementation.
+A skill counts as wired only when the installed `SKILL.md` is byte-identical to the plugin's copy (`cmp -s`), so a caveman or ponytail update makes it report not-wired until `wire` runs again; existence alone is not enough. `copilot.sh` (or `check`) is read-only and exits 0 when every installed tool is wired. `copilot.sh wire` applies missing wiring after confirmation; `wire --yes` skips the prompt. `install.sh --with-copilot` delegates to this script, so the wiring has one implementation.
 
 ## opencode functional proof
 

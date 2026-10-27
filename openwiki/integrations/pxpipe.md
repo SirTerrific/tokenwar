@@ -3,9 +3,6 @@ type: integration
 title: pxpipe integration (terminal and desktop)
 description: How TokenWar routes Claude Code through pxpipe — the terminal `claude` wrapper (pxpipe warp) and the desktop proxy (pxpipe-desktop.mjs + settings.json + Startup shortcut).
 tags: [pxpipe, proxy, windows, desktop, claude-code]
-verified:
-  - by: openwiki/0.7.0
-    at: 2026-10-05T04:01:37.525Z
 sources:
   - id: openwiki-source-5745bdc3f982182a15424be8
     resource: repo://docs/windows.md
@@ -17,7 +14,12 @@ sources:
     resource: repo://scripts/pxpipe-desktop.sh
   - id: openwiki-source-c6ad78c4f811fe2c4e420c25
     resource: repo://tests/pxpipe-desktop.bats
-generated: { by: "claude-code", at: "2026-10-05T04:01:37.525Z" }
+  - id: openwiki-source-4ccef873414d626ff66115e6
+    resource: repo://uninstall.sh
+generated: { by: "claude-code", at: "2026-10-27T17:51:57.686Z" }
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-27T17:51:57.686Z
 ---
 
 # pxpipe integration (terminal and desktop)
@@ -57,8 +59,8 @@ A long-lived Node HTTPS (CONNECT) proxy on `127.0.0.1:47822` (`TW_PXPIPE_CONNECT
 
 | Subcommand | Effect |
 |---|---|
-| `on` | Requires `pxpipe` (0.14+, for its CA). Starts the proxy hidden if it is not up (log `~/.pxpipe/desktop.log`, waits up to `TW_PXPIPE_WAIT_SECS`, default 20 s). **Only if it came up**, adds a Startup-folder shortcut `tokenwar-pxpipe-desktop.lnk` (hidden mintty running `pxpipe-desktop.sh run`) and writes `HTTPS_PROXY`, `NO_PROXY=localhost,127.0.0.1,::1` and `NODE_EXTRA_CA_CERTS` into `settings.json` (first run backs it up to `settings.json.tokenwar-pxpipe.bak`). Then quit the desktop app from the tray and reopen it. |
-| `off` | Removes only the keys it owns (`HTTPS_PROXY` only while it still points at this proxy — a foreign proxy is left alone) and the Startup shortcut. The running proxy becomes unused and stops at logoff. |
+| `on` | Requires `pxpipe` (0.14+, for its CA). Starts the proxy hidden if it is not up (log `~/.pxpipe/desktop.log`, waits up to `TW_PXPIPE_WAIT_SECS`, default 20 s). **Only if it came up**, adds a Startup-folder shortcut `tokenwar-pxpipe-desktop.lnk` (hidden mintty running `pxpipe-desktop.sh run`) and writes `HTTPS_PROXY`, `NO_PROXY=localhost,127.0.0.1,::1` and `NODE_EXTRA_CA_CERTS` into `settings.json` (first run backs it up to `settings.json.tokenwar-pxpipe.bak`). Values the user already had for those three keys are saved once to `settings.json.tokenwar-pxpipe.prev`. If `settings.json` is not valid JSON, the write fails, the file is left untouched, and `on` reports the failure instead of claiming success. Then quit the desktop app from the tray and reopen it. |
+| `off` | Removes only the keys it owns (`HTTPS_PROXY` only while it still points at this proxy — a foreign proxy is left alone), restores the values saved in the `.prev` file, and removes the Startup shortcut. If `settings.json` cannot be updated, `off` warns and exits non-zero rather than saying it removed the settings. `uninstall.sh` runs `pxpipe-desktop.sh off` before deleting the install directory, so `HTTPS_PROXY` never stays pointing at a proxy whose script no longer exists. The running proxy becomes unused and stops at logoff. |
 | `status` | Reports settings wiring, desktop proxy, pxpipe proxy and autostart; warns loudly when settings are wired to a proxy that is down. |
 | `run` | The supervised loop the Startup shortcut runs: restarts the daemon if it dies. |
 
@@ -84,7 +86,7 @@ The dashboard's model chips are in-memory only. Other models are passed through 
 ## Tests
 
 - `tests/pxpipe-claude.bats` — warp when up; start-then-warp; fallback when the proxy will not start or pxpipe is missing; `TOKENWAR_PXPIPE=off`; non-model commands skip the proxy.
-- `tests/pxpipe-desktop.bats` — `on` keeps other settings and never wires to a proxy that did not start; Startup shortcut add/remove; `off` removes only its keys and spares a foreign proxy; `status` flags a down proxy; dispatch from `tokenwar pxpipe desktop`.
+- `tests/pxpipe-desktop.bats` — `on` keeps other settings and never wires to a proxy that did not start; Startup shortcut add/remove; `off` removes only its keys and spares a foreign proxy; user values are restored on `off`; invalid JSON is reported, not hidden; `status` flags a down proxy; dispatch from `tokenwar pxpipe desktop`.
 
 <!-- openwiki: broken internal link [/openwiki/platform/windows.md] link "/openwiki/platform/windows.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
 <!-- openwiki: broken internal link [/openwiki/workflows/install-and-uninstall.md] link "/openwiki/workflows/install-and-uninstall.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
