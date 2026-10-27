@@ -539,3 +539,36 @@ EOF
     run bash "$SCRIPT" --bogus
     [ "$status" -ne 0 ]
 }
+
+@test "an unparseable settings.json is left untouched, install carries on" {
+    mock_claude_empty
+    mkdir -p "$HOME/.claude"
+    printf '{\n  "hooks": {"PreToolUse": []},\n}\n' > "$HOME/.claude/settings.json"
+    cp "$HOME/.claude/settings.json" "$HOME/before.json"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"not valid JSON"* ]]
+    cmp -s "$HOME/before.json" "$HOME/.claude/settings.json"
+}
+
+@test "uninstall.sh unwires the pxpipe desktop proxy before deleting its script" {
+    mock_claude_empty
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    # The fake checkout has no scripts: give it the real pxpipe-desktop.sh.
+    cp "$BATS_TEST_DIRNAME/../scripts/pxpipe-desktop.sh" "$TOKENWAR_DIR/scripts/"
+    mkdir -p "$TOKENWAR_DIR/scripts/lib"
+    cp "$BATS_TEST_DIRNAME/../scripts/lib/osdetect.sh" "$TOKENWAR_DIR/scripts/lib/"
+    export TW_STARTUP_DIR="$HOME/startup"; mkdir -p "$TW_STARTUP_DIR"
+    node -e '
+        const fs = require("fs"), f = process.argv[1];
+        const s = JSON.parse(fs.readFileSync(f, "utf8"));
+        s.env = { HTTPS_PROXY: "http://127.0.0.1:47822", NO_PROXY: "localhost", NODE_EXTRA_CA_CERTS: "/x/ca.pem", KEEP: "1" };
+        fs.writeFileSync(f, JSON.stringify(s));
+    ' "$(cygpath -m "$HOME/.claude/settings.json" 2>/dev/null || echo "$HOME/.claude/settings.json")"
+    run bash "$BATS_TEST_DIRNAME/../uninstall.sh"
+    [ "$status" -eq 0 ]
+    run grep -c 'HTTPS_PROXY' "$HOME/.claude/settings.json"
+    [ "$output" = "0" ]
+    grep -q '"KEEP"' "$HOME/.claude/settings.json"
+}

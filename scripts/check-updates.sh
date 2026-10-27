@@ -213,17 +213,17 @@ rtk_installed_version() {
     command -v "$RTK_BIN" >/dev/null 2>&1 || { echo ""; return; }
     # A trailing \r here never matches the semver regex in classify(), which
     # would report the tool as update-available on every single run.
-    "$RTK_BIN" --version 2>/dev/null | tw_strip_cr | awk '{print $2}'
+    "$RTK_BIN" --version 2>/dev/null | tw_strip_cr | awk '{print $2}' || true
 }
 
 pxpipe_installed_version() {
     command -v "$PXPIPE_BIN" >/dev/null 2>&1 || { echo ""; return; }
-    "$PXPIPE_BIN" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}'
+    "$PXPIPE_BIN" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}' || true
 }
 
 graphify_installed_version() {
     command -v "$GRAPHIFY_BIN" >/dev/null 2>&1 || { echo ""; return; }
-    "$GRAPHIFY_BIN" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}'
+    "$GRAPHIFY_BIN" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}' || true
 }
 
 # registry_version <url> <field> — the version a registry's JSON reports at
@@ -297,14 +297,14 @@ rtk_latest_version() {
     if command -v cargo >/dev/null 2>&1; then
         local repo_path
         repo_path=$(cargo install --list 2>/dev/null \
-            | awk '/^rtk v.* \(.*\):$/ { match($0, /\(([^)]+)\)/, m); print m[1]; exit }')
+            | awk '/^rtk v.* \(.*\):$/ { match($0, /\(([^)]+)\)/, m); print m[1]; exit }' || true)
         if [[ -n "$repo_path" && -d "$repo_path/.git" ]]; then
             git -C "$repo_path" fetch --quiet 2>/dev/null || true
             local branch ref
             branch=$(git -C "$repo_path" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo "")
             ref="${branch:-HEAD}"
             git_show_ref "$repo_path" "${ref}:Cargo.toml" \
-                | awk -F'"' '/^version[[:space:]]*=/ {print $2; exit}'
+                | awk -F'"' '/^version[[:space:]]*=/ {print $2; exit}' || true
             return
         fi
     fi

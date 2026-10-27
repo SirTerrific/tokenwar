@@ -106,7 +106,7 @@ rtk_version() {
     # tw_strip_cr: the version is the LAST field, so a CRLF-emitting native
     # Windows build would leave a trailing \r glued to it — enough to break the
     # semver compare in check-updates.sh and pin the tool at "update-available".
-    "$RTK_BIN" --version 2>/dev/null | tw_strip_cr | awk '{print $2}'
+    "$RTK_BIN" --version 2>/dev/null | tw_strip_cr | awk '{print $2}' || true
 }
 
 pxpipe_state() {
@@ -118,7 +118,7 @@ pxpipe_state() {
 
 pxpipe_version() {
     if ! command -v "$PXPIPE_BIN" >/dev/null 2>&1; then echo "-"; return; fi
-    "$PXPIPE_BIN" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}'
+    "$PXPIPE_BIN" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}' || true
 }
 
 # graphify: CLI on PATH + the skill registered with the assistant. A CLI without
@@ -136,7 +136,7 @@ graphify_state() {
 
 graphify_version() {
     if ! command -v "$GRAPHIFY_BIN" >/dev/null 2>&1; then echo "-"; return; fi
-    "$GRAPHIFY_BIN" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}'
+    "$GRAPHIFY_BIN" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}' || true
 }
 
 # Provider state detection

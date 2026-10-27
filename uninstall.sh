@@ -112,6 +112,14 @@ for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
 done
 unwire_block "$CLAUDE_MD" "$TW_MD_BEGIN" "$TW_MD_END" "context-mode routing"
 
+# Undo `tokenwar pxpipe desktop on` before its script is deleted: otherwise
+# settings.json keeps HTTPS_PROXY pointing at a proxy that never starts again.
+# `off` only removes the keys while they still point at our proxy.
+if [[ -f "$INSTALL_DIR/scripts/pxpipe-desktop.sh" ]]; then
+    bash "$INSTALL_DIR/scripts/pxpipe-desktop.sh" off >/dev/null 2>&1 \
+        || warn "could not unwire the pxpipe desktop proxy — remove env.HTTPS_PROXY from $SETTINGS_JSON by hand"
+fi
+
 if [[ -d "$INSTALL_DIR" ]]; then
     say "Removing $INSTALL_DIR"
     rm -rf "$INSTALL_DIR"

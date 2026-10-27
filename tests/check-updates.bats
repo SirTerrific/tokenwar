@@ -232,3 +232,13 @@ make_tokenwar_clone() {
     run bash "$tw/scripts/check-updates.sh" --force --quiet
     [ "$(cache_field tokenwar state)" = "up-to-date" ]
 }
+
+@test "a CLI whose --version fails still lets the cache be written" {
+    printf '#!/usr/bin/env bash\nexit 1\n' > "$MOCK_BIN/graphify"
+    chmod +x "$MOCK_BIN/graphify"
+    mock_version_cli pxpipe "0.10.0"
+    run bash "$SCRIPT" --force --quiet
+    [ "$status" -ne 1 ]
+    [ -f "$HOME/.claude/tokenwar/upgrade-check.json" ]
+    [ -n "$(cache_field pxpipe state)" ]
+}

@@ -16,7 +16,6 @@
 # The three SQLite-backed sources are read through tw_sqlite_rows, which runs
 # the same SQL under python3 or node:sqlite — see the engine note there.
 
-set -euo pipefail
 
 TW_PROVIDERS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=osdetect.sh
@@ -247,7 +246,7 @@ provider_version() {
     if ! command -v "$cli" >/dev/null 2>&1; then echo "-"; return; fi
     # A provider CLI reached through an npm .cmd shim can answer with CRLF; the
     # version is the last field, so the \r would ride along into every compare.
-    "$cli" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}' | sed 's/[.,;:]*$//'
+    "$cli" --version 2>/dev/null | tw_strip_cr | head -1 | sed 's/^[^0-9]*//' | awk '{print $1}' | sed 's/[.,;:]*$//' || true
 }
 
 # ── telemetry: total tokens saved per provider ────────────────────────

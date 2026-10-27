@@ -250,7 +250,12 @@ import { readFileSync, writeFileSync, copyFileSync } from "fs";
 const path = process.env.SETTINGS_JSON;
 const desired = process.env.STATUSLINE_CMD;
 let cfg = {};
-try { cfg = JSON.parse(readFileSync(path, "utf8")); } catch (e) { cfg = {}; }
+try { cfg = JSON.parse(readFileSync(path, "utf8")); } catch (e) {
+    // Never rewrite a file we could not parse: that would drop every hook,
+    // permission and env key the user has. Leave it for them to fix.
+    console.error(`    ${path} is not valid JSON (${e.message}) — statusLine not wired, file left untouched`);
+    process.exit(1);
+}
 const already = cfg.statusLine && cfg.statusLine.type === "command" && cfg.statusLine.command === desired;
 if (already) {
     console.log("    statusLine already wired — leaving settings.json alone");
@@ -261,7 +266,7 @@ copyFileSync(path, `${path}.bak-${stamp}`);
 cfg.statusLine = { type: "command", command: desired };
 writeFileSync(path, JSON.stringify(cfg, null, 2) + "\n");
 console.log(`    patched (backup at ${path}.bak-${stamp})`);
-'
+' || warn "statusLine skipped — fix $SETTINGS_JSON and re-run install.sh"
 
 # 4. wire shell integration (tokenwar + provider functions) into shell rc.
 #

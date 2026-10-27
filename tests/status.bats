@@ -303,3 +303,22 @@ EOF
         });
     '
 }
+
+@test "a CLI whose --version fails does not abort the report" {
+    # graphify with a broken interpreter: --version exits 1. Under set -euo
+    # pipefail that used to kill status.sh at the version line, printing nothing.
+    mock_claude_with_plugins '[
+      {"id":"context-mode@context-mode","version":"1.0.107","enabled":true},
+      {"id":"claude-mem@thedotmack","version":"12.1.4","enabled":true},
+      {"id":"caveman@caveman","version":"abc","enabled":true},
+      {"id":"ponytail@ponytail","version":"4.5.0","enabled":true}
+    ]'
+    mock_rtk_alive
+    mock_pxpipe_alive
+    printf '#!/usr/bin/env bash\necho "ModuleNotFoundError" >&2\nexit 1\n' > "$MOCK_BIN/graphify"
+    chmod +x "$MOCK_BIN/graphify"
+    run bash "$SCRIPT"
+    [[ "$output" == *"context-mode"*"OK"* ]]
+    [[ "$output" == *"graphify"* ]]
+    [[ "$output" == *"pxpipe"*"0.10.0"*"OK"* ]]
+}
