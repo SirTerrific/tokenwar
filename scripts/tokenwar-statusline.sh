@@ -52,8 +52,6 @@ readonly SLUG_MEM="claude-mem@thedotmack"
 readonly SLUG_CAVE="caveman@caveman"
 
 readonly VERSION_HASH_TRIM_LEN=7
-readonly SETTINGS_JSON="${HOME}/.claude/settings.json"
-readonly SETTINGS_LOCAL_JSON="${HOME}/.claude/settings.local.json"
 
 # ponytail (lazy-dev ruleset): now a real Claude Code plugin with a runtime mode
 # toggle. Its SessionStart hook writes ~/.claude/.ponytail-active with the live

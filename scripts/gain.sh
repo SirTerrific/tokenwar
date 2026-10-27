@@ -80,7 +80,8 @@ readonly GRAPHIFY_BENCHMARK_TIMEOUT_SECS=30
 # list price from anthropic.com/pricing, checked 2026-10-04. Prices move with
 # each model generation — re-check before trusting the $ column.
 # Index 0 of the provider registry is Claude: one price, one place.
-readonly CLAUDE_INPUT_USD_PER_MTOK="$(provider_input_usd_per_mtok 0)"
+CLAUDE_INPUT_USD_PER_MTOK="$(provider_input_usd_per_mtok 0)"
+readonly CLAUDE_INPUT_USD_PER_MTOK
 readonly CLAUDE_LABEL="Claude Opus 5.5"
 readonly MONTH_ROW_RE='^[0-9]{4}-[0-9]{2}[[:space:]]'
 

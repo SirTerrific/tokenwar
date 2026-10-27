@@ -39,6 +39,7 @@ SETTINGS_JSON="$HOME/.claude/settings.json"
 # the portable ~ / $HOME form; a custom TOKENWAR_DIR is written out in full so
 # every command points at the checkout that was actually cloned.
 if [[ "$INSTALL_DIR" == "$HOME/.claude/skills/tokenwar" ]]; then
+    # shellcheck disable=SC2088  # literal ~ on purpose: written to the user's shell config
     TW_STATUS_DIR='~/.claude/skills/tokenwar'
     TW_RC_DIR='$HOME/.claude/skills/tokenwar'
     STATUSLINE_CMD='bash ~/.claude/skills/tokenwar/scripts/tokenwar-statusline.sh'
