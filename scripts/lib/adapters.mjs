@@ -10,56 +10,12 @@
 // efficient usage.
 
 import { readFileSync } from "node:fs";
-import { classifyCommand, splitCommands } from "./parse.mjs";
+import { bump, classifyCommand, emptySession, splitCommands } from "./parse.mjs";
 
-// Shape every adapter returns. Mirrors what parseSessionFile produces.
+// Shape every adapter returns: the Claude session shape, plus the fields only
+// other clients fill in.
 export function emptyNormalized(path) {
-  return {
-    path,
-    client: null,
-    sessionId: null,
-    cwd: null,
-    model: null,
-    turns: 0,
-    freshInput: 0,
-    cacheCreate: 0,
-    cacheRead: 0,
-    output: 0,
-    cacheWriteTurns: 0,
-    cacheWriteTokensAfterFirst: 0,
-    cacheReadTurns: 0,
-    firstRequestTokens: 0,
-    peakInputTokens: 0,
-    contextWindow: null,
-    compactions: 0,
-    toolCalls: new Map(),
-    bashFamilies: new Map(),
-    bashHeads: new Map(),
-    bashCount: 0,
-    fileExtensions: new Map(),
-    skillsInvoked: new Map(),
-    mcpCalls: new Map(),
-    lanes: {
-      shell: { calls: 0, bytes: 0 },
-      search: { calls: 0, bytes: 0 },
-      read: { calls: 0, bytes: 0 },
-      web: { calls: 0, bytes: 0 },
-      test: { calls: 0, bytes: 0 },
-      mcp: { calls: 0, bytes: 0 },
-      fileRead: { calls: 0, bytes: 0 },
-    },
-    assistantProseChars: 0,
-    codeWrittenChars: 0,
-    resultSizes: [],
-    sidechainCalls: 0,
-    parseErrors: 0,
-    lines: 0,
-  };
-}
-
-function bump(map, key, amount = 1) {
-  if (!key) return;
-  map.set(key, (map.get(key) || 0) + amount);
+  return { ...emptySession(path), client: null, contextWindow: null };
 }
 
 function laneForFamily(family) {

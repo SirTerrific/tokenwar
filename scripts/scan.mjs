@@ -288,7 +288,7 @@ function main() {
   });
 
   // Cost of the dead listing, both ways round.
-  const avgTurns = Math.max(1, Math.round(aggregate.turns / aggregate.sessions));
+  const avgTurns = Math.max(1, Math.round(aggregate.turns / Math.max(1, aggregate.turnSessions)));
   const meanRewrite = aggregate.cacheWriteTurns > 0
     ? Math.round(aggregate.cacheWriteTokensAfterFirst / aggregate.cacheWriteTurns)
     : 0;

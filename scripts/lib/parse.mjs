@@ -189,7 +189,7 @@ export function listSessionFiles(root, { maxFiles = Infinity, since = null, patt
   return Number.isFinite(maxFiles) ? found.slice(0, maxFiles) : found;
 }
 
-function emptySession(path) {
+export function emptySession(path) {
   return {
     path,
     sessionId: null,
@@ -200,6 +200,8 @@ function emptySession(path) {
     // Provider-reported usage. Never estimated.
     freshInput: 0,
     cacheCreate: 0,
+    // Of cacheCreate, the part written with the 1-hour TTL (priced at 2x, not 1.25x).
+    cacheCreate1h: 0,
     cacheRead: 0,
     output: 0,
     // Cache behaviour: how often the prefix had to be rebuilt after turn 1.
@@ -235,7 +237,7 @@ function emptySession(path) {
   };
 }
 
-function bump(map, key, amount = 1) {
+export function bump(map, key, amount = 1) {
   if (!key) return;
   map.set(key, (map.get(key) || 0) + amount);
 }
@@ -318,6 +320,7 @@ export function parseSessionFile(path, { includeSidechain = false } = {}) {
       session.turns += 1;
       session.freshInput += fresh;
       session.cacheCreate += create;
+      session.cacheCreate1h += usage.cache_creation?.ephemeral_1h_input_tokens || 0;
       session.cacheRead += read;
       session.output += usage.output_tokens || 0;
 
@@ -406,9 +409,12 @@ function mergeMap(target, source) {
 export function aggregateSessions(sessions) {
   const total = {
     sessions: sessions.length,
+    // Sessions that carry usage: a client with no token logs (Gemini) has turns 0.
+    turnSessions: 0,
     turns: 0,
     freshInput: 0,
     cacheCreate: 0,
+    cacheCreate1h: 0,
     cacheRead: 0,
     output: 0,
     cacheWriteTurns: 0,
@@ -439,6 +445,8 @@ export function aggregateSessions(sessions) {
 
   for (const session of sessions) {
     total.turns += session.turns;
+    if (session.turns > 0) total.turnSessions += 1;
+    total.cacheCreate1h += session.cacheCreate1h || 0;
     total.freshInput += session.freshInput;
     total.cacheCreate += session.cacheCreate;
     total.cacheRead += session.cacheRead;

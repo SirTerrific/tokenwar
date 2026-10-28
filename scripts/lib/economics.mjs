@@ -52,7 +52,11 @@ export function dollars(tokens, perMillion) {
 // Actual spend from provider-reported usage. No estimation.
 export function observedCost(usage, price) {
   const input = dollars(usage.freshInput || 0, price.input);
-  const write = dollars(usage.cacheCreate || 0, price.input * CACHE_WRITE_5M_MULTIPLIER);
+  // The 1-hour TTL is billed at 2x input; the rest of the writes at the 5-minute 1.25x.
+  const write1h = Math.min(usage.cacheCreate1h || 0, usage.cacheCreate || 0);
+  const write =
+    dollars((usage.cacheCreate || 0) - write1h, price.input * CACHE_WRITE_5M_MULTIPLIER) +
+    dollars(write1h, price.input * CACHE_WRITE_1H_MULTIPLIER);
   const read = dollars(usage.cacheRead || 0, cacheReadRate(price));
   const output = dollars(usage.output || 0, price.output);
   return { input, write, read, output, total: input + write + read + output };

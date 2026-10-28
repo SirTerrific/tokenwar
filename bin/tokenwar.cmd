@@ -18,6 +18,8 @@ if not defined TW_BASH if exist "%ProgramFiles%\Git\bin\bash.exe" set "TW_BASH=%
 if not defined TW_BASH if exist "%ProgramFiles(x86)%\Git\bin\bash.exe" set "TW_BASH=%ProgramFiles(x86)%\Git\bin\bash.exe"
 if not defined TW_BASH if exist "%LOCALAPPDATA%\Programs\Git\bin\bash.exe" set "TW_BASH=%LOCALAPPDATA%\Programs\Git\bin\bash.exe"
 if not defined TW_BASH for %%B in (bash.exe) do if not defined TW_BASH set "TW_BASH=%%~$PATH:B"
+rem System32\bash.exe is the WSL launcher: it cannot run a Windows path.
+if not defined TOKENWAR_BASH if defined TW_BASH echo "%TW_BASH%"| findstr /i /c:"\system32\" >nul && set "TW_BASH="
 
 if not defined TW_BASH (
     echo tokenwar: no bash.exe found. Install Git for Windows, or set TOKENWAR_BASH. 1>&2

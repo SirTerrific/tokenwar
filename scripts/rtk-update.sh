@@ -112,13 +112,17 @@ new_exe="$(find "$work/x" -type f -name 'rtk.exe' | head -1)"
 target="${RTK_LOCAL_BIN}/rtk.exe"
 # A running exe cannot be overwritten on Windows, but it can be renamed: move
 # the old one aside first, so an rtk hook firing mid-update cannot block this.
+# The name is unique per run: a leftover from an earlier update may still be
+# locked by a running process, and renaming onto a locked file fails.
+old_exe="${target}.old.$$"
+rm -f "${target}.old" "${target}".old.* 2>/dev/null || true
 if [[ -e "$target" ]]; then
-    mv -f "$target" "${target}.old" || { warn "cannot move the current $target aside"; exit 1; }
+    mv -f "$target" "$old_exe" || { warn "cannot move the current $target aside"; exit 1; }
 fi
 if ! cp "$new_exe" "$target"; then
-    [[ -e "${target}.old" ]] && mv -f "${target}.old" "$target"
+    [[ -e "$old_exe" ]] && mv -f "$old_exe" "$target"
     warn "cannot write $target"; exit 1
 fi
-rm -f "${target}.old" 2>/dev/null || true
+rm -f "$old_exe" 2>/dev/null || true
 
 say "RTK $("$target" --version 2>/dev/null | tw_strip_cr | awk '{print $2}') installed at $target"

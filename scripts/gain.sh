@@ -117,6 +117,7 @@ rtk_summary() {
     saved_human=$(echo "$out" | awk '/Tokens saved:/ {print $3; exit}')
     pct=$(echo "$out"         | awk -F'[()%]' '/Tokens saved:/ {print $2; exit}')
     count=$(echo "$out"       | awk '/Total commands:/ {print $3; exit}')
+    saved_human="${saved_human//,/}"; count="${count//,/}"   # "1,234" is 1234, not 1
     saved_human="${saved_human:-?}"; pct="${pct:-?}"; count="${count:-?}"
     # Convert human suffix (M/K/G) to integer
     saved_num=$(echo "$saved_human" | awk '

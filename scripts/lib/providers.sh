@@ -344,10 +344,12 @@ kimi_telemetry_monthly() {
 # opencode records real per-session token usage in its Drizzle SQLite DB
 # (session.tokens_input/output/reasoning, time_created in epoch ms).
 
-readonly OPENCODE_SQL_TOTAL="SELECT COALESCE(SUM(tokens_input+tokens_output+tokens_reasoning), 0), COUNT(*)
+# A NULL column would make the whole row NULL, and SUM would skip the row.
+readonly OPENCODE_SQL_TOKENS="COALESCE(tokens_input,0)+COALESCE(tokens_output,0)+COALESCE(tokens_reasoning,0)"
+readonly OPENCODE_SQL_TOTAL="SELECT COALESCE(SUM(${OPENCODE_SQL_TOKENS}), 0), COUNT(*)
     FROM session WHERE (tokens_input+tokens_output) > 0"
 readonly OPENCODE_SQL_MONTHLY="SELECT strftime('%Y-%m', datetime(time_created/1000, 'unixepoch')) AS m,
-           SUM(tokens_input+tokens_output+tokens_reasoning), COUNT(*)
+           SUM(${OPENCODE_SQL_TOKENS}), COUNT(*)
     FROM session WHERE (tokens_input+tokens_output) > 0 AND time_created > 0
     GROUP BY m ORDER BY m"
 

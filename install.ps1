@@ -122,15 +122,22 @@ if ($SkipProfile) {
 # $PROFILE function below is a convenience on top, and it must never be able to
 # stop this from happening.
 $binDir = Join-Path $TwDir 'bin'
-$userPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
+# Read it unexpanded, so an existing %VAR% entry is not frozen into a literal path.
+$envKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $true)
+$userPath = $envKey.GetValue('Path', '', [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
 if ($null -eq $userPath) { $userPath = '' }
 if (($userPath -split ';') -notcontains $binDir) {
     Write-Step "Adding $binDir to your user PATH"
     $newPath = if ($userPath.TrimEnd(';')) { "$($userPath.TrimEnd(';'));$binDir" } else { $binDir }
-    [Environment]::SetEnvironmentVariable('PATH', $newPath, 'User')
+    $envKey.SetValue('Path', $newPath, [Microsoft.Win32.RegistryValueKind]::ExpandString)
+    # A raw registry write does not tell running programs the environment changed.
+    # Setting and clearing a throwaway variable through .NET sends that broadcast.
+    [Environment]::SetEnvironmentVariable('TOKENWAR_ENV_REFRESH', '1', 'User')
+    [Environment]::SetEnvironmentVariable('TOKENWAR_ENV_REFRESH', $null, 'User')
 } else {
     Write-Step 'bin already on your user PATH'
 }
+$envKey.Close()
 
 # -- 3. PowerShell profile (best effort) ------------------------------
 # Mirrors the ~/.bashrc block install.sh writes. Idempotent: an existing block is
@@ -151,7 +158,12 @@ try {
         throw "profile directory could not be created: $profileDir"
     }
 
-    $existing = @(Get-Content -LiteralPath $PROFILE -ErrorAction SilentlyContinue)
+    # Stop on a read error (locked file, no access): an empty read would make the
+    # rewrite below drop everything else the user keeps in their profile.
+    $existing = @()
+    if (Test-Path -LiteralPath $PROFILE) {
+        $existing = @(Get-Content -LiteralPath $PROFILE -ErrorAction Stop)
+    }
     $kept = New-Object System.Collections.Generic.List[string]
     $inBlock = $false
     foreach ($line in $existing) {
