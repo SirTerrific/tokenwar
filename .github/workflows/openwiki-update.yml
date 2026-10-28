@@ -21,17 +21,34 @@ jobs:
           # update runs against an empty change summary.
           fetch-depth: 0
 
+      - name: Check for OpenAI key
+        id: key
+        # Secrets cannot be read in an `if:`, so surface presence as an output.
+        # Forks and fresh clones have no OPENAI_API_KEY; skip instead of failing.
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -n "$OPENAI_API_KEY" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=OpenWiki update skipped::OPENAI_API_KEY secret is not set"
+          fi
+
       - name: Set up Node.js
+        if: ${{ steps.key.outputs.present == 'true' }}
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22"
 
       - name: Install OpenWiki
+        if: ${{ steps.key.outputs.present == 'true' }}
         # mermaid + jsdom are optional; they add high-fidelity validation of Mermaid diagrams. Remove if your wiki has none.
         run: npm install --global openwiki@0.7.2 mermaid@11.16.0 jsdom@29.1.1
 
       - name: Run OpenWiki
         id: openwiki
+        if: ${{ steps.key.outputs.present == 'true' }}
         continue-on-error: true
         run: openwiki code --update --print
         env:
@@ -48,12 +65,12 @@ jobs:
           LANGCHAIN_TRACING_V2: "true"
 
       - name: Remove transient OpenWiki run state
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.key.outputs.present == 'true' }}
         run: rm -f -- openwiki/.run.json
 
       - name: List OpenWiki update paths
         id: paths
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.key.outputs.present == 'true' }}
         # CLAUDE.md is listed only when present: git add fails on a missing path
         # and then stages nothing.
         run: |
@@ -63,7 +80,7 @@ jobs:
 
       - name: Create OpenWiki update pull request
         id: create-pr
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.key.outputs.present == 'true' }}
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
           add-paths: ${{ steps.paths.outputs.list }}
@@ -80,7 +97,7 @@ jobs:
             baseline for the next scheduled run.
 
       - name: Annotate OpenWiki update pull request
-        if: ${{ !cancelled() && steps.create-pr.outputs.pull-request-url != '' }}
+        if: ${{ !cancelled() && steps.key.outputs.present == 'true' && steps.create-pr.outputs.pull-request-url != '' }}
         run: echo "::notice title=OpenWiki update pull request::${{ steps.create-pr.outputs.pull-request-url }}"
 
       - name: Propagate OpenWiki failure
