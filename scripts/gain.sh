@@ -83,6 +83,11 @@ readonly GRAPHIFY_BENCHMARK_TIMEOUT_SECS=30
 CLAUDE_INPUT_USD_PER_MTOK="$(provider_input_usd_per_mtok 0)"
 readonly CLAUDE_INPUT_USD_PER_MTOK
 readonly CLAUDE_LABEL="Claude Opus 5.5"
+
+# One copy of the token formatter/parser, prepended to every inline node
+# snippet below (K/M suffix at 1e3/1e6; humanToNum reads RTK's "1.2M" back).
+readonly TW_JS_PRELUDE='const human = n => n >= 1e6 ? (n/1e6).toFixed(1)+"M" : n >= 1e3 ? (n/1e3).toFixed(1)+"K" : String(Math.round(n));
+const humanToNum = h => { const m = String(h).trim().match(/^([\d.]+)\s*([KMGB]?)/i); if (!m) return 0; const u = (m[2]||"").toUpperCase(); return Math.round(parseFloat(m[1]) * ({K:1e3,M:1e6,G:1e9,B:1e9}[u]||1)); };'
 readonly MONTH_ROW_RE='^[0-9]{4}-[0-9]{2}[[:space:]]'
 
 readonly COL_BOLD=$'\033[1m'
@@ -180,14 +185,12 @@ ctx_summary() {
         echo "$(tw_human_tokens "$tokens")|$((bytes / 1024)) KB diverted + indexed over ${events} captures; sandbox handled $(tw_human_bytes "$sandboxed") (not counted)|${tokens}"
         return
     fi
-    node --input-type=module -e "
+    node --input-type=module -e "$TW_JS_PRELUDE
         const j = JSON.parse(process.env.CTX_STATS_JSON);
         const kb = j.total_size_kb || j.totalSizeKb || j.size_kb || 0;
         const entries = j.entry_count || j.entries || j.count || 0;
         const tokens = Math.round((kb * 1024) / $CHARS_PER_TOKEN);
-        const human = tokens >= 1e6 ? (tokens/1e6).toFixed(1)+'M' :
-                       tokens >= 1e3 ? (tokens/1e3).toFixed(1)+'K' : String(tokens);
-        console.log(human + '|' + entries + ' entries indexed|' + tokens);
+        console.log(human(tokens) + '|' + entries + ' entries indexed|' + tokens);
     " 2>/dev/null || echo "N/A|ctx_stats JSON parse failed|0"
 }
 
@@ -208,7 +211,7 @@ mem_summary() {
         echo "N/A|claude-mem store not found ($MEM_SYNC_STATE)|0"; return
     fi
     MEM_STATE="$(tw_node_path "$MEM_SYNC_STATE")" PER_ITEM="$MEM_EST_TOKENS_PER_ITEM" \
-    node --input-type=module -e "
+    node --input-type=module -e "$TW_JS_PRELUDE
         import { readFileSync } from 'fs';
         let j; try { j = JSON.parse(readFileSync(process.env.MEM_STATE,'utf8')); } catch { console.log('N/A|claude-mem state parse failed|0'); process.exit(0); }
         let obs=0, sum=0, projects=0;
@@ -219,8 +222,7 @@ mem_summary() {
         const items = obs + sum;
         if (items === 0) { console.log('N/A|no memories stored yet|0'); process.exit(0); }
         const tokens = items * Number(process.env.PER_ITEM);
-        const human = tokens>=1e6 ? (tokens/1e6).toFixed(1)+'M' : tokens>=1e3 ? (tokens/1e3).toFixed(1)+'K' : String(tokens);
-        console.log(human + '|~est: ' + obs + ' obs + ' + sum + ' summaries across ' + projects + ' projects|' + tokens);
+        console.log(human(tokens) + '|~est: ' + obs + ' obs + ' + sum + ' summaries across ' + projects + ' projects|' + tokens);
     " 2>/dev/null || echo "N/A|claude-mem state read failed|0"
 }
 
@@ -231,14 +233,13 @@ mem_summary() {
 tools_monthly() {
     local rtk_monthly="$1"
     if [[ -n "$rtk_monthly" ]]; then
-        RTK_MONTHLY="$rtk_monthly" node -e '
+        RTK_MONTHLY="$rtk_monthly" node -e "$TW_JS_PRELUDE"'
             const strip = s => s.replace(/\x1b\[[0-9;]*m/g, "");
             // Columns: Month Cmds Input Output Saved Save% Time — Month + Saved (5th).
             const RE = /^(\d{4}-\d{2})\s+\S+\s+\S+\s+\S+\s+(\S+)/;
-            const toNum = h => { const m = String(h).trim().match(/^([\d.]+)\s*([KMGB]?)/i); if (!m) return 0; const u = (m[2]||"").toUpperCase(); return Math.round(parseFloat(m[1]) * ({K:1e3,M:1e6,G:1e9,B:1e9}[u]||1)); };
             for (const ln of strip(process.env.RTK_MONTHLY).split("\n")) {
                 const m = ln.match(RE); if (!m) continue;
-                const tok = toNum(m[2]); if (tok) console.log(m[1] + " RTK " + tok);
+                const tok = humanToNum(m[2]); if (tok) console.log(m[1] + " RTK " + tok);
             }
         ' 2>/dev/null
     fi
@@ -289,17 +290,16 @@ pxpipe_summary() {
     if command -v pxpipe >/dev/null 2>&1; then
         local stats
         stats="$(pxpipe stats --json --file "$(tw_node_path "$PXPIPE_EVENTS_LOG")" 2>/dev/null)"
-        if [[ -n "$stats" ]] && STATS="$stats" node -e '
+        if [[ -n "$stats" ]] && STATS="$stats" node -e "$TW_JS_PRELUDE"'
             const s = JSON.parse(process.env.STATS);
             const saved = Math.round(Number(s.savedTokensTotal) || 0);
             if (saved <= 0) process.exit(1);
-            const human = saved >= 1e6 ? (saved/1e6).toFixed(1)+"M" : saved >= 1e3 ? (saved/1e3).toFixed(1)+"K" : String(saved);
-            console.log(human + "|" + (s.compressed || 0) + " compressed of " + (s.total || 0) + " requests (pxpipe stats)|" + saved);
+            console.log(human(saved) + "|" + (s.compressed || 0) + " compressed of " + (s.total || 0) + " requests (pxpipe stats)|" + saved);
         ' 2>/dev/null; then
             return
         fi
     fi
-    PXPIPE_EVENTS="$(tw_node_path "$PXPIPE_EVENTS_LOG")" node --input-type=module -e '
+    PXPIPE_EVENTS="$(tw_node_path "$PXPIPE_EVENTS_LOG")" node --input-type=module -e "$TW_JS_PRELUDE"'
         import { readFileSync } from "node:fs";
         const pick = (o, keys) => {
             for (const k of keys) {
@@ -335,8 +335,7 @@ pxpipe_summary() {
             console.log("N/A|no pxpipe token savings in events log (" + parsed + " events)|0");
             process.exit(0);
         }
-        const human = saved >= 1e6 ? (saved/1e6).toFixed(1)+"M" : saved >= 1e3 ? (saved/1e3).toFixed(1)+"K" : String(Math.round(saved));
-        console.log(human + "|" + compressed + " compressed requests (native pxpipe events)|" + Math.round(saved));
+        console.log(human(saved) + "|" + compressed + " compressed requests (native pxpipe events)|" + Math.round(saved));
     ' 2>/dev/null || echo "N/A|pxpipe events log read failed|0"
 }
 
@@ -435,15 +434,14 @@ if $json_mode; then
     monthly_json="{}"
     if $rtk_has_monthly; then
         # Use node to parse monthly rows into JSON array
-        rtk_monthly_json=$(RTK_MONTHLY="$rtk_monthly_raw" CLAUDE_IN="$CLAUDE_INPUT_USD_PER_MTOK" node --input-type=module -e '
+        rtk_monthly_json=$(RTK_MONTHLY="$rtk_monthly_raw" CLAUDE_IN="$CLAUDE_INPUT_USD_PER_MTOK" node --input-type=module -e "$TW_JS_PRELUDE"'
             const strip = s => s.replace(/\x1b\[[0-9;]*m/g, "");
             const RE = /^(\d{4}-\d{2})\s+\S+\s+\S+\s+\S+\s+(\S+)/;
-            const toNum = h => { const m = String(h).trim().match(/^([\d.]+)\s*([KMGB]?)/i); if (!m) return 0; const u = (m[2]||"").toUpperCase(); return Math.round(parseFloat(m[1]) * ({K:1e3,M:1e6,G:1e9,B:1e9}[u]||1)); };
             const CL = parseFloat(process.env.CLAUDE_IN);
             const rows = [];
             for (const ln of strip(process.env.RTK_MONTHLY||"").split("\n")) {
                 const m = ln.match(RE); if (!m) continue;
-                const tok = toNum(m[2]); if (!tok) continue;
+                const tok = humanToNum(m[2]); if (!tok) continue;
                 rows.push({ month: m[1], saved: m[2], saved_tokens: tok, dollars: tok/1e6*CL });
             }
             console.log(JSON.stringify(rows));
@@ -632,8 +630,7 @@ if $has_any_monthly; then
             "$CLAUDE_LABEL" "$CLAUDE_INPUT_USD_PER_MTOK"
         TOOLS_MONTHLY="$tools_monthly_raw" \
         CLAUDE_IN="$CLAUDE_INPUT_USD_PER_MTOK" \
-        node -e '
-            const human = t => t>=1e6 ? (t/1e6).toFixed(1)+"M" : t>=1e3 ? (t/1e3).toFixed(1)+"K" : String(t);
+        node -e "$TW_JS_PRELUDE"'
             const CL = parseFloat(process.env.CLAUDE_IN);
             const TOOLS = ["RTK", "context-mode", "claude-mem"];
             const W = [9, 9, 12, 10, 9];
@@ -680,9 +677,8 @@ if $has_any_monthly; then
 
         PROVIDER_MONTHLY="$monthly_raw" \
         PROVIDER_PRICE="$pprice" \
-        node --input-type=module -e '
+        node --input-type=module -e "$TW_JS_PRELUDE"'
             const toNum = t => parseInt(t, 10);
-            const human = t => t>=1e6 ? (t/1e6).toFixed(1)+"M" : t>=1e3 ? (t/1e3).toFixed(1)+"K" : String(t);
             const price = parseFloat(process.env.PROVIDER_PRICE);
             const lines = (process.env.PROVIDER_MONTHLY||"").trim().split("\n").filter(Boolean);
             let tT=0, tD=0;
