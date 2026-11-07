@@ -69,15 +69,19 @@ class LinkParser(HTMLParser):
 
 def copy_file(source: Path, destination: Path, source_root: Path) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
-    text = source.read_text()
+    text = source.read_text(encoding="utf-8")
     text = text.replace(str(source_root), "/local-study")
+    # Scrub the author's home on every OS, Windows drive form first so its
+    # "/Users/" tail is not half-rewritten by the macOS rule.
+    text = re.sub(r"[A-Za-z]:[\\/]+Users[\\/]+[^\\/]+", "/home/user", text)
     text = re.sub(r"/Users/[^/]+", "/home/user", text)
-    destination.write_text(text)
+    text = re.sub(r"/home/(?!user\b)[^/]+", "/home/user", text)
+    destination.write_text(text, encoding="utf-8")
 
 
 def public_html(source_root: Path) -> str:
     report = source_root / "rapport-graphify-serena-openwiki-20260903.html"
-    html = report.read_text()
+    html = report.read_text(encoding="utf-8")
     for project, prefix in COMMITS.items():
         pattern = re.compile(rf'href="{project}/([^"#]+)(#[^"]+)?"')
 
@@ -101,7 +105,7 @@ def public_html(source_root: Path) -> str:
 
 def validate(output: Path) -> None:
     parser = LinkParser()
-    parser.feed((output / "index.html").read_text())
+    parser.feed((output / "index.html").read_text(encoding="utf-8"))
     if len(parser.ids) != len(set(parser.ids)):
         raise RuntimeError("duplicate HTML ids")
     missing: list[str] = []
@@ -123,7 +127,7 @@ def main() -> None:
     source_root = args.source.resolve()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    (output / "index.html").write_text(public_html(source_root))
+    (output / "index.html").write_text(public_html(source_root), encoding="utf-8")
 
     benchmark = source_root / "benchmark"
     for name in BENCHMARK_FILES:

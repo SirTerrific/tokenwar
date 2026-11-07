@@ -288,3 +288,19 @@ INSERT INTO assistant_usage_events (session_id, model, input_tokens, output_toke
     # AI credits are the unit GitHub actually bills — tokens alone understate it.
     [[ "$output" == *"1.50 AI credits billed"* ]]
 }
+
+@test "tw_sql_local_month files every timestamp form under the local month" {
+    command -v node >/dev/null || skip "node not installed"
+    node -e 'require("node:sqlite")' 2>/dev/null || skip "node:sqlite not available"
+    local expr
+    expr="$(bash -c "source '$BATS_TEST_DIRNAME/../scripts/lib/providers.sh'; tw_sql_local_month v")"
+    # 2026-10-01 02:00 UTC is still September in Toronto (UTC-4).
+    NODE_NO_WARNINGS=1 TZ=America/Toronto EXPR="$expr" run node -e '
+      const { DatabaseSync } = require("node:sqlite");
+      const d = new DatabaseSync(":memory:");
+      const vals = ["\x272026-10-01T02:00:00.000Z\x27", "\x272026-10-01 02:00:00\x27", "1790820000", "1790820000000"];
+      console.log(vals.map((v) => d.prepare("SELECT " + process.env.EXPR + " AS m FROM (SELECT " + v + " AS v)").get().m).join(" "));
+    ' 2>/dev/null
+    [ "$status" -eq 0 ]
+    [ "$output" = "2026-09 2026-09 2026-09 2026-09" ]
+}

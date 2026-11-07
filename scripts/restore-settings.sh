@@ -15,13 +15,16 @@ readonly SCRIPT_DIR
 # shellcheck source=lib/osdetect.sh
 source "${SCRIPT_DIR}/lib/osdetect.sh"
 
-readonly SETTINGS="${HOME}/.claude/settings.json"
-readonly LOCAL="${HOME}/.claude/settings.local.json"
+readonly CONFIG_DIR="${CLAUDE_CONFIG_DIR:-${HOME}/.claude}"
+readonly SETTINGS="${CONFIG_DIR}/settings.json"
+readonly LOCAL="${CONFIG_DIR}/settings.local.json"
 readonly BACKUP="${SETTINGS}.tokenwar-bak"
 
+# Nothing to merge is not a failure: docs/operations.md chains this script
+# before `claude` with &&, so a non-zero exit would stop Claude from starting.
 if [[ ! -f "$LOCAL" ]]; then
-    echo "[tokenwar restore] no settings.local.json at $LOCAL — nothing to merge" >&2
-    exit 1
+    echo "[tokenwar restore] no settings.local.json at $LOCAL - nothing to merge" >&2
+    exit 0
 fi
 
 if [[ ! -f "$SETTINGS" ]]; then
@@ -34,11 +37,18 @@ fi
 cp -f "$SETTINGS" "$BACKUP"
 
 SETTINGS_PATH="$(tw_node_path "$SETTINGS")" LOCAL_PATH="$(tw_node_path "$LOCAL")" node --input-type=module -e '
-    import { readFileSync, writeFileSync } from "fs";
-    const cur   = JSON.parse(readFileSync(process.env.SETTINGS_PATH, "utf8"));
-    const local = JSON.parse(readFileSync(process.env.LOCAL_PATH,    "utf8"));
+    import { readFileSync, writeFileSync, renameSync } from "fs";
+    const read = (p) => {
+        try { return JSON.parse(readFileSync(p, "utf8")); }
+        catch (e) { console.error("[tokenwar restore] " + p + " is not valid JSON, nothing changed: " + e.message); process.exit(1); }
+    };
+    const cur   = read(process.env.SETTINGS_PATH);
+    const local = read(process.env.LOCAL_PATH);
     const merged = { ...cur, ...local };  // local wins on conflict
-    writeFileSync(process.env.SETTINGS_PATH, JSON.stringify(merged, null, 2) + "\n", "utf8");
-    const restored = Object.keys(local).filter(k => !cur[k]);
+    // Write then rename, so a Claude Code starting in parallel never reads half a file.
+    const tmp = process.env.SETTINGS_PATH + ".tokenwar-tmp";
+    writeFileSync(tmp, JSON.stringify(merged, null, 2) + "\n", "utf8");
+    renameSync(tmp, process.env.SETTINGS_PATH);
+    const restored = Object.keys(local).filter(k => !(k in cur));
     console.log("[tokenwar restore] restored keys:", restored.length ? restored.join(", ") : "(all present, no-op)");
 '

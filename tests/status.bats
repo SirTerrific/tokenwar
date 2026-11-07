@@ -195,6 +195,7 @@ EOF
     rm -f "$MOCK_BIN/claude-mem"
     mkdir -p "$HOME/.claude-mem"
     echo '{"CLAUDE_MEM_WORKER_PORT":"41234"}' > "$HOME/.claude-mem/settings.json"
+    PATH="$MOCK_BIN:/usr/bin:/bin:$(dirname "$(command -v node)")"   # excludes user CLI dirs: a real claude-mem CLI must not shadow the worker path
     export CURL_LOG="$HOME/curl.log"
     cat > "$MOCK_BIN/curl" <<'EOF2'
 #!/usr/bin/env bash
@@ -248,7 +249,7 @@ EOF
     [[ "$output" != *"/tokenwar upgrade"* ]]
 }
 
-@test "graphify absent → not-installed and exit 1" {
+@test "graphify absent -> not-installed and exit 1" {
     mock_claude_with_plugins '[
       {"id":"context-mode@context-mode","version":"1.0.107","enabled":true},
       {"id":"claude-mem@thedotmack","version":"12.1.4","enabled":true},

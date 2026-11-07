@@ -105,7 +105,7 @@ seed_all_sources() {
 
 # ── check ─────────────────────────────────────────────────────────
 
-@test "no Copilot CLI → refuses with an install hint, exit 1" {
+@test "no Copilot CLI -> refuses with an install hint, exit 1" {
     seed_all_sources
     printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v node)" > "$MOCK_BIN/node" && chmod +x "$MOCK_BIN/node"
     PATH="$MOCK_BIN:/usr/bin:/bin"     # excludes ~/.nvm etc, so no real copilot
@@ -195,7 +195,7 @@ seed_all_sources() {
     grep -qx "200000" "$MCP_ARGS_DUMP"
 }
 
-@test "wire is idempotent — a second run does nothing" {
+@test "wire is idempotent - a second run does nothing" {
     mock_copilot
     seed_all_sources
     run bash "$SCRIPT" wire --yes

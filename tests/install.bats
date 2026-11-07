@@ -100,7 +100,7 @@ EOF
     grep -q "plugin install context-mode@context-mode" "$CLAUDE_LOG"
 }
 
-@test "bare install (no flag) never touches plugins — opt-in only" {
+@test "bare install (no flag) never touches plugins - opt-in only" {
     mock_claude_empty
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]

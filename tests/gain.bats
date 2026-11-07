@@ -115,7 +115,7 @@ INSERT INTO observations (project, title) VALUES ('projA', 'abcdefgh');
     [[ "$output" == *"caveman"*"N/A"*"style-only"* ]]
 }
 
-@test "no context-mode store → context-mode shows N/A" {
+@test "no context-mode store -> context-mode shows N/A" {
     mock_rtk
     unset CTX_STATS_JSON
     run bash "$SCRIPT"
@@ -166,7 +166,7 @@ INSERT INTO chunks VALUES ('ab', hex(zeroblob(2047)));
     [[ "$output" == *"context-mode"*"1.0K"*"7 entries indexed"* ]]
 }
 
-@test "rtk absent → RTK shows N/A" {
+@test "rtk absent -> RTK shows N/A" {
     # no rtk binary
     run bash "$SCRIPT"
     [[ "$output" == *"RTK"*"N/A"* ]]

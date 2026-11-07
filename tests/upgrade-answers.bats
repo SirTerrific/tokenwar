@@ -69,7 +69,7 @@ run_with_answer() {
     [[ "$output" == *"Upgrade now?"* ]]
 }
 
-@test "answer YES → upgrade is applied" {
+@test "answer YES -> upgrade is applied" {
     mock_claude
     write_old_version_cache
     run_with_answer "y"
@@ -77,7 +77,7 @@ run_with_answer() {
     grep -q "plugin update caveman@caveman" "$CLAUDE_LOG"
 }
 
-@test "answer 'yes' (long form) → upgrade is applied" {
+@test "answer 'yes' (long form) -> upgrade is applied" {
     mock_claude
     write_old_version_cache
     run_with_answer "yes"
@@ -85,7 +85,7 @@ run_with_answer() {
     grep -q "plugin update caveman@caveman" "$CLAUDE_LOG"
 }
 
-@test "answer NO → nothing is upgraded, exit 0, says Skipped" {
+@test "answer NO -> nothing is upgraded, exit 0, says Skipped" {
     mock_claude
     write_old_version_cache
     run_with_answer "n"
@@ -94,7 +94,7 @@ run_with_answer() {
     [ ! -f "$CLAUDE_LOG" ] || ! grep -q "plugin update" "$CLAUDE_LOG"
 }
 
-@test "answer empty (bare Enter) → declines, nothing upgraded" {
+@test "answer empty (bare Enter) -> declines, nothing upgraded" {
     mock_claude
     write_old_version_cache
     run_with_answer ""
@@ -103,7 +103,7 @@ run_with_answer() {
     [ ! -f "$CLAUDE_LOG" ] || ! grep -q "plugin update" "$CLAUDE_LOG"
 }
 
-@test "answer garbage (not y/yes) → declines, nothing upgraded" {
+@test "answer garbage (not y/yes) -> declines, nothing upgraded" {
     mock_claude
     write_old_version_cache
     run_with_answer "maybe"
@@ -112,7 +112,7 @@ run_with_answer() {
     [ ! -f "$CLAUDE_LOG" ] || ! grep -q "plugin update" "$CLAUDE_LOG"
 }
 
-@test "no tty available at all → skips safely, exit 0, no /dev/tty leak" {
+@test "no tty available at all -> skips safely, exit 0, no /dev/tty leak" {
     mock_claude
     write_old_version_cache
     # Point TW_TTY at a path that cannot be opened for reading.

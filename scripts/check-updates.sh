@@ -427,7 +427,7 @@ if $force_refresh || ! cache_is_fresh; then
     OPENCODE_I="$opencode_installed" OPENCODE_L="$opencode_latest" OPENCODE_S="$opencode_state" \
     COPILOT_I="$copilot_installed" COPILOT_L="$copilot_latest" COPILOT_S="$copilot_state" \
     node --input-type=module -e "
-        import { writeFileSync } from 'node:fs';
+        import { writeFileSync, renameSync } from 'node:fs';
         const e = process.env;
         const data = {
             checked_at: Number(e.NOW),
@@ -451,7 +451,10 @@ if $force_refresh || ! cache_is_fresh; then
                 'copilot':  { installed: e.COPILOT_I, latest: e.COPILOT_L, state: e.COPILOT_S }
             }
         };
-        writeFileSync(e.TOKENWAR_CACHE_FILE, JSON.stringify(data, null, 2));
+        // Write then rename: a concurrent statusline render never reads half a file.
+        const tmp = e.TOKENWAR_CACHE_FILE + '.' + process.pid + '.tmp';
+        writeFileSync(tmp, JSON.stringify(data, null, 2));
+        renameSync(tmp, e.TOKENWAR_CACHE_FILE);
     "
 fi
 

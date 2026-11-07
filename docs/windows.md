@@ -187,10 +187,29 @@ keep that from happening by default:
   through `NODE_EXTRA_CA_CERTS` only — by Claude Code processes, not by Windows.
   The proxy sees your OAuth token in plaintext, on loopback only.
 
-  **While wired, Claude Code needs that proxy.** If Claude stops answering, run
-  `tokenwar pxpipe desktop status`, then `on` to restart it or `off` to unwire
-  (both work from Git Bash or `tokenwar.cmd`). The desktop app may also rewrite
-  `settings.json` and drop the wiring; `status` shows it, `on` restores it.
+  > **If the proxy is not running, nothing works.**
+  > While `settings.json` carries `HTTPS_PROXY=http://127.0.0.1:47822`, every
+  > outbound HTTPS request from Claude Code goes through that port — API calls,
+  > remote MCP servers and connectors alike (only `localhost`, `127.0.0.1` and
+  > `::1` are excluded, through `NO_PROXY`). With nothing listening there, those
+  > requests fail: Claude stops answering and connectors time out, even though
+  > nothing looks broken in the app.
+  >
+  > The Startup shortcut `tokenwar-pxpipe-desktop.lnk` is the only thing that
+  > brings the proxy back after a reboot or logoff. Do not delete or move it
+  > while the wiring is on: `settings.json` would keep pointing at a proxy that
+  > never starts again.
+  >
+  > To fix it (Git Bash or `tokenwar.cmd`):
+  > 1. `tokenwar pxpipe desktop status` — warns loudly when settings are wired to
+  >    a proxy that is down.
+  > 2. `tokenwar pxpipe desktop on` — restarts the proxy and restores the wiring
+  >    and the shortcut. Then quit the desktop app from the tray and reopen it.
+  > 3. `tokenwar pxpipe desktop off` — if you want out instead: removes the three
+  >    settings keys, restores your previous values and removes the shortcut.
+  >
+  > The desktop app may also rewrite `settings.json` and drop the wiring; `status`
+  > shows it, `on` restores it.
 - **In a terminal, tokenwar's `claude` shell function does it for you.** It
   runs `scripts/pxpipe-claude.sh`, which starts the proxy if it is not running
   (detached, logging to `~/.pxpipe/proxy.log`, so later sessions reuse it) and

@@ -44,7 +44,7 @@ write_cache() {
     cat > "$HOME/.claude/tokenwar/upgrade-check.json"
 }
 
-@test "all up-to-date → nothing to upgrade, exit 0" {
+@test "all up-to-date -> nothing to upgrade, exit 0" {
     write_cache <<'EOF'
 {"tools":{"context-mode":{"state":"up-to-date"},"claude-mem":{"state":"up-to-date"},"caveman":{"state":"up-to-date"},"rtk":{"state":"up-to-date"}},"providers":{"codex":{"state":"update-available"}}}
 EOF
@@ -54,7 +54,7 @@ EOF
     [[ "$output" != *"codex"* ]]
 }
 
-@test "update available but no TTY → skip safely, exit 0, no /dev/tty error" {
+@test "update available but no TTY -> skip safely, exit 0, no /dev/tty error" {
     write_cache <<'EOF'
 {"tools":{"context-mode":{"state":"update-available"},"claude-mem":{"state":"up-to-date"},"caveman":{"state":"up-to-date"},"rtk":{"state":"up-to-date"}}}
 EOF

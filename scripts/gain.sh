@@ -52,7 +52,8 @@ readonly MEM_SQL_SAVINGS="SELECT COUNT(*), COALESCE(SUM(discovery_tokens), 0),
            COALESCE(SUM(${MEM_SQL_READ_COST}), 0),
            COUNT(DISTINCT project)
     FROM observations"
-readonly MEM_SQL_MONTHLY="SELECT substr(created_at, 1, 7),
+# shellcheck disable=SC2155  # tw_sql_local_month only echoes; it cannot fail
+readonly MEM_SQL_MONTHLY="SELECT $(tw_sql_local_month created_at),
            COALESCE(SUM(discovery_tokens), 0) - COALESCE(SUM(${MEM_SQL_READ_COST}), 0)
     FROM observations GROUP BY 1"
 readonly MEM_EST_TOKENS_PER_ITEM=40
@@ -61,9 +62,11 @@ readonly CTX_SQL_AVOIDED="SELECT COALESCE(SUM(bytes_avoided), 0), COUNT(*) FROM 
 readonly CTX_SQL_CONTENT="SELECT COALESCE(SUM(LENGTH(content) + LENGTH(title)), 0) FROM chunks"
 # The same two counters per month, for the monthly $ table: events carry their
 # own created_at, indexed chunks their source's indexed_at.
-readonly CTX_SQL_AVOIDED_MONTHLY="SELECT substr(created_at, 1, 7), COALESCE(SUM(bytes_avoided), 0)
+# shellcheck disable=SC2155  # tw_sql_local_month only echoes; it cannot fail
+readonly CTX_SQL_AVOIDED_MONTHLY="SELECT $(tw_sql_local_month created_at), COALESCE(SUM(bytes_avoided), 0)
     FROM session_events GROUP BY 1"
-readonly CTX_SQL_CONTENT_MONTHLY="SELECT substr(s.indexed_at, 1, 7),
+# shellcheck disable=SC2155  # tw_sql_local_month only echoes; it cannot fail
+readonly CTX_SQL_CONTENT_MONTHLY="SELECT $(tw_sql_local_month s.indexed_at),
            COALESCE(SUM(LENGTH(c.content) + LENGTH(c.title)), 0)
     FROM chunks c JOIN sources s ON s.id = c.source_id GROUP BY 1"
 readonly PXPIPE_EVENTS_LOG="${HOME}/.pxpipe/events.jsonl"

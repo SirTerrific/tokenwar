@@ -13,32 +13,32 @@ teardown() {
     rm -rf "$HOME"
 }
 
-@test "no TTY on stdout → no banner, exit 0" {
+@test "no TTY on stdout -> no banner, exit 0" {
     run bash "$SCRIPT" codex </dev/null
     [ "$status" -eq 0 ]
     [ -z "$output" ]
 }
 
-@test "codex exec subcommand → no banner even if forced TTY-like" {
+@test "codex exec subcommand -> no banner even if forced TTY-like" {
     # exec is in the non-interactive list; piped output guarantees no -t 1 anyway
     run bash "$SCRIPT" codex exec "do something" </dev/null
     [ "$status" -eq 0 ]
     [ -z "$output" ]
 }
 
-@test "gemini -p headless flag → no banner" {
+@test "gemini -p headless flag -> no banner" {
     run bash "$SCRIPT" gemini -p "summarize" </dev/null
     [ "$status" -eq 0 ]
     [ -z "$output" ]
 }
 
-@test "kimi -p headless flag → no banner" {
+@test "kimi -p headless flag -> no banner" {
     run bash "$SCRIPT" kimi -p "summarize" </dev/null
     [ "$status" -eq 0 ]
     [ -z "$output" ]
 }
 
-@test "opencode run headless subcommand → no banner" {
+@test "opencode run headless subcommand -> no banner" {
     run bash "$SCRIPT" opencode run "summarize" </dev/null
     [ "$status" -eq 0 ]
     [ -z "$output" ]
@@ -83,20 +83,20 @@ copilot_launch() {
     run script -qfec "env HOME='$HOME' bash '$SCRIPT' copilot $*" /dev/null
 }
 
-@test "copilot -p headless flag → no banner even on a tty" {
+@test "copilot -p headless flag -> no banner even on a tty" {
     copilot_launch -p "summarize"
     [ "$status" -eq 0 ]
     [[ "$output" != *"tokenwar"* ]]
 }
 
-@test "copilot --acp (Agent Client Protocol server) → no banner on a tty" {
+@test "copilot --acp (Agent Client Protocol server) -> no banner on a tty" {
     # --acp turns the CLI into a machine channel; a banner on stdout corrupts it.
     copilot_launch --acp
     [ "$status" -eq 0 ]
     [[ "$output" != *"tokenwar"* ]]
 }
 
-@test "copilot management subcommands → no banner on a tty" {
+@test "copilot management subcommands -> no banner on a tty" {
     for sub in mcp skill plugin update version login; do
         copilot_launch "$sub" list
         [ "$status" -eq 0 ]
@@ -104,7 +104,7 @@ copilot_launch() {
     done
 }
 
-@test "copilot --version → no banner on a tty" {
+@test "copilot --version -> no banner on a tty" {
     copilot_launch --version
     [ "$status" -eq 0 ]
     [[ "$output" != *"tokenwar"* ]]

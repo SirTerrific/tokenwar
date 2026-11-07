@@ -21,8 +21,8 @@ command -v node >/dev/null 2>&1 || {
 }
 
 days=30
-for arg in "$@"; do
-    case "$arg" in
+while (( $# > 0 )); do
+    case "$1" in
         -h|--help)
             cat <<'EOF'
 tokenwar prune — show capabilities loaded on every request but never invoked
@@ -36,9 +36,14 @@ the decision stays with you.
 EOF
             exit 0
             ;;
-        --days) shift; days="${1:-30}" ;;
+        --days)
+            [[ "${2:-}" =~ ^[1-9][0-9]*$ ]] || { printf 'tokenwar prune: --days needs a positive integer
+' >&2; exit 2; }
+            days="$2"; shift ;;
+        *) printf 'tokenwar prune: unknown option: %s
+' "$1" >&2; exit 2 ;;
     esac
-    shift || true
+    shift
 done
 
 export TOKENWAR_STATUS_SCRIPT="${TOKENWAR_STATUS_SCRIPT:-${SCRIPT_DIR}/status.sh}"

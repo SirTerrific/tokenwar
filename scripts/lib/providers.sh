@@ -284,7 +284,18 @@ provider_telemetry_monthly() {
 # COALESCE keeps the first field non-NULL: rows are space-joined, so a leading
 # NULL (empty table) would otherwise be eaten by `read` and shift COUNT into it.
 readonly CODEX_SQL_TOTAL="SELECT COALESCE(SUM(tokens_used), 0), COUNT(*) FROM threads WHERE tokens_used > 0"
-readonly CODEX_SQL_MONTHLY="SELECT strftime('%Y-%m', datetime(created_at, 'unixepoch')) AS m,
+# SQL expression for the local calendar month (YYYY-MM) of a timestamp column.
+# Stores disagree on the type: ISO text (with or without Z, both UTC), epoch
+# seconds or epoch milliseconds. Every form is normalised to UTC and then
+# shifted to local time, so a session at 23:30 on Sep 30 in UTC-4 stays in
+# September instead of being filed under October.
+tw_sql_local_month() {
+    local c="$1"
+    printf "strftime('%%Y-%%m', CASE WHEN typeof(%s) IN ('integer','real') THEN datetime(CASE WHEN %s > 100000000000 THEN %s / 1000 ELSE %s END, 'unixepoch') ELSE %s END, 'localtime')" "$c" "$c" "$c" "$c" "$c"
+}
+
+# shellcheck disable=SC2155  # tw_sql_local_month only echoes; it cannot fail
+readonly CODEX_SQL_MONTHLY="SELECT $(tw_sql_local_month created_at) AS m,
            SUM(tokens_used), COUNT(*)
     FROM threads WHERE tokens_used > 0 AND created_at > 0
     GROUP BY m ORDER BY m"
@@ -348,7 +359,8 @@ kimi_telemetry_monthly() {
 readonly OPENCODE_SQL_TOKENS="COALESCE(tokens_input,0)+COALESCE(tokens_output,0)+COALESCE(tokens_reasoning,0)"
 readonly OPENCODE_SQL_TOTAL="SELECT COALESCE(SUM(${OPENCODE_SQL_TOKENS}), 0), COUNT(*)
     FROM session WHERE (tokens_input+tokens_output) > 0"
-readonly OPENCODE_SQL_MONTHLY="SELECT strftime('%Y-%m', datetime(time_created/1000, 'unixepoch')) AS m,
+# shellcheck disable=SC2155  # tw_sql_local_month only echoes; it cannot fail
+readonly OPENCODE_SQL_MONTHLY="SELECT $(tw_sql_local_month time_created) AS m,
            SUM(${OPENCODE_SQL_TOKENS}), COUNT(*)
     FROM session WHERE (tokens_input+tokens_output) > 0 AND time_created > 0
     GROUP BY m ORDER BY m"
@@ -386,7 +398,8 @@ readonly COPILOT_SQL_TOKENS="COALESCE(input_tokens,0)+COALESCE(output_tokens,0)+
 readonly COPILOT_SQL_TOTAL="SELECT COALESCE(SUM(${COPILOT_SQL_TOKENS}), 0), COUNT(DISTINCT session_id),
            COALESCE(SUM(COALESCE(total_nano_aiu,0)), 0)
     FROM assistant_usage_events"
-readonly COPILOT_SQL_MONTHLY="SELECT strftime('%Y-%m', created_at) AS m, SUM(${COPILOT_SQL_TOKENS}), COUNT(DISTINCT session_id)
+# shellcheck disable=SC2155  # tw_sql_local_month only echoes; it cannot fail
+readonly COPILOT_SQL_MONTHLY="SELECT $(tw_sql_local_month created_at) AS m, SUM(${COPILOT_SQL_TOKENS}), COUNT(DISTINCT session_id)
     FROM assistant_usage_events WHERE created_at IS NOT NULL
     GROUP BY m HAVING m IS NOT NULL AND SUM(${COPILOT_SQL_TOKENS}) > 0 ORDER BY m"
 

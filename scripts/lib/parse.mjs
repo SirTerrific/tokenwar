@@ -283,6 +283,10 @@ export function parseSessionFile(path, { includeSidechain = false } = {}) {
   }
 
   const session = emptySession(path);
+  // A file under subagents/ is the subagent's own transcript: every line is
+  // flagged isSidechain, but it is not a copy of the parent's turns, so its
+  // usage is real spend and must be counted.
+  session.subagent = /[\\/]subagents[\\/][^\\/]+$/.test(path);
   // tool_use.id -> {name, family, lane}; lets a result be attributed to its call.
   const pending = new Map();
   const seenCallIds = new Set();
@@ -304,7 +308,7 @@ export function parseSessionFile(path, { includeSidechain = false } = {}) {
     if (!session.cwd && event.cwd) session.cwd = event.cwd;
     if (!session.gitBranch && event.gitBranch) session.gitBranch = event.gitBranch;
 
-    const isSidechain = event.isSidechain === true;
+    const isSidechain = event.isSidechain === true && !session.subagent;
     const message = event.message;
 
     // Skill invocation ground truth, when the client records it.
@@ -408,7 +412,9 @@ function mergeMap(target, source) {
 
 export function aggregateSessions(sessions) {
   const total = {
-    sessions: sessions.length,
+    // Subagent transcripts add spend, not conversations.
+    sessions: sessions.filter((s) => !s.subagent).length,
+    subagentTurns: 0,
     // Sessions that carry usage: a client with no token logs (Gemini) has turns 0.
     turnSessions: 0,
     turns: 0,
@@ -445,7 +451,8 @@ export function aggregateSessions(sessions) {
 
   for (const session of sessions) {
     total.turns += session.turns;
-    if (session.turns > 0) total.turnSessions += 1;
+    if (session.subagent) total.subagentTurns += session.turns;
+    else if (session.turns > 0) total.turnSessions += 1;
     total.cacheCreate1h += session.cacheCreate1h || 0;
     total.freshInput += session.freshInput;
     total.cacheCreate += session.cacheCreate;

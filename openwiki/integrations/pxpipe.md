@@ -66,7 +66,11 @@ A long-lived Node HTTPS (CONNECT) proxy on `127.0.0.1:47822` (`TW_PXPIPE_CONNECT
 
 Autostart uses a Startup shortcut rather than `schtasks /SC ONLOGON`, which needs admin rights. Off Windows, `on` warns that there is no autostart; run `tokenwar pxpipe desktop run` under your own supervisor.
 
-**Caveats** (from pxpipe-windows): while wired, Claude Code needs the proxy running — if Claude stops answering, run `tokenwar pxpipe desktop off`. The desktop app may rewrite `settings.json`; `status` shows the wiring was dropped and `on` restores it.
+> **If the proxy is not running, nothing works.** While `settings.json` carries `HTTPS_PROXY=http://127.0.0.1:47822`, every outbound HTTPS request from Claude Code goes through that port — API calls, remote MCP servers and connectors alike (only `localhost`, `127.0.0.1` and `::1` are excluded, through `NO_PROXY`). With nothing listening, Claude stops answering and connectors time out. The Startup shortcut `tokenwar-pxpipe-desktop.lnk` is the only thing that restarts the proxy after a reboot or logoff; deleting or moving it while wired leaves `settings.json` pointing at a proxy that never starts again.
+>
+> Fix: `tokenwar pxpipe desktop status` (warns when wired to a down proxy), then `on` to restart the proxy and restore the wiring and shortcut, or `off` to unwire and restore previous values.
+
+**Caveats** (from pxpipe-windows): the desktop app may rewrite `settings.json`; `status` shows the wiring was dropped and `on` restores it.
 
 ## Which models are imaged
 

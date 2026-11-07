@@ -182,3 +182,22 @@ run_node() {
     "
     [ "$status" -eq 0 ]
 }
+
+@test "a subagent transcript counts its usage but not as a separate session" {
+    local d
+    d="$(mktemp -d)"
+    mkdir -p "$d/s1/subagents"
+    local line='{"isSidechain":SC,"message":{"role":"assistant","id":"MID","usage":{"input_tokens":10,"output_tokens":5}}}'
+    # The parent carries one own turn and one sidechain copy that must stay skipped.
+    { printf '%s\n' "${line//SC/false}" | sed 's/MID/m1/'; printf '%s\n' "${line//SC/true}" | sed 's/MID/m2/'; } > "$d/s1.jsonl"
+    printf '%s\n' "${line//SC/true}" | sed 's/MID/m3/' > "$d/s1/subagents/agent-x.jsonl"
+    ROOT="$(cygpath -m "$d" 2>/dev/null || printf '%s' "$d")" run run_node "
+      import {listSessionFiles, parseSessionFile, aggregateSessions} from '${LIB}/parse.mjs';
+      const s = listSessionFiles(process.env.ROOT).map((f) => parseSessionFile(f.path)).filter(Boolean);
+      const a = aggregateSessions(s);
+      console.log([s.length, a.sessions, a.turns, a.subagentTurns, a.turnSessions].join(' '));
+    "
+    rm -rf "$d"
+    [ "$status" -eq 0 ]
+    [ "$output" = "2 1 2 1 1" ]
+}

@@ -91,7 +91,7 @@ EOF
     chmod +x "$MOCK_BIN/pxpipe"
 }
 
-@test "core Claude tools active → all green" {
+@test "core Claude tools active -> all green" {
     write_settings <<'EOF'
 {"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"command":"rtk hook claude"}]}]}}
 EOF
@@ -110,7 +110,7 @@ EOF
     [[ "$output" == *"${GREEN}[caveman 84cc3c1]"* ]]
 }
 
-@test "rtk rewrite script hook → rtk green" {
+@test "rtk rewrite script hook -> rtk green" {
     write_settings <<'EOF'
 {"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"command":"/another/users/home/.claude/hooks/rtk-rewrite.sh"}]}]}}
 EOF
@@ -122,7 +122,7 @@ EOF
     [[ "$output" == *"${GREEN}[rtk 44.7M]"* ]]
 }
 
-@test "pxpipe installed → pxpipe badge green" {
+@test "pxpipe installed -> pxpipe badge green" {
     write_settings <<'EOF'
 {}
 EOF
@@ -134,7 +134,7 @@ EOF
     [[ "$output" == *"${GREEN}[pxpipe 0.10.0]"* ]]
 }
 
-@test "rtk hook missing → rtk red, others green" {
+@test "rtk hook missing -> rtk red, others green" {
     write_settings <<'EOF'
 {"hooks":{}}
 EOF
@@ -152,7 +152,7 @@ EOF
     [[ "$output" == *"${GREEN}[caveman 84cc3c1]"* ]]
 }
 
-@test "context-mode disabled → ctx red" {
+@test "context-mode disabled -> ctx red" {
     write_settings <<'EOF'
 {"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"command":"rtk hook claude"}]}]}}
 EOF
@@ -169,7 +169,7 @@ EOF
     [[ "$output" == *"${GREEN}[mem 12.1.4]"* ]]
 }
 
-@test "caveman not installed → caveman red with version=-" {
+@test "caveman not installed -> caveman red with version=-" {
     write_settings <<'EOF'
 {"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"command":"rtk hook claude"}]}]}}
 EOF
@@ -184,7 +184,7 @@ EOF
     [[ "$output" == *"${RED}[caveman -]"* ]]
 }
 
-@test "core Claude tools down → all red" {
+@test "core Claude tools down -> all red" {
     write_settings <<'EOF'
 {}
 EOF
@@ -199,7 +199,7 @@ EOF
     [[ "$output" == *"${RED}[caveman -]"* ]]
 }
 
-@test "version is SHA → truncated to 7 chars" {
+@test "version is SHA -> truncated to 7 chars" {
     write_settings <<'EOF'
 {"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"command":"rtk hook claude"}]}]}}
 EOF
@@ -212,7 +212,7 @@ EOF
     [[ "$output" == *"[caveman abcdef0]"* ]]
 }
 
-@test "version is semver → kept as-is" {
+@test "version is semver -> kept as-is" {
     write_settings <<'EOF'
 {"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"command":"rtk hook claude"}]}]}}
 EOF
@@ -225,7 +225,7 @@ EOF
     [[ "$output" == *"[ctx 1.0.107]"* ]]
 }
 
-@test "update-available in cache → ⬆ on that tool only" {
+@test "update-available in cache -> ^ on that tool only" {
     write_settings <<'EOF'
 {"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"command":"rtk hook claude"}]}]}}
 EOF
@@ -254,7 +254,7 @@ EOF
     [[ "$output" != *"updates"* ]]
 }
 
-@test "multiple updates → plural CTA with count" {
+@test "multiple updates -> plural CTA with count" {
     write_settings <<'EOF'
 {"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"command":"rtk hook claude"}]}]}}
 EOF
@@ -277,7 +277,7 @@ EOF
     [[ "$output" == *"2 updates · /tokenwar upgrade"* ]]
 }
 
-@test "all up-to-date in cache → no ⬆ marker, no CTA" {
+@test "all up-to-date in cache -> no ^ marker, no CTA" {
     write_settings <<'EOF'
 {"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"command":"rtk hook claude"}]}]}}
 EOF
@@ -291,7 +291,7 @@ EOF
     [[ "$output" != *"/tokenwar upgrade"* ]]
 }
 
-@test "ponytail plugin enabled + full-mode flag → green [ponytail on]" {
+@test "ponytail plugin enabled + full-mode flag -> green [ponytail on]" {
     write_settings <<'EOF'
 {}
 EOF
@@ -305,7 +305,7 @@ EOF
     [[ "$output" == *"${GREEN}[ponytail on]"* ]]
 }
 
-@test "ponytail enabled + ultra-mode flag → green [ponytail ultra]" {
+@test "ponytail enabled + ultra-mode flag -> green [ponytail ultra]" {
     write_settings <<'EOF'
 {}
 EOF
@@ -319,7 +319,7 @@ EOF
     [[ "$output" == *"${GREEN}[ponytail ultra]"* ]]
 }
 
-@test "ponytail enabled but flag cleared (toggled off) → red [ponytail off]" {
+@test "ponytail enabled but flag cleared (toggled off) -> red [ponytail off]" {
     write_settings <<'EOF'
 {}
 EOF
@@ -333,7 +333,7 @@ EOF
     [[ "$output" == *"${RED}[ponytail off]"* ]]
 }
 
-@test "ponytail plugin disabled → red [ponytail off], ignores legacy CLAUDE.md include" {
+@test "ponytail plugin disabled -> red [ponytail off], ignores legacy CLAUDE.md include" {
     write_settings <<'EOF'
 {}
 EOF

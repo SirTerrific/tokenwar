@@ -288,7 +288,7 @@ function main() {
   });
 
   // Cost of the dead listing, both ways round.
-  const avgTurns = Math.max(1, Math.round(aggregate.turns / Math.max(1, aggregate.turnSessions)));
+  const avgTurns = Math.max(1, Math.round((aggregate.turns - (aggregate.subagentTurns || 0)) / Math.max(1, aggregate.turnSessions)));
   const meanRewrite = aggregate.cacheWriteTurns > 0
     ? Math.round(aggregate.cacheWriteTokensAfterFirst / aggregate.cacheWriteTurns)
     : 0;
@@ -423,7 +423,8 @@ function main() {
     console.log(`  HTML report written to ${path}`);
     if (args.open) {
       try {
-        if (process.platform === "win32") execFileSync("cmd", ["/c", "start", "", path], { stdio: "ignore" });
+        // Not `cmd /c start`: cmd re-parses the line, so a path like R&D.html would run "D.html".
+        if (process.platform === "win32") spawnSync("explorer.exe", [path], { stdio: "ignore" });
         else execFileSync(process.platform === "darwin" ? "open" : "xdg-open", [path], { stdio: "ignore" });
       } catch {
         // Opening a browser is a convenience; failing to do so is not an error.

@@ -13,7 +13,7 @@ teardown() {
     rm -rf "$HOME"
 }
 
-@test "R1 PASS — single Bash PreToolUse hook" {
+@test "R1 PASS - single Bash PreToolUse hook" {
     cat > "$HOME/.claude/settings.json" <<'EOF'
 {"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"command":"/x/rtk-rewrite.sh"}]}]}}
 EOF
@@ -21,13 +21,13 @@ EOF
     [[ "$output" == *"R1 bash double-hook"*PASS* ]]
 }
 
-@test "R1 WARN — no Bash hook" {
+@test "R1 WARN - no Bash hook" {
     echo '{}' > "$HOME/.claude/settings.json"
     run bash "$SCRIPT"
     [[ "$output" == *"R1 bash double-hook"*WARN* ]]
 }
 
-@test "R1 FAIL — multiple Bash hooks" {
+@test "R1 FAIL - multiple Bash hooks" {
     cat > "$HOME/.claude/settings.json" <<'EOF'
 {"hooks":{"PreToolUse":[
   {"matcher":"Bash","hooks":[{"command":"/x/rtk-rewrite.sh"}]},
@@ -38,7 +38,7 @@ EOF
     [[ "$output" == *"R1 bash double-hook"*FAIL* ]]
 }
 
-@test "R2 PASS — claude-mem dir exists, disjoint sinks" {
+@test "R2 PASS - claude-mem dir exists, disjoint sinks" {
     echo '{}' > "$HOME/.claude/settings.json"
     # Simulate installed_plugins with claude-mem
     mkdir -p "$HOME/.claude/plugins"
@@ -50,7 +50,7 @@ EOF
     [[ "$output" == *"R2 memory source overlap"*PASS* ]]
 }
 
-@test "R3 always PASS — disjoint buffers" {
+@test "R3 always PASS - disjoint buffers" {
     echo '{}' > "$HOME/.claude/settings.json"
     run bash "$SCRIPT"
     [[ "$output" == *"R3 output compression"*PASS* ]]
@@ -86,7 +86,7 @@ EOF
     [[ "$output" == *"COMPLEMENTARY"* ]]
 }
 
-@test "R4 WARN — graphify CLI absent" {
+@test "R4 WARN - graphify CLI absent" {
     cat > "$HOME/.claude/settings.json" <<'EOF'
 {"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"command":"/x/rtk-rewrite.sh"}]}]}}
 EOF
