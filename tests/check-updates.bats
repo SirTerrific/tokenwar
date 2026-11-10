@@ -102,9 +102,13 @@ make_caveman_marketplace() {
     local sha
     sha="$(git -C "$(winpath "$HOME/.claude/plugins/marketplaces/caveman")" rev-parse --short=12 HEAD)"
     run bash "$SCRIPT" --force
-    [[ "$output" == *"caveman"*"→ $sha"* ]]
+    # Look at the caveman row only: a glob across the whole output would also
+    # match a later row (e.g. tokenwar's own self-check) that is update-available.
+    local row
+    row="$(grep -E '^ +caveman ' <<<"$output")"
+    [[ "$row" == *"→ $sha"* ]]
     # A semver install cannot be ordered against a SHA: unknown, not an update.
-    [[ "$output" != *"caveman"*"update-available"* ]]
+    [[ "$row" != *"update-available"* ]]
 }
 
 @test "a marketplace clone behind upstream still reports upstream's version" {

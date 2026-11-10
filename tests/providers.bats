@@ -305,3 +305,21 @@ INSERT INTO assistant_usage_events (session_id, model, input_tokens, output_toke
     [ "$status" -eq 0 ]
     [ "$output" = "2026-09 2026-09 2026-09 2026-09" ]
 }
+
+@test "tw_sql_local_month honours daylight saving at a month boundary" {
+    command -v node >/dev/null || skip "node not installed"
+    node -e 'require("node:sqlite")' 2>/dev/null || skip "node:sqlite not available"
+    local expr
+    expr="$(bash -c "source '$BATS_TEST_DIRNAME/../scripts/lib/providers.sh'; tw_sql_local_month v")"
+    # 2026-11-01 04:30 UTC is 00:30 EDT (UTC-4) = November. A fixed UTC-5 zone
+    # would call it 23:30 on Oct 31. POSIX "EST5EDT" works with the Windows runtime.
+    NODE_NO_WARNINGS=1 TZ=EST5EDT EXPR="$expr" run node -e '
+      const { DatabaseSync } = require("node:sqlite");
+      const d = new DatabaseSync(":memory:");
+      const ms = Date.UTC(2026, 10, 1, 4, 30);
+      const vals = ["\x272026-11-01T04:30:00.000Z\x27", "\x272026-11-01 04:30:00\x27", String(ms / 1000), String(ms)];
+      console.log(vals.map((v) => d.prepare("SELECT " + process.env.EXPR + " AS m FROM (SELECT " + v + " AS v)").get().m).join(" "));
+    ' 2>/dev/null
+    [ "$status" -eq 0 ]
+    [ "$output" = "2026-11 2026-11 2026-11 2026-11" ]
+}
